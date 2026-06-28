@@ -1,0 +1,161 @@
+import nodemailer from 'nodemailer';
+import { env } from './env.js';
+
+let transporter: nodemailer.Transporter | null = null;
+
+export const getMailTransporter = (): nodemailer.Transporter => {
+  if (!transporter) {
+    transporter = nodemailer.createTransport({
+      host: env.EMAIL_HOST,
+      port: Number(env.EMAIL_PORT),
+      secure: env.EMAIL_SECURE === 'true',
+      auth: {
+        user: env.EMAIL_USER,
+        pass: env.EMAIL_PASS,
+      },
+    });
+  }
+  return transporter;
+};
+
+interface SendMailOptions {
+  to: string;
+  subject: string;
+  html: string;
+}
+
+export const sendMail = async ({ to, subject, html }: SendMailOptions): Promise<void> => {
+  if (!env.EMAIL_USER || !env.EMAIL_PASS) {
+    console.warn('⚠️   Email credentials not configured — skipping email send');
+    return;
+  }
+
+  const mail = getMailTransporter();
+  await mail.sendMail({
+    from: env.EMAIL_FROM,
+    to,
+    subject,
+    html,
+  });
+};
+
+// ─── Email Templates ──────────────────────────────────────────────────────────
+
+export const orderConfirmationTemplate = (data: {
+  name: string;
+  orderId: string;
+  total: number;
+  items: Array<{ name: string; quantity: number; price: number }>;
+}): string => `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Georgia, serif; background: #f9f7f4; margin: 0; padding: 0; }
+    .container { max-width: 600px; margin: 40px auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 24px rgba(11,35,66,0.08); }
+    .header { background: #0B2342; padding: 40px 32px; text-align: center; }
+    .header h1 { color: #CFA96A; font-size: 28px; margin: 0; letter-spacing: 4px; font-weight: 300; }
+    .header p { color: rgba(255,255,255,0.7); margin: 8px 0 0; font-size: 14px; }
+    .body { padding: 40px 32px; }
+    .body h2 { color: #0B2342; font-size: 22px; margin-bottom: 8px; }
+    .body p { color: #555; line-height: 1.7; }
+    .order-id { background: #f0ede8; border-radius: 8px; padding: 16px 24px; margin: 24px 0; }
+    .order-id span { color: #0B2342; font-weight: 600; font-size: 18px; }
+    table { width: 100%; border-collapse: collapse; margin: 24px 0; }
+    th { text-align: left; border-bottom: 2px solid #0B2342; padding: 10px; color: #0B2342; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
+    td { padding: 12px 10px; border-bottom: 1px solid #eee; color: #444; }
+    .total-row td { font-weight: 700; color: #0B2342; border-top: 2px solid #0B2342; border-bottom: none; font-size: 16px; }
+    .footer { background: #0B2342; padding: 24px 32px; text-align: center; }
+    .footer p { color: rgba(255,255,255,0.6); font-size: 13px; margin: 0; }
+    .gold { color: #CFA96A; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>MINARA</h1>
+      <p>Luxury Gifting, Reimagined</p>
+    </div>
+    <div class="body">
+      <h2>Thank you, ${data.name}!</h2>
+      <p>Your order has been confirmed. We're preparing your luxury gift with the utmost care.</p>
+      <div class="order-id">
+        Order ID: <span class="gold">${data.orderId}</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Qty</th>
+            <th>Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${data.items
+            .map(
+              (item) => `
+            <tr>
+              <td>${item.name}</td>
+              <td>${item.quantity}</td>
+              <td>₹${item.price.toLocaleString('en-IN')}</td>
+            </tr>
+          `
+            )
+            .join('')}
+          <tr class="total-row">
+            <td colspan="2">Total</td>
+            <td>₹${data.total.toLocaleString('en-IN')}</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>We'll notify you when your order ships. Expected delivery: <strong>2–5 business days</strong>.</p>
+    </div>
+    <div class="footer">
+      <p>Questions? Email us at <span class="gold">support@minara.in</span></p>
+    </div>
+  </div>
+</body>
+</html>
+`;
+
+export const orderShippedTemplate = (data: {
+  name: string;
+  orderId: string;
+  awbNumber: string;
+}): string => `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Georgia, serif; background: #f9f7f4; margin: 0; }
+    .container { max-width: 600px; margin: 40px auto; background: #fff; border-radius: 12px; overflow: hidden; }
+    .header { background: #0B2342; padding: 40px 32px; text-align: center; }
+    .header h1 { color: #CFA96A; font-size: 28px; margin: 0; letter-spacing: 4px; font-weight: 300; }
+    .body { padding: 40px 32px; }
+    .body h2 { color: #0B2342; font-size: 22px; }
+    .awb-box { background: #f0ede8; border-left: 4px solid #CFA96A; border-radius: 8px; padding: 20px 24px; margin: 24px 0; }
+    .awb-box p { margin: 0; color: #444; }
+    .awb-box strong { color: #0B2342; font-size: 18px; }
+    .footer { background: #0B2342; padding: 24px 32px; text-align: center; }
+    .footer p { color: rgba(255,255,255,0.6); font-size: 13px; margin: 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header"><h1>MINARA</h1></div>
+    <div class="body">
+      <h2>Your order is on its way! 🚀</h2>
+      <p>Hi ${data.name}, your order <strong>${data.orderId}</strong> has been shipped via XpressBees.</p>
+      <div class="awb-box">
+        <p>Tracking Number (AWB)</p>
+        <strong>${data.awbNumber}</strong>
+      </div>
+      <p>You can track your shipment on the XpressBees website using the AWB number above.</p>
+    </div>
+    <div class="footer"><p>Questions? Email us at support@minara.in</p></div>
+  </div>
+</body>
+</html>
+`;

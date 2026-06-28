@@ -1,0 +1,81 @@
+import express from 'express';
+import helmet from 'helmet';
+import cors from 'cors';
+import morgan from 'morgan';
+import cookieParser from 'cookie-parser';
+import rateLimit from 'express-rate-limit';
+import { env } from './config/env.js';
+import { errorHandler } from './middlewares/error.middleware.js';
+
+// Route imports
+import authRoutes from './modules/auth/auth.routes.js';
+import productRoutes from './modules/products/product.routes.js';
+import categoryRoutes from './modules/categories/category.routes.js';
+import dashboardRoutes from './modules/dashboard/dashboard.routes.js';
+import orderRoutes from './modules/orders/order.routes.js';
+import userRoutes from './modules/users/user.routes.js';
+
+const app = express();
+
+// ─── Security ─────────────────────────────────────────────────────────────────
+app.use(helmet());
+
+// ─── CORS ─────────────────────────────────────────────────────────────────────
+app.use(
+  cors({
+    origin: [env.FRONTEND_URL, env.ADMIN_URL],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
+
+// ─── Rate Limiting ────────────────────────────────────────────────────────────
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Too many requests, please try again later.' },
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { success: false, message: 'Too many login attempts, please try again later.' },
+});
+
+app.use(globalLimiter);
+
+// ─── Body Parsers ─────────────────────────────────────────────────────────────
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(cookieParser());
+
+// ─── Logger ───────────────────────────────────────────────────────────────────
+if (env.NODE_ENV !== 'test') {
+  app.use(morgan(env.NODE_ENV === 'development' ? 'dev' : 'combined'));
+}
+
+// ─── Health Check ─────────────────────────────────────────────────────────────
+app.get('/health', (_req, res) => {
+  res.json({ success: true, message: 'MINARA API is running', timestamp: new Date() });
+});
+
+// ─── API Routes ───────────────────────────────────────────────────────────────
+app.use('/api/v1/auth', authLimiter, authRoutes);
+app.use('/api/v1/products', productRoutes);
+app.use('/api/v1/categories', categoryRoutes);
+app.use('/api/v1/dashboard', dashboardRoutes);
+app.use('/api/v1/orders', orderRoutes);
+app.use('/api/v1/users', userRoutes);
+
+// ─── 404 Handler ──────────────────────────────────────────────────────────────
+app.use((_req, res) => {
+  res.status(404).json({ success: false, message: 'Route not found' });
+});
+
+// ─── Global Error Handler ─────────────────────────────────────────────────────
+app.use(errorHandler);
+
+export default app;
