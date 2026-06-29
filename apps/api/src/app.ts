@@ -62,6 +62,46 @@ app.get('/health', (_req, res) => {
   res.json({ success: true, message: 'MINARA API is running', timestamp: new Date() });
 });
 
+// ─── Deep Health Check (MongoDB + Cloudinary) ─────────────────────────────────
+app.get('/health/check', async (_req, res) => {
+  const checks: Record<string, { status: string; message: string }> = {};
+
+  // MongoDB check
+  try {
+    const mongoose = await import('mongoose');
+    const state = mongoose.default.connection.readyState;
+    // 0=disconnected, 1=connected, 2=connecting, 3=disconnecting
+    const stateMap: Record<number, string> = { 0: 'disconnected', 1: 'connected', 2: 'connecting', 3: 'disconnecting' };
+    checks.mongodb = {
+      status: state === 1 ? '✅ connected' : '❌ ' + stateMap[state],
+      message: state === 1 ? `Connected to: ${mongoose.default.connection.host}` : 'Not connected',
+    };
+  } catch {
+    checks.mongodb = { status: '❌ error', message: 'Could not check MongoDB' };
+  }
+
+  // Cloudinary check
+  try {
+    const { cloudinary } = await import('./config/cloudinary.js');
+    const result = await cloudinary.api.ping();
+    checks.cloudinary = {
+      status: result.status === 'ok' ? '✅ connected' : '❌ error',
+      message: `Cloud: ${env.CLOUDINARY_CLOUD_NAME}`,
+    };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Unknown error';
+    checks.cloudinary = { status: '❌ error', message: msg };
+  }
+
+  const allOk = Object.values(checks).every((c) => c.status.startsWith('✅'));
+  res.status(allOk ? 200 : 503).json({
+    success: allOk,
+    message: allOk ? '🚀 All services connected' : '⚠️ Some services failed',
+    checks,
+    timestamp: new Date(),
+  });
+});
+
 // ─── API Routes ───────────────────────────────────────────────────────────────
 app.use('/api/v1/auth', authLimiter, authRoutes);
 app.use('/api/v1/products', productRoutes);
