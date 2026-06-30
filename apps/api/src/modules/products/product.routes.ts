@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import {
+  getAdminProducts,
   getProducts,
   getProductBySlug,
   getProductById,
@@ -19,6 +20,8 @@ const router = Router();
 router.get('/', getProducts);
 router.get('/featured', getFeaturedProducts);
 router.get('/slug/:slug', getProductBySlug);
+// Admin: list all products including inactive — must be before /:id to avoid CastError
+router.get('/admin/all', authenticate, requireAdmin, getAdminProducts);
 router.get('/:id', getProductById);
 
 // Admin routes

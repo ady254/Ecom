@@ -37,6 +37,7 @@ export interface IOrder extends Document {
   discount: number;
   total: number;
   couponCode?: string;
+  giftMessage?: string;
   paymentMethod: 'razorpay' | 'cod';
   paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded';
   razorpayOrderId?: string;
@@ -85,6 +86,7 @@ const orderSchema = new Schema<IOrder>(
     discount: { type: Number, default: 0 },
     total: { type: Number, required: true },
     couponCode: String,
+    giftMessage: { type: String, trim: true, maxlength: 300 },
     paymentMethod: {
       type: String,
       enum: ['razorpay', 'cod'],

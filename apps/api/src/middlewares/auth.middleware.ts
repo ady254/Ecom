@@ -47,10 +47,14 @@ export const optionalAuth = async (
     const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
     if (token) {
       const decoded = verifyAccessToken(token);
-      req.user = { userId: decoded.userId, role: decoded.role };
+      const user = await UserModel.findById(decoded.userId).select('isActive').lean();
+      if (user?.isActive) {
+        req.user = { userId: decoded.userId, role: decoded.role };
+      }
+      // Blocked user: token is silently ignored — they proceed as a guest
     }
   } catch {
-    // Optional auth — silently ignore invalid token
+    // Invalid/expired token — silently ignored, request proceeds as unauthenticated
   }
   next();
 };

@@ -1,5 +1,8 @@
 import { Router } from 'express';
-import { register, login, googleLogin, refreshToken, logout, getMe } from './auth.controller.js';
+import {
+  register, login, googleLogin, refreshToken, logout, getMe,
+  forgotPassword, resetPassword, verifyEmail, resendVerification,
+} from './auth.controller.js';
 import { validate } from '../../middlewares/validate.middleware.js';
 import { authenticate } from '../../middlewares/auth.middleware.js';
 import { RegisterSchema, LoginSchema } from '@minara/types';
@@ -47,5 +50,10 @@ router.post('/logout', authenticate, logout);
  * @access Private
  */
 router.get('/me', authenticate, getMe);
+
+router.post('/forgot-password', forgotPassword);
+router.post('/reset-password', resetPassword);
+router.post('/verify-email', verifyEmail);
+router.post('/resend-verification', authenticate, resendVerification);
 
 export default router;

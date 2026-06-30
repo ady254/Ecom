@@ -71,3 +71,30 @@ export const getMe = asyncHandler(async (req: AuthRequest, res: Response) => {
   const user = await authService.getMe(req.user!.userId);
   res.json({ success: true, message: 'User fetched', data: { user } });
 });
+
+export const forgotPassword = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const { email } = req.body;
+  if (!email) throw new AppError('Email is required', 400);
+  await authService.forgotPassword(email as string);
+  res.json({ success: true, message: 'If an account exists, a reset link has been sent' });
+});
+
+export const resetPassword = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const { token, userId, password } = req.body;
+  if (!token || !userId || !password) throw new AppError('Token, userId and password are required', 400);
+  if (password.length < 8) throw new AppError('Password must be at least 8 characters', 400);
+  await authService.resetPassword(userId as string, token as string, password as string);
+  res.json({ success: true, message: 'Password reset successfully. Please log in.' });
+});
+
+export const verifyEmail = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const { token, userId } = req.body;
+  if (!token || !userId) throw new AppError('Token and userId are required', 400);
+  await authService.verifyEmail(userId as string, token as string);
+  res.json({ success: true, message: 'Email verified successfully' });
+});
+
+export const resendVerification = asyncHandler(async (req: AuthRequest, res: Response) => {
+  await authService.resendVerification(req.user!.userId);
+  res.json({ success: true, message: 'Verification email sent' });
+});

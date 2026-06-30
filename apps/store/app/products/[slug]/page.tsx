@@ -2,31 +2,24 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Star, Shield, Truck, RefreshCw, ChevronRight } from 'lucide-react';
-import { formatCurrency, calculateDiscount, calculateEstimatedDelivery, formatDeliveryDate } from '@minara/utils';
-import AddToCartButton from '@/components/products/AddToCartButton';
+import { ChevronRight } from 'lucide-react';
+import { formatCurrency, calculateDiscount } from '@minara/utils';
 import ProductImageGallery from '@/components/products/ProductImageGallery';
+import PDPClient from '@/components/products/PDPClient';
+import ProductReviews from '@/components/products/ProductReviews';
 
-interface ProductImage {
-  url: string;
-  alt?: string;
-}
-
+interface ProductImage { url: string; alt?: string; }
+interface CustomField { label: string; placeholder?: string; required?: boolean; }
 interface Product {
-  _id: string;
-  name: string;
-  slug: string;
-  description: string;
-  shortDescription?: string;
-  price: number;
-  comparePrice?: number;
+  _id: string; name: string; slug: string;
+  description: string; shortDescription?: string;
+  price: number; comparePrice?: number;
   images: ProductImage[];
-  ratings?: { averageRating: number; reviewCount: number };
-  tags: string[];
-  category?: { name: string; slug: string };
-  stock: number;
-  sku?: string;
-  weight?: number;
+  averageRating: number; reviewCount: number;
+  tags: string[]; category?: { _id: string; name: string; slug: string };
+  stock: number; sku?: string; weight?: number;
+  isCustomizable?: boolean;
+  customFields?: CustomField[];
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
@@ -37,206 +30,278 @@ async function fetchProduct(slug: string): Promise<Product | null> {
     if (res.status === 404) return null;
     if (!res.ok) return null;
     const json = await res.json();
-    return json.data?.product ?? json.data ?? null;
-  } catch {
-    return null;
-  }
+    return json.data?.product ?? null;
+  } catch { return null; }
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}): Promise<Metadata> {
+async function fetchRelated(categoryId: string, excludeId: string): Promise<Product[]> {
+  try {
+    const res = await fetch(`${API_URL}/products?category=${categoryId}&limit=5`, { cache: 'no-store' });
+    if (!res.ok) return [];
+    const j = await res.json();
+    return (j.data?.products ?? []).filter((p: Product) => p._id !== excludeId).slice(0, 4);
+  } catch { return []; }
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const product = await fetchProduct(slug);
   if (!product) return { title: 'Product Not Found' };
   return {
     title: product.name,
     description: product.shortDescription || product.description?.slice(0, 160),
-    openGraph: {
-      images: product.images[0] ? [{ url: product.images[0].url }] : [],
-    },
+    openGraph: { images: product.images[0] ? [{ url: product.images[0].url }] : [] },
   };
 }
 
-export default async function ProductDetailPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const product = await fetchProduct(slug);
-
   if (!product) notFound();
 
+  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://minara.in';
   const discount = calculateDiscount(product.price, product.comparePrice);
-  const delivery = calculateEstimatedDelivery();
-  const deliveryDate = `${formatDeliveryDate(delivery.from)} – ${formatDeliveryDate(delivery.to)}`;
-  const mainImage = product.images[0];
+  const related = product.category ? await fetchRelated(product.category._id, product._id) : [];
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    description: product.shortDescription || product.description?.slice(0, 200),
+    image: product.images.map((img) => img.url),
+    ...(product.sku ? { sku: product.sku } : {}),
+    brand: { '@type': 'Brand', name: 'MINARA' },
+    offers: {
+      '@type': 'Offer',
+      priceCurrency: 'INR',
+      price: product.price,
+      availability:
+        product.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+      url: `${SITE_URL}/products/${product.slug}`,
+      seller: { '@type': 'Organization', name: 'MINARA' },
+    },
+    ...(product.reviewCount > 0
+      ? {
+          aggregateRating: {
+            '@type': 'AggregateRating',
+            ratingValue: product.averageRating,
+            reviewCount: product.reviewCount,
+            bestRating: 5,
+            worstRating: 1,
+          },
+        }
+      : {}),
+  };
+
+  // Delivery timeline dates
+  const today = new Date();
+  const fmt = (d: Date) => d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+  const day2 = new Date(today); day2.setDate(today.getDate() + 1);
+  const day4 = new Date(today); day4.setDate(today.getDate() + 4);
+
+  const soldCount = Math.floor(Math.random() * 18) + 8;
 
   return (
-    <div className="pt-24 pb-20">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+    <div className="pb-20 pt-6">
       <div className="section-container">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-xs text-gray-400 uppercase tracking-widest mb-8">
+        <nav className="flex items-center gap-1.5 text-xs text-gray-400 mb-8">
           <Link href="/" className="hover:text-[var(--color-gold)] transition-colors">Home</Link>
-          <ChevronRight size={12} />
+          <ChevronRight size={11} />
           <Link href="/products" className="hover:text-[var(--color-gold)] transition-colors">Products</Link>
           {product.category && (
             <>
-              <ChevronRight size={12} />
-              <Link href={`/products?category=${product.category.slug}`} className="hover:text-[var(--color-gold)] transition-colors">
+              <ChevronRight size={11} />
+              <Link
+                href={`/products?category=${product.category.slug}`}
+                className="hover:text-[var(--color-gold)] transition-colors"
+              >
                 {product.category.name}
               </Link>
             </>
           )}
-          <ChevronRight size={12} />
-          <span className="text-[var(--color-navy)]">{product.name}</span>
+          <ChevronRight size={11} />
+          <span className="text-[var(--color-navy)] font-medium truncate max-w-[200px]">{product.name}</span>
         </nav>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 xl:gap-20">
-          {/* Left — Image Gallery */}
+        {/* Two-column product layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 xl:gap-16">
           <ProductImageGallery images={product.images} productName={product.name} />
 
-          {/* Right — Product Info */}
-          <div className="flex flex-col">
-            {/* Tags */}
-            <div className="flex flex-wrap gap-2 mb-4">
-              {product.tags.includes('bestseller') && (
-                <span className="badge badge-gold text-xs px-3 py-1">Bestseller</span>
-              )}
-              {product.tags.includes('new') && (
-                <span className="badge badge-navy text-xs px-3 py-1">New Arrival</span>
-              )}
-              {product.category && (
-                <span className="text-xs text-[var(--color-gold-dark)] uppercase tracking-widest">
-                  {product.category.name}
-                </span>
-              )}
-            </div>
+          <PDPClient
+            product={{
+              _id: product._id,
+              name: product.name,
+              slug: product.slug,
+              price: product.price,
+              comparePrice: product.comparePrice,
+              images: product.images,
+              averageRating: product.averageRating,
+              reviewCount: product.reviewCount,
+              tags: product.tags,
+              category: product.category,
+              stock: product.stock,
+              sku: product.sku,
+              shortDescription: product.shortDescription,
+              isCustomizable: product.isCustomizable,
+              customFields: product.customFields,
+            }}
+            discount={discount}
+            soldCount={soldCount}
+            deliverySteps={[
+              { label: 'Order Today', date: fmt(today) },
+              { label: 'Customization', date: fmt(day2) },
+              { label: 'Dispatched', date: fmt(day4) },
+            ]}
+          />
+        </div>
 
-            {/* Title */}
-            <h1 className="font-heading text-3xl md:text-4xl text-[var(--color-navy)] leading-tight mb-4">
-              {product.name}
-            </h1>
+        {/* Below the fold */}
+        <div className="mt-16 grid grid-cols-1 lg:grid-cols-3 gap-10">
+          {/* Accordions */}
+          <div className="lg:col-span-2 space-y-0">
+            <AccordionSection title="Product Description" defaultOpen>
+              <div className="text-gray-600 leading-relaxed whitespace-pre-line text-sm">
+                {product.description}
+              </div>
+            </AccordionSection>
 
-            {/* Rating */}
-            {product.ratings && product.ratings.reviewCount > 0 && (
-              <div className="flex items-center gap-3 mb-6">
-                <div className="flex items-center gap-1">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star
-                      key={star}
-                      size={14}
-                      className={
-                        star <= Math.round(product.ratings!.averageRating)
-                          ? 'text-[var(--color-gold)] fill-[var(--color-gold)]'
-                          : 'text-gray-200 fill-gray-200'
-                      }
-                    />
-                  ))}
+            <AccordionSection title="Additional Information">
+              <div className="space-y-2 text-sm text-gray-600">
+                {product.sku && <p><span className="font-medium text-gray-700">SKU:</span> {product.sku}</p>}
+                {product.weight && <p><span className="font-medium text-gray-700">Weight:</span> {product.weight}g</p>}
+                {product.category && <p><span className="font-medium text-gray-700">Category:</span> {product.category.name}</p>}
+                {product.tags.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-2 mt-1">
+                    <span className="font-medium text-gray-700">Tags:</span>
+                    {product.tags.map((t) => (
+                      <span key={t} className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-xs">{t}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </AccordionSection>
+
+            <AccordionSection title="Shipping & Return Policy">
+              <div className="space-y-3 text-sm text-gray-600">
+                <p>🚚 <span className="font-medium text-gray-700">Free Delivery</span> on orders above ₹999. Standard delivery in 4–7 business days.</p>
+                <p>🎁 <span className="font-medium text-gray-700">Premium Packaging</span> — Every order comes beautifully wrapped at no extra cost.</p>
+                <p>🔄 <span className="font-medium text-gray-700">Easy Replacement</span> — 10-day replacement for damaged or defective items.</p>
+                <p>📞 <span className="font-medium text-gray-700">Support</span> — Reach us via WhatsApp or email for any concerns.</p>
+                <p className="text-xs text-gray-400 mt-2">Personalized/customized orders are non-refundable unless the product arrives damaged.</p>
+              </div>
+            </AccordionSection>
+          </div>
+
+          {/* Trust sidebar */}
+          <div>
+            <div className="bg-[var(--color-cream)] rounded-2xl p-6 border border-[rgba(207,169,106,0.2)]">
+              <p className="text-xs font-semibold text-[var(--color-navy)] uppercase tracking-wider mb-4">Why Shop With Us</p>
+              {[
+                { icon: '🚚', t: 'Free Delivery', s: 'On orders above ₹999' },
+                { icon: '🔄', t: '10 Days Replacement', s: 'Damaged or defective items' },
+                { icon: '🎁', t: 'Premium Packaging', s: 'Beautifully wrapped' },
+                { icon: '🔒', t: 'Secured Payment', s: '100% safe checkout' },
+                { icon: '✅', t: 'Safe Delivery', s: 'Guaranteed safe arrival' },
+              ].map((item) => (
+                <div key={item.t} className="flex items-start gap-3 py-3 border-b border-[rgba(207,169,106,0.15)] last:border-0">
+                  <span className="text-xl shrink-0">{item.icon}</span>
+                  <div>
+                    <p className="text-xs font-semibold text-[var(--color-navy)]">{item.t}</p>
+                    <p className="text-[11px] text-gray-400">{item.s}</p>
+                  </div>
                 </div>
-                <span className="text-sm text-gray-500">
-                  {product.ratings.averageRating} · {product.ratings.reviewCount} reviews
-                </span>
-              </div>
-            )}
-
-            {/* Price */}
-            <div className="flex items-baseline gap-4 mb-6 pb-6 border-b border-gray-100">
-              <span className="font-heading text-3xl text-[var(--color-navy)]">
-                {formatCurrency(product.price)}
-              </span>
-              {product.comparePrice && (
-                <span className="text-lg text-gray-400 line-through">
-                  {formatCurrency(product.comparePrice)}
-                </span>
-              )}
-              {discount > 0 && (
-                <span className="text-sm font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">
-                  {discount}% off
-                </span>
-              )}
+              ))}
             </div>
-
-            {/* Short Description */}
-            {product.shortDescription && (
-              <p className="text-gray-600 leading-relaxed mb-6">{product.shortDescription}</p>
-            )}
-
-            {/* Stock */}
-            <div className="flex items-center gap-2 mb-6 text-sm">
-              {product.stock > 0 ? (
-                <>
-                  <span className="w-2 h-2 bg-emerald-500 rounded-full" />
-                  <span className="text-emerald-700 font-medium">
-                    {product.stock <= 5 ? `Only ${product.stock} left` : 'In Stock'}
-                  </span>
-                </>
-              ) : (
-                <>
-                  <span className="w-2 h-2 bg-red-500 rounded-full" />
-                  <span className="text-red-600 font-medium">Out of Stock</span>
-                </>
-              )}
-            </div>
-
-            {/* Add to Cart */}
-            {product.stock > 0 && (
-              <div className="mb-6">
-                <AddToCartButton
-                  product={{
-                    _id: product._id,
-                    name: product.name,
-                    slug: product.slug,
-                    price: product.price,
-                    image: mainImage?.url ?? '',
-                  }}
-                />
-              </div>
-            )}
-
-            {/* Trust signals */}
-            <div className="grid grid-cols-3 gap-3 pt-6 border-t border-gray-100">
-              <div className="flex flex-col items-center gap-2 text-center">
-                <Truck size={18} className="text-[var(--color-gold)]" />
-                <div>
-                  <p className="text-xs font-semibold text-[var(--color-navy)]">Free Delivery</p>
-                  <p className="text-[10px] text-gray-400">Est. {deliveryDate}</p>
-                </div>
-              </div>
-              <div className="flex flex-col items-center gap-2 text-center">
-                <Shield size={18} className="text-[var(--color-gold)]" />
-                <div>
-                  <p className="text-xs font-semibold text-[var(--color-navy)]">Secure Payment</p>
-                  <p className="text-[10px] text-gray-400">100% protected</p>
-                </div>
-              </div>
-              <div className="flex flex-col items-center gap-2 text-center">
-                <RefreshCw size={18} className="text-[var(--color-gold)]" />
-                <div>
-                  <p className="text-xs font-semibold text-[var(--color-navy)]">Easy Returns</p>
-                  <p className="text-[10px] text-gray-400">7-day policy</p>
-                </div>
-              </div>
-            </div>
-
-            {/* SKU */}
-            {product.sku && (
-              <p className="mt-4 text-xs text-gray-400">SKU: {product.sku}</p>
-            )}
           </div>
         </div>
 
-        {/* Full Description */}
-        {product.description && (
-          <div className="mt-16 max-w-3xl">
-            <h2 className="font-heading text-2xl text-[var(--color-navy)] mb-4">Product Description</h2>
-            <div className="text-gray-600 leading-relaxed whitespace-pre-line">{product.description}</div>
+        {/* Reviews */}
+        <div className="mt-16 max-w-3xl">
+          <ProductReviews
+            productId={product._id}
+            averageRating={product.averageRating}
+            reviewCount={product.reviewCount}
+          />
+        </div>
+
+        {/* Related products */}
+        {related.length > 0 && (
+          <div className="mt-20">
+            <h2
+              className="text-3xl text-[var(--color-navy)] mb-8"
+              style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 600 }}
+            >
+              You May Also Like
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
+              {related.map((p) => {
+                const img = p.images?.[0];
+                return (
+                  <Link key={p._id} href={`/products/${p.slug}`} className="product-card group">
+                    <div className="product-image-wrap">
+                      {img?.url ? (
+                        <Image
+                          src={img.url}
+                          alt={img.alt || p.name}
+                          fill
+                          sizes="(max-width: 768px) 50vw, 25vw"
+                          className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-[var(--color-cream)]">
+                          <span className="text-4xl opacity-30">🎁</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-3">
+                      <p className="font-heading text-sm text-[var(--color-navy)] line-clamp-2 mb-1">{p.name}</p>
+                      <p className="font-semibold text-sm text-[var(--color-navy)]">{formatCurrency(p.price)}</p>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
     </div>
+    </>
+  );
+}
+
+// Accordion using native <details> — works without JS
+function AccordionSection({
+  title,
+  children,
+  defaultOpen = false,
+}: {
+  title: string;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+}) {
+  return (
+    <details
+      className="border-b border-gray-100 group"
+      {...(defaultOpen ? { open: true } : {})}
+    >
+      <summary className="flex items-center justify-between py-4 cursor-pointer list-none select-none">
+        <span
+          className="font-semibold text-[var(--color-navy)]"
+          style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '1rem' }}
+        >
+          {title}
+        </span>
+        <span className="text-gray-400 transition-transform duration-200 group-open:rotate-180 text-lg leading-none">
+          ▾
+        </span>
+      </summary>
+      <div className="pb-5 pt-1">{children}</div>
+    </details>
   );
 }

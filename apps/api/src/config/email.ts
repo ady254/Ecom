@@ -119,6 +119,77 @@ export const orderConfirmationTemplate = (data: {
 </html>
 `;
 
+export const passwordResetTemplate = (data: { name: string; resetUrl: string }): string => `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Georgia, serif; background: #f9f7f4; margin: 0; padding: 0; }
+    .container { max-width: 600px; margin: 40px auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 24px rgba(11,35,66,0.08); }
+    .header { background: #0B2342; padding: 40px 32px; text-align: center; }
+    .header h1 { color: #CFA96A; font-size: 28px; margin: 0; letter-spacing: 4px; font-weight: 300; }
+    .body { padding: 40px 32px; }
+    .body h2 { color: #0B2342; font-size: 22px; margin-bottom: 8px; }
+    .body p { color: #555; line-height: 1.7; }
+    .btn { display: inline-block; margin: 24px 0; padding: 14px 32px; background: #0B2342; color: #fff; text-decoration: none; border-radius: 50px; font-size: 15px; font-weight: 600; letter-spacing: 1px; }
+    .note { font-size: 13px; color: #999; margin-top: 16px; }
+    .footer { background: #0B2342; padding: 24px 32px; text-align: center; }
+    .footer p { color: rgba(255,255,255,0.6); font-size: 13px; margin: 0; }
+    .gold { color: #CFA96A; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header"><h1>MINARA</h1></div>
+    <div class="body">
+      <h2>Reset your password</h2>
+      <p>Hi ${data.name},</p>
+      <p>We received a request to reset the password for your MINARA account. Click the button below to set a new password:</p>
+      <a href="${data.resetUrl}" class="btn">Reset Password</a>
+      <p class="note">This link expires in <strong>1 hour</strong>. If you did not request a password reset, you can safely ignore this email — your account remains secure.</p>
+    </div>
+    <div class="footer"><p>Questions? Email us at <span class="gold">support@minara.in</span></p></div>
+  </div>
+</body>
+</html>
+`;
+
+export const emailVerificationTemplate = (data: { name: string; verifyUrl: string }): string => `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Georgia, serif; background: #f9f7f4; margin: 0; padding: 0; }
+    .container { max-width: 600px; margin: 40px auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 24px rgba(11,35,66,0.08); }
+    .header { background: #0B2342; padding: 40px 32px; text-align: center; }
+    .header h1 { color: #CFA96A; font-size: 28px; margin: 0; letter-spacing: 4px; font-weight: 300; }
+    .body { padding: 40px 32px; }
+    .body h2 { color: #0B2342; font-size: 22px; margin-bottom: 8px; }
+    .body p { color: #555; line-height: 1.7; }
+    .btn { display: inline-block; margin: 24px 0; padding: 14px 32px; background: #CFA96A; color: #0B2342; text-decoration: none; border-radius: 50px; font-size: 15px; font-weight: 700; letter-spacing: 1px; }
+    .note { font-size: 13px; color: #999; margin-top: 16px; }
+    .footer { background: #0B2342; padding: 24px 32px; text-align: center; }
+    .footer p { color: rgba(255,255,255,0.6); font-size: 13px; margin: 0; }
+    .gold { color: #CFA96A; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header"><h1>MINARA</h1></div>
+    <div class="body">
+      <h2>Welcome, ${data.name}! 🎁</h2>
+      <p>Thank you for joining MINARA — India's premier luxury gifting destination. Please verify your email address to unlock all features:</p>
+      <a href="${data.verifyUrl}" class="btn">Verify My Email</a>
+      <p class="note">If you didn't create an account with us, please ignore this email.</p>
+    </div>
+    <div class="footer"><p>Questions? Email us at <span class="gold">support@minara.in</span></p></div>
+  </div>
+</body>
+</html>
+`;
+
 export const orderShippedTemplate = (data: {
   name: string;
   orderId: string;

@@ -10,11 +10,28 @@ export class ProductService {
     this.repo = new ProductRepository();
   }
 
+  // Public: always restricts to isActive:true unless caller explicitly overrides
   async getProducts(
     filter: ProductFilter & { page?: number; limit?: number; sort?: string }
   ) {
     const page = filter.page || 1;
     const limit = Math.min(filter.limit || 12, 48);
+    const sort = filter.sort || '-createdAt';
+    const { products, total } = await this.repo.findAll(
+      { ...filter, isActive: filter.isActive ?? true },
+      page,
+      limit,
+      sort
+    );
+    return { products, pagination: getPaginationMeta(total, page, limit) };
+  }
+
+  // Admin: no isActive filter — returns all products including inactive
+  async getAdminProducts(
+    filter: ProductFilter & { page?: number; limit?: number; sort?: string }
+  ) {
+    const page = filter.page || 1;
+    const limit = Math.min(filter.limit || 48, 100);
     const sort = filter.sort || '-createdAt';
     const { products, total } = await this.repo.findAll(filter, page, limit, sort);
     return { products, pagination: getPaginationMeta(total, page, limit) };
@@ -53,7 +70,7 @@ export class ProductService {
   }
 
   async getFeaturedProducts(): Promise<IProduct[]> {
-    const { products } = await this.repo.findAll({ isFeatured: true }, 1, 8);
+    const { products } = await this.repo.findAll({ isFeatured: true, isActive: true }, 1, 8);
     return products;
   }
 }

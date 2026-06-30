@@ -4,6 +4,7 @@ import { ShoppingBag, Check } from 'lucide-react';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { useCartStore } from '@/store/cartStore';
+import { useUIStore } from '@/store/uiStore';
 
 interface Product {
   _id: string;
@@ -22,6 +23,7 @@ interface Props {
 
 export default function AddToCartButton({ product, iconOnly = false, quantity = 1, className }: Props) {
   const { addItem } = useCartStore();
+  const { openCart } = useUIStore();
   const [added, setAdded] = useState(false);
 
   const handleAdd = (e: React.MouseEvent) => {
@@ -36,7 +38,8 @@ export default function AddToCartButton({ product, iconOnly = false, quantity = 
       slug: product.slug,
     });
     setAdded(true);
-    toast.success('Added to cart');
+    toast.success('Added to cart!');
+    openCart();
     setTimeout(() => setAdded(false), 2000);
   };
 
@@ -55,12 +58,16 @@ export default function AddToCartButton({ product, iconOnly = false, quantity = 
   return (
     <button
       onClick={handleAdd}
-      className={`btn-primary w-full justify-center gap-2 ${className ?? ''}`}
+      className={`inline-flex items-center justify-center gap-2 w-full py-4 px-8 rounded-full font-semibold tracking-wider transition-all duration-300 ${
+        added
+          ? 'bg-emerald-600 text-white'
+          : 'bg-[var(--color-navy)] text-white hover:bg-[var(--color-navy-light)] hover:shadow-lg'
+      } ${className ?? ''}`}
     >
       {added ? (
         <>
           <Check size={16} />
-          Added to Cart
+          Added to Cart!
         </>
       ) : (
         <>

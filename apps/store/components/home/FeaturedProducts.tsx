@@ -1,149 +1,214 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Heart, ShoppingBag, Star } from 'lucide-react';
+import Image from 'next/image';
+import { Heart, Star, ShoppingCart, ArrowRight } from 'lucide-react';
 import { formatCurrency, calculateDiscount } from '@minara/utils';
+import { useCartStore } from '@/store/cartStore';
+import { useUIStore } from '@/store/uiStore';
+import { useWishlistStore } from '@/store/wishlistStore';
+import toast from 'react-hot-toast';
 
-interface DemoProduct {
-  _id: string;
-  name: string;
-  slug: string;
-  price: number;
-  comparePrice?: number;
-  images: string[];
-  averageRating: number;
-  reviewCount: number;
+interface ProductImage { url: string; alt?: string; }
+interface Product {
+  _id: string; name: string; slug: string;
+  price: number; comparePrice?: number;
+  images: ProductImage[];
+  averageRating: number; reviewCount: number;
   tags: string[];
 }
 
-const demoProducts: DemoProduct[] = [
-  { _id: '1', name: 'Royal Saffron Gift Box', slug: 'royal-saffron-gift-box', price: 2499, comparePrice: 3200, images: [], averageRating: 4.9, reviewCount: 128, tags: ['bestseller'] },
-  { _id: '2', name: 'Artisan Chocolate Hamper', slug: 'artisan-chocolate-hamper', price: 1899, comparePrice: 2500, images: [], averageRating: 4.8, reviewCount: 96, tags: ['new'] },
-  { _id: '3', name: 'Wellness Ritual Set', slug: 'wellness-ritual-set', price: 3299, comparePrice: undefined, images: [], averageRating: 5.0, reviewCount: 64, tags: [] },
-  { _id: '4', name: 'Luxury Tea Collection', slug: 'luxury-tea-collection', price: 1599, comparePrice: 2000, images: [], averageRating: 4.7, reviewCount: 203, tags: [] },
-];
+const BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
 
 export default function FeaturedProducts() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { addItem } = useCartStore();
+  const { openCart } = useUIStore();
+  const { toggle, isInWishlist } = useWishlistStore();
+
+  useEffect(() => {
+    fetch(`${BASE}/products?isFeatured=true&limit=8`)
+      .then((r) => r.json())
+      .then((j) => setProducts(j.data?.products ?? []))
+      .catch(() => setProducts([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <section className="py-16 bg-[var(--color-cream)]">
+        <div className="section-container">
+          <div className="flex items-center justify-between mb-8">
+            <div className="skeleton h-8 w-48 rounded" />
+            <div className="skeleton h-4 w-20 rounded" />
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="rounded-2xl overflow-hidden bg-white">
+                <div className="skeleton aspect-[3/4]" />
+                <div className="p-4 space-y-2">
+                  <div className="skeleton h-4 w-3/4 rounded" />
+                  <div className="skeleton h-3 w-1/2 rounded" />
+                  <div className="skeleton h-8 w-full rounded" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (products.length === 0) return null;
+
   return (
-    <section className="py-20 bg-[var(--color-cream)]">
+    <section className="py-16 bg-[var(--color-cream)]">
       <div className="section-container">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4"
-        >
+        <div className="flex items-end justify-between mb-8 gap-4">
           <div>
-            <div className="inline-flex items-center gap-3 mb-3">
-              <div className="w-6 h-[1px] bg-[var(--color-gold)]" />
-              <span className="text-[var(--color-gold-dark)] text-xs tracking-[3px] uppercase font-medium">
-                Handpicked For You
-              </span>
-            </div>
-            <h2 className="font-heading text-4xl md:text-5xl text-[var(--color-navy)]">
-              Featured Gifts
+            <p className="text-[var(--color-gold-dark)] text-xs font-semibold tracking-[3px] uppercase mb-1.5">
+              Handpicked For You
+            </p>
+            <h2 className="font-heading text-3xl md:text-4xl text-[var(--color-navy)]">
+              Bestselling Gifts
             </h2>
           </div>
           <Link
             href="/products"
-            className="text-sm font-medium tracking-widest uppercase text-[var(--color-navy)] border-b border-[var(--color-navy)] pb-0.5 hover:text-[var(--color-gold)] hover:border-[var(--color-gold)] transition-colors self-start md:self-auto"
+            className="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--color-navy)] hover:text-[var(--color-gold-dark)] transition-colors shrink-0"
           >
-            View All
+            View all <ArrowRight size={14} />
           </Link>
-        </motion.div>
+        </div>
 
-        {/* Product Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-          {demoProducts.map((product, i) => {
+        {/* Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+          {products.map((product) => {
             const discount = calculateDiscount(product.price, product.comparePrice);
+            const image = product.images?.[0];
+            const wishlisted = isInWishlist(product._id);
+
             return (
-              <motion.div
+              <div
                 key={product._id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="product-card"
+                className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all duration-300 flex flex-col"
               >
-                <div className="product-image-wrap">
-                  {/* Placeholder image */}
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[var(--color-cream)] to-[var(--color-cream-dark)]">
-                    <span className="text-5xl opacity-30">🎁</span>
-                  </div>
+                {/* Image */}
+                <div className="relative aspect-[4/5] overflow-hidden bg-[var(--color-cream)]">
+                  {image?.url ? (
+                    <Image
+                      src={image.url}
+                      alt={image.alt || product.name}
+                      fill
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                      className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <span className="text-5xl opacity-20">🎁</span>
+                    </div>
+                  )}
 
                   {/* Badges */}
-                  <div className="absolute top-3 left-3 flex flex-col gap-1.5">
+                  <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5">
                     {product.tags.includes('bestseller') && (
-                      <span className="badge badge-gold text-[10px]">Bestseller</span>
+                      <span className="badge badge-gold text-[9px] px-2 py-0.5">Bestseller</span>
                     )}
                     {product.tags.includes('new') && (
-                      <span className="badge badge-navy text-[10px]">New</span>
+                      <span className="badge badge-navy text-[9px] px-2 py-0.5">New</span>
                     )}
                     {discount > 0 && (
-                      <span className="badge text-[10px] bg-[rgba(239,68,68,0.1)] text-red-600">
+                      <span className="bg-red-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">
                         -{discount}%
                       </span>
                     )}
                   </div>
 
-                  {/* Wishlist button */}
+                  {/* Wishlist */}
                   <button
-                    className="absolute top-3 right-3 p-2 rounded-full bg-white/90 text-gray-400 hover:text-red-500 hover:bg-white transition-all shadow-sm"
-                    aria-label="Add to wishlist"
+                    onClick={() => {
+                      toggle(product._id);
+                      toast(isInWishlist(product._id) ? 'Removed from wishlist' : 'Added to wishlist!', {
+                        icon: isInWishlist(product._id) ? '💔' : '❤️',
+                      });
+                    }}
+                    className={`absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm transition-colors ${
+                      wishlisted ? 'text-red-500' : 'text-gray-300 hover:text-red-400'
+                    }`}
                   >
-                    <Heart size={14} />
+                    <Heart size={13} className={wishlisted ? 'fill-red-500' : ''} />
                   </button>
+                </div>
 
-                  {/* Hover overlay */}
-                  <div className="product-overlay">
-                    <Link
-                      href={`/products/${product.slug}`}
-                      className="flex-1 py-2 px-3 bg-white text-[var(--color-navy)] text-xs font-semibold rounded text-center hover:bg-[var(--color-cream)] transition-colors"
-                    >
-                      Quick View
-                    </Link>
+                {/* Info */}
+                <div className="p-3.5 flex flex-col flex-1">
+                  <Link href={`/products/${product.slug}`} className="flex-1 mb-3">
+                    <h3 className="text-sm font-semibold text-[var(--color-navy)] line-clamp-2 leading-snug hover:text-[var(--color-gold-dark)] transition-colors">
+                      {product.name}
+                    </h3>
+                    {product.reviewCount > 0 && (
+                      <div className="flex items-center gap-1 mt-1.5">
+                        {[1,2,3,4,5].map((s) => (
+                          <Star
+                            key={s}
+                            size={9}
+                            className={s <= Math.round(product.averageRating)
+                              ? 'text-amber-400 fill-amber-400'
+                              : 'text-gray-200 fill-gray-200'}
+                          />
+                        ))}
+                        <span className="text-[10px] text-gray-400 ml-0.5">({product.reviewCount})</span>
+                      </div>
+                    )}
+                  </Link>
+
+                  <div className="flex items-center justify-between gap-2">
+                    <div>
+                      <span className="text-base font-bold text-[var(--color-navy)]">
+                        {formatCurrency(product.price)}
+                      </span>
+                      {product.comparePrice && (
+                        <span className="text-xs text-gray-400 line-through ml-1.5">
+                          {formatCurrency(product.comparePrice)}
+                        </span>
+                      )}
+                    </div>
                     <button
-                      className="p-2 bg-[var(--color-gold)] text-[var(--color-navy)] rounded hover:bg-[var(--color-gold-dark)] transition-colors"
-                      aria-label="Add to cart"
+                      onClick={() => {
+                        addItem({
+                          productId: product._id,
+                          name: product.name,
+                          slug: product.slug,
+                          price: product.price,
+                          image: image?.url ?? '',
+                          quantity: 1,
+                        });
+                        openCart();
+                        toast.success('Added to cart!');
+                      }}
+                      className="flex items-center gap-1.5 bg-[var(--color-navy)] text-white text-[11px] font-semibold px-3 py-2 rounded-full hover:bg-[var(--color-navy-light)] transition-colors shrink-0"
                     >
-                      <ShoppingBag size={14} />
+                      <ShoppingCart size={11} />
+                      Add
                     </button>
                   </div>
                 </div>
-
-                {/* Card Info */}
-                <div className="p-4">
-                  <Link href={`/products/${product.slug}`}>
-                    <h3 className="font-heading text-base text-[var(--color-navy)] hover:text-[var(--color-gold-dark)] transition-colors line-clamp-2 mb-2">
-                      {product.name}
-                    </h3>
-                  </Link>
-
-                  {/* Rating */}
-                  <div className="flex items-center gap-1.5 mb-3">
-                    <Star size={11} className="text-[var(--color-gold)] fill-[var(--color-gold)]" />
-                    <span className="text-xs text-gray-600">
-                      {product.averageRating} ({product.reviewCount})
-                    </span>
-                  </div>
-
-                  {/* Price */}
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-[var(--color-navy)]">
-                      {formatCurrency(product.price)}
-                    </span>
-                    {product.comparePrice && (
-                      <span className="text-xs text-gray-400 line-through">
-                        {formatCurrency(product.comparePrice)}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </motion.div>
+              </div>
             );
           })}
+        </div>
+
+        {/* Mobile view all */}
+        <div className="mt-8 text-center sm:hidden">
+          <Link
+            href="/products"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--color-navy)] text-white text-sm font-semibold rounded-full"
+          >
+            View All Gifts <ArrowRight size={14} />
+          </Link>
         </div>
       </div>
     </section>

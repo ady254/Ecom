@@ -14,6 +14,13 @@ import categoryRoutes from './modules/categories/category.routes.js';
 import dashboardRoutes from './modules/dashboard/dashboard.routes.js';
 import orderRoutes from './modules/orders/order.routes.js';
 import userRoutes from './modules/users/user.routes.js';
+import paymentRoutes from './modules/payments/payment.routes.js';
+import couponRoutes from './modules/coupons/coupon.routes.js';
+import reviewRoutes from './modules/reviews/review.routes.js';
+import bannerRoutes from './modules/banners/banner.routes.js';
+import settingsRoutes from './modules/settings/settings.routes.js';
+import pageRoutes from './modules/pages/page.routes.js';
+import newsletterRoutes from './modules/newsletter/newsletter.routes.js';
 
 const app = express();
 
@@ -109,6 +116,13 @@ app.use('/api/v1/categories', categoryRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
 app.use('/api/v1/orders', orderRoutes);
 app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/payments', paymentRoutes);
+app.use('/api/v1/coupons', couponRoutes);
+app.use('/api/v1/reviews', reviewRoutes);
+app.use('/api/v1/banners', bannerRoutes);
+app.use('/api/v1/settings', settingsRoutes);
+app.use('/api/v1/pages', pageRoutes);
+app.use('/api/v1/newsletter', newsletterRoutes);
 
 // ─── 404 Handler ──────────────────────────────────────────────────────────────
 app.use((_req, res) => {

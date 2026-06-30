@@ -38,8 +38,8 @@ export default function DashboardPage() {
           dashboardApi.getRecentOrders(),
         ]);
         setStats(statsRes.data);
-        setRevenue(revenueRes.data);
-        setRecentOrders(ordersRes.data);
+        setRevenue(revenueRes.data.revenue ?? []);
+        setRecentOrders(ordersRes.data.orders ?? []);
       } catch {
         setError(true);
       } finally {
@@ -157,7 +157,7 @@ export default function DashboardPage() {
             <ResponsiveContainer width="100%" height={220}>
               <LineChart data={revenue}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="_id" tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`} />
                 <Tooltip
                   formatter={(value) => [formatCurrency(Number(value)), 'Revenue']}

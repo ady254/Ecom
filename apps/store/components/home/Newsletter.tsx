@@ -13,10 +13,25 @@ export default function Newsletter() {
     e.preventDefault();
     if (!email) return;
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 800));
-    toast.success('Welcome to MINARA! 🎁 You\'re on the list.');
-    setEmail('');
-    setLoading(false);
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+      const res = await fetch(`${API_URL}/newsletter/subscribe`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        toast.success("Welcome to MINARA! 🎁 You're on the list.");
+        setEmail('');
+      } else {
+        toast.error(json.message || 'Could not subscribe. Try again.');
+      }
+    } catch {
+      toast.error('Network error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

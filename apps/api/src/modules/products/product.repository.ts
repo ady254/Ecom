@@ -1,4 +1,6 @@
+import mongoose from 'mongoose';
 import { ProductModel, IProduct } from './product.model.js';
+import { CategoryModel } from '../categories/category.model.js';
 import { FilterQuery } from 'mongoose';
 
 export interface ProductFilter {
@@ -20,7 +22,22 @@ export class ProductRepository {
   ): Promise<{ products: IProduct[]; total: number }> {
     const query: FilterQuery<IProduct> = { isActive: true };
 
-    if (filter.category) query.category = filter.category;
+    if (filter.category) {
+      // Accept either a MongoDB ObjectId string or a category slug.
+      // The sidebar sends slugs; admin might send _id directly.
+      if (mongoose.Types.ObjectId.isValid(filter.category)) {
+        query.category = filter.category;
+      } else {
+        const cat = await CategoryModel.findOne({ slug: filter.category }).select('_id').lean();
+        if (cat) {
+          query.category = cat._id;
+        } else {
+          // Unknown slug — return empty result set rather than a CastError
+          return { products: [], total: 0 };
+        }
+      }
+    }
+
     if (filter.isFeatured !== undefined) query.isFeatured = filter.isFeatured;
     if (filter.isActive !== undefined) query.isActive = filter.isActive;
     if (filter.tags?.length) query.tags = { $in: filter.tags };

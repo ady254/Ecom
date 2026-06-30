@@ -107,6 +107,22 @@ router.post(
 
 // ─── Admin: Customers ─────────────────────────────────────────────────────────
 
+// PATCH /api/v1/users/:id/status — Admin: toggle active
+router.patch(
+  '/:id/status',
+  authenticate,
+  requireAdmin,
+  asyncHandler(async (req, res) => {
+    const user = await UserModel.findByIdAndUpdate(
+      req.params.id,
+      { isActive: req.body.isActive },
+      { new: true }
+    );
+    if (!user) throw new AppError('User not found', 404);
+    res.json({ success: true, message: `User ${user.isActive ? 'activated' : 'blocked'}`, data: { user } });
+  })
+);
+
 // GET /api/v1/users — Admin only
 router.get(
   '/',

@@ -1,8 +1,11 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from 'react-hot-toast';
+import AnnouncementBar from '@/components/layout/AnnouncementBar';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import CartDrawer from '@/components/cart/CartDrawer';
+import WhatsAppButton from '@/components/layout/WhatsAppButton';
 
 export const metadata: Metadata = {
   title: {
@@ -35,9 +38,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
+        <AnnouncementBar />
         <Navbar />
         <main>{children}</main>
         <Footer />
+        <CartDrawer />
+        <WhatsAppButton />
         <Toaster
           position="bottom-right"
           toastOptions={{

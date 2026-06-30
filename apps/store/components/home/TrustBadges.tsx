@@ -1,37 +1,58 @@
-'use client';
-
-import { motion } from 'framer-motion';
 import { Package, RefreshCw, Shield, Truck } from 'lucide-react';
 
 const badges = [
-  { icon: Truck, title: 'Free Delivery', desc: 'On orders above ₹999' },
-  { icon: Shield, title: 'Secure Payments', desc: 'Razorpay encrypted' },
-  { icon: RefreshCw, title: 'Easy Returns', desc: '7-day return policy' },
-  { icon: Package, title: 'Gift Wrapping', desc: 'Complimentary on all orders' },
+  {
+    icon: Truck,
+    title: 'Free Delivery',
+    desc: 'On orders above ₹999 — Pan India',
+    bg: 'bg-sky-50',
+    iconColor: 'text-sky-600',
+    iconBg: 'bg-sky-100',
+  },
+  {
+    icon: Shield,
+    title: '100% Secure Payments',
+    desc: 'Razorpay 256-bit SSL encryption',
+    bg: 'bg-emerald-50',
+    iconColor: 'text-emerald-600',
+    iconBg: 'bg-emerald-100',
+  },
+  {
+    icon: Package,
+    title: 'Premium Gift Wrapping',
+    desc: 'Every order packed beautifully',
+    bg: 'bg-amber-50',
+    iconColor: 'text-amber-600',
+    iconBg: 'bg-amber-100',
+  },
+  {
+    icon: RefreshCw,
+    title: 'Easy 7-Day Returns',
+    desc: 'Hassle-free return & refund policy',
+    bg: 'bg-purple-50',
+    iconColor: 'text-purple-600',
+    iconBg: 'bg-purple-100',
+  },
 ];
 
 export default function TrustBadges() {
   return (
-    <section className="py-10 bg-[var(--color-cream)]">
+    <section className="py-10 bg-white border-b border-gray-100">
       <div className="section-container">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {badges.map((badge, i) => (
-            <motion.div
-              key={badge.title}
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="flex items-center gap-4 p-4 bg-white rounded-xl shadow-[var(--shadow-soft)]"
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {badges.map((b) => (
+            <div
+              key={b.title}
+              className={`${b.bg} rounded-xl p-4 flex items-start gap-3 border border-transparent hover:border-gray-200 transition-colors`}
             >
-              <div className="w-10 h-10 rounded-full bg-[rgba(207,169,106,0.12)] flex items-center justify-center shrink-0">
-                <badge.icon size={18} className="text-[var(--color-gold-dark)]" />
+              <div className={`${b.iconBg} ${b.iconColor} w-10 h-10 rounded-full flex items-center justify-center shrink-0`}>
+                <b.icon size={17} />
               </div>
               <div>
-                <div className="text-sm font-semibold text-[var(--color-navy)]">{badge.title}</div>
-                <div className="text-xs text-gray-500 mt-0.5">{badge.desc}</div>
+                <p className="text-sm font-semibold text-[var(--color-navy)] leading-snug">{b.title}</p>
+                <p className="text-xs text-gray-500 mt-0.5 leading-snug">{b.desc}</p>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

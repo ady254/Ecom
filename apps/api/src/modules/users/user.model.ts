@@ -23,6 +23,10 @@ export interface IUser extends Document {
   wishlist: mongoose.Types.ObjectId[];
   isActive: boolean;
   refreshToken?: string;
+  passwordResetToken?: string;
+  passwordResetExpires?: Date;
+  emailVerified: boolean;
+  emailVerificationToken?: string;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
@@ -61,6 +65,10 @@ const userSchema = new Schema<IUser>(
     wishlist: [{ type: Schema.Types.ObjectId, ref: 'Product' }],
     isActive: { type: Boolean, default: true },
     refreshToken: { type: String, select: false },
+    passwordResetToken: { type: String, select: false },
+    passwordResetExpires: { type: Date, select: false },
+    emailVerified: { type: Boolean, default: false },
+    emailVerificationToken: { type: String, select: false },
   },
   {
     timestamps: true,
@@ -68,6 +76,9 @@ const userSchema = new Schema<IUser>(
       transform: (_doc, ret) => {
         delete (ret as Record<string, unknown>).password;
         delete (ret as Record<string, unknown>).refreshToken;
+        delete (ret as Record<string, unknown>).passwordResetToken;
+        delete (ret as Record<string, unknown>).passwordResetExpires;
+        delete (ret as Record<string, unknown>).emailVerificationToken;
         delete (ret as Record<string, unknown>).__v;
         return ret;
       },

@@ -7,8 +7,8 @@ export interface IProduct extends Document {
   shortDescription?: string;
   price: number;
   comparePrice?: number;
-  images: string[];
-  category: mongoose.Types.ObjectId;
+  images: { url: string; alt?: string }[];
+  category?: mongoose.Types.ObjectId;
   tags: string[];
   stock: number;
   variants: Array<{
@@ -17,6 +17,8 @@ export interface IProduct extends Document {
   }>;
   isFeatured: boolean;
   isActive: boolean;
+  isCustomizable: boolean;
+  customFields: Array<{ label: string; placeholder?: string; required?: boolean }>;
   weight?: number;
   sku?: string;
   metaTitle?: string;
@@ -33,8 +35,8 @@ const productSchema = new Schema<IProduct>(
     shortDescription: String,
     price: { type: Number, required: true, min: 0 },
     comparePrice: { type: Number, min: 0 },
-    images: [{ type: String }],
-    category: { type: Schema.Types.ObjectId, ref: 'Category', required: true, index: true },
+    images: [{ url: { type: String, required: true }, alt: String }],
+    category: { type: Schema.Types.ObjectId, ref: 'Category', index: true },
     tags: [{ type: String, lowercase: true }],
     stock: { type: Number, required: true, min: 0, default: 0 },
     variants: [
@@ -51,6 +53,8 @@ const productSchema = new Schema<IProduct>(
     ],
     isFeatured: { type: Boolean, default: false, index: true },
     isActive: { type: Boolean, default: true, index: true },
+    isCustomizable: { type: Boolean, default: false },
+    customFields: [{ label: String, placeholder: String, required: Boolean }],
     weight: Number,
     sku: { type: String, sparse: true, index: true },
     metaTitle: String,
