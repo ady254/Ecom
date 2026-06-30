@@ -7,8 +7,7 @@ import Image from 'next/image';
 import { CheckCircle2, Package, Truck, Home, Loader2, XCircle, ChevronRight, Gift, ExternalLink, AlertTriangle, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { formatCurrency } from '@minara/utils';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+import api from '@/lib/api';
 
 interface OrderItem {
   product?: { slug: string };
@@ -67,36 +66,26 @@ export default function OrderDetailPage() {
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
-    fetch(`${API_URL}/orders/${orderId}`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    })
-      .then((r) => r.json())
-      .then((j) => {
-        if (j.success) setOrder(j.data.order);
-        else setError(j.message || 'Could not load order');
+    api.get(`/orders/${orderId}`)
+      .then((res) => {
+        if (res.data?.success) setOrder(res.data.data.order);
+        else setError(res.data?.message || 'Could not load order');
       })
-      .catch(() => setError('Network error — please try again'))
+      .catch((err) => {
+        setError(err?.response?.data?.message || 'Could not load order');
+      })
       .finally(() => setLoading(false));
   }, [orderId]);
 
   const handleCancel = async () => {
     setCancelling(true);
-    const token = localStorage.getItem('accessToken');
     try {
-      const res = await fetch(`${API_URL}/orders/${orderId}/cancel`, {
-        method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      const json = await res.json();
-      if (json.success) {
-        setOrder((prev) => prev ? { ...prev, status: 'cancelled' } : prev);
-        toast.success('Order cancelled successfully');
-      } else {
-        toast.error(json.message || 'Could not cancel order');
-      }
-    } catch {
-      toast.error('Network error — please try again');
+      await api.post(`/orders/${orderId}/cancel`);
+      setOrder((prev) => prev ? { ...prev, status: 'cancelled' } : prev);
+      toast.success('Order cancelled successfully');
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      toast.error(msg || 'Could not cancel order');
     } finally {
       setCancelling(false);
       setShowCancelConfirm(false);

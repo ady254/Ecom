@@ -41,7 +41,7 @@ export default function BrandStory() {
               At MINARA, we believe a great gift is more than a product — it&rsquo;s a memory. We handpick every item in our collection for quality, beauty, and meaning.
             </p>
             <p className="text-gray-500 leading-relaxed mb-8 text-[15px]">
-              From intimate birthdays to large corporate orders, each gift is packed with care, shipped fast, and arrives ready to delight. No assembly required on your end — just the smile on their face.
+              From Nikkah celebrations to Hajj return favours, Quran sets to Tasbih cards for little ones — each gift is packed with care, shipped fast, and arrives ready to delight.
             </p>
             <Link
               href="/products"

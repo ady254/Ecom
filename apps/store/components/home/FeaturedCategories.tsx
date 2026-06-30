@@ -4,14 +4,14 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 
 const categories = [
-  { name: 'Gift Hampers', slug: 'gift-hampers', emoji: '🎁', desc: 'Curated luxury sets' },
-  { name: 'Corporate Gifts', slug: 'corporate', emoji: '🏢', desc: 'Impress your team' },
-  { name: 'Birthday Specials', slug: 'birthday', emoji: '🎂', desc: 'Make it memorable' },
-  { name: 'Wedding Gifts', slug: 'wedding', emoji: '💍', desc: 'Celebrate love' },
-  { name: 'Festive Specials', slug: 'festive', emoji: '✨', desc: "Season's joy" },
-  { name: 'Self-Care Sets', slug: 'self-care', emoji: '🌿', desc: 'Pure indulgence' },
-  { name: 'Kids & Baby', slug: 'kids', emoji: '🧸', desc: 'Tiny joys' },
+  { name: 'Quran Sets', slug: 'quran', emoji: '📖', desc: 'Beautifully crafted Qurans' },
+  { name: 'Wedding Gifts', slug: 'wedding', emoji: '💍', desc: 'Celebrate love & Nikkah' },
+  { name: 'Gift Hampers', slug: 'hamper', emoji: '🎁', desc: 'Curated luxury sets' },
+  { name: 'Hajj Return Gifts', slug: 'hajj', emoji: '🕋', desc: 'Blessed return favours' },
+  { name: 'Tasbih Cards', slug: 'tasbih', emoji: '📿', desc: 'For kids & little ones' },
+  { name: 'Home Decor', slug: 'homedecor', emoji: '🏡', desc: 'Islamic home accents' },
   { name: 'Personalised', slug: 'personalised', emoji: '🖋️', desc: 'Made just for them' },
+  { name: 'All Gifts', slug: '', emoji: '✨', desc: 'Browse everything' },
 ];
 
 export default function FeaturedCategories() {
@@ -46,7 +46,7 @@ export default function FeaturedCategories() {
               transition={{ delay: i * 0.07 }}
             >
               <Link
-                href={`/products?category=${cat.slug}`}
+                href={cat.slug ? `/products?tags=${cat.slug}` : '/products'}
                 className="group flex flex-col items-center text-center gap-3 p-5 rounded-2xl bg-white border-2 border-transparent hover:border-[var(--color-gold-light)] hover:shadow-md transition-all duration-300 hover:-translate-y-1"
               >
                 <div className="w-14 h-14 rounded-2xl bg-[var(--color-cream)] flex items-center justify-center text-3xl group-hover:scale-110 transition-transform duration-300">

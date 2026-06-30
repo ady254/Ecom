@@ -9,8 +9,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useCartStore } from '@/store/cartStore';
 import { useWishlistStore } from '@/store/wishlistStore';
 import { formatCurrency } from '@minara/utils';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+import api from '@/lib/api';
 
 interface Order {
   _id: string;
@@ -41,28 +40,20 @@ export default function AccountPage() {
       return;
     }
     // Fetch user details (includes emailVerified)
-    const token = localStorage.getItem('accessToken');
-    fetch(`${API_URL}/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
-      .then((r) => r.json())
-      .then((j) => { if (j.success) setEmailVerified(j.data.user.emailVerified); })
+    api.get('/auth/me')
+      .then((res) => { setEmailVerified(res.data?.data?.user?.emailVerified ?? null); })
       .catch(() => {});
 
     // Fetch recent orders
     setOrdersLoading(true);
-    fetch(`${API_URL}/orders/my?page=1`, { headers: { Authorization: `Bearer ${token}` } })
-      .then((r) => r.json())
-      .then((j) => { if (j.success) setOrders((j.data.orders || []).slice(0, 5)); })
+    api.get('/orders/my', { params: { page: 1 } })
+      .then((res) => { setOrders((res.data?.data?.orders || []).slice(0, 5)); })
       .catch(() => {})
       .finally(() => setOrdersLoading(false));
   }, [mounted, isAuthenticated, router]);
 
   const handleLogout = async () => {
-    const token = localStorage.getItem('accessToken');
-    await fetch(`${API_URL}/auth/logout`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-      credentials: 'include',
-    }).catch(() => {});
+    await api.post('/auth/logout').catch(() => {});
     clearAuth();
     clearWishlist();
     router.push('/');
@@ -71,17 +62,12 @@ export default function AccountPage() {
 
   const handleResendVerification = async () => {
     setResendLoading(true);
-    const token = localStorage.getItem('accessToken');
     try {
-      const res = await fetch(`${API_URL}/auth/resend-verification`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const json = await res.json();
-      if (json.success) toast.success('Verification email sent! Check your inbox.');
-      else toast.error(json.message || 'Failed to send email');
-    } catch {
-      toast.error('Network error. Try again.');
+      await api.post('/auth/resend-verification');
+      toast.success('Verification email sent! Check your inbox.');
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      toast.error(msg || 'Network error. Try again.');
     } finally {
       setResendLoading(false);
     }

@@ -1,14 +1,14 @@
 import Link from 'next/link';
 
 const occasions = [
-  { name: 'Wedding',     slug: 'wedding',     emoji: '💍' },
-  { name: 'Birthday',    slug: 'birthday',    emoji: '🎂' },
-  { name: 'Anniversary', slug: 'anniversary', emoji: '❤️' },
-  { name: 'Corporate',   slug: 'corporate',   emoji: '💼' },
-  { name: 'Baby Shower', slug: 'baby-shower', emoji: '🍼' },
-  { name: 'Festive',     slug: 'festive',     emoji: '✨' },
-  { name: 'New Home',    slug: 'new-home',    emoji: '🏠' },
-  { name: 'Thank You',   slug: 'thank-you',   emoji: '🙏' },
+  { name: 'Quran Sets',       slug: 'quran',       emoji: '📖' },
+  { name: 'Wedding Gifts',    slug: 'wedding',     emoji: '💍' },
+  { name: 'Gift Hampers',     slug: 'hamper',      emoji: '🎁' },
+  { name: 'Hajj Favours',     slug: 'hajj',        emoji: '🕋' },
+  { name: 'Tasbih Cards',     slug: 'tasbih',      emoji: '📿' },
+  { name: 'Home Decor',       slug: 'homedecor',   emoji: '🏡' },
+  { name: 'Personalised',     slug: 'personalised',emoji: '🖋️' },
+  { name: 'New Arrivals',     slug: '',            emoji: '✨' },
 ];
 
 export default function OccasionSection() {
@@ -19,7 +19,7 @@ export default function OccasionSection() {
           {occasions.map((occ) => (
             <Link
               key={occ.slug}
-              href={`/products?tags=${occ.slug}`}
+              href={occ.slug ? `/products?tags=${occ.slug}` : '/products?sort=-createdAt'}
               className="group flex flex-col items-center gap-2 min-w-[72px] sm:min-w-[80px]"
             >
               <div className="w-16 h-16 sm:w-[72px] sm:h-[72px] rounded-full bg-[var(--color-cream)] border-2 border-[rgba(207,169,106,0.3)] group-hover:border-[var(--color-gold)] group-hover:bg-[rgba(207,169,106,0.08)] transition-all duration-200 flex items-center justify-center text-2xl sm:text-3xl">

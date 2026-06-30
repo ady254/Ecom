@@ -309,7 +309,7 @@ export default function CheckoutPage() {
                   <textarea
                     value={giftMessage}
                     onChange={(e) => setGiftMessage(e.target.value)}
-                    placeholder="e.g. Happy Birthday Priya! Wishing you all the joy and love in the world. 🎁"
+                    placeholder="e.g. JazakAllah Khair for attending our Nikkah — this is a small token of our love. 🎁"
                     maxLength={300}
                     rows={3}
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[var(--color-gold)] transition-colors resize-none"

@@ -12,18 +12,19 @@ import { useUIStore } from '@/store/uiStore';
 const navLinks = [
   { label: 'New Arrivals', href: '/products?sort=-createdAt' },
   {
-    label: 'Occasions',
+    label: 'Collections',
     href: '/products',
     children: [
+      { label: 'Quran Sets', href: '/products?tags=quran' },
       { label: 'Wedding Gifts', href: '/products?tags=wedding' },
-      { label: 'Birthday', href: '/products?tags=birthday' },
-      { label: 'Anniversary', href: '/products?tags=anniversary' },
-      { label: 'Corporate Gifts', href: '/products?tags=corporate' },
-      { label: 'Festive Specials', href: '/products?tags=festive' },
+      { label: 'Gift Hampers', href: '/products?tags=hamper' },
+      { label: 'Hajj Return Gifts', href: '/products?tags=hajj' },
+      { label: 'Tasbih Cards for Kids', href: '/products?tags=tasbih' },
+      { label: 'Home Decor', href: '/products?tags=homedecor' },
     ],
   },
-  { label: 'Collections', href: '/products' },
   { label: 'Gift Hampers', href: '/products?tags=hamper' },
+  { label: 'Wedding Gifts', href: '/products?tags=wedding' },
 ];
 
 export default function Navbar() {

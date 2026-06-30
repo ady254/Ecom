@@ -5,8 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Package, ChevronRight, Loader2, ShoppingBag } from 'lucide-react';
 import { formatCurrency } from '@minara/utils';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+import api from '@/lib/api';
 
 interface OrderItem {
   name: string;
@@ -44,18 +43,17 @@ export default function MyOrdersPage() {
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
     if (!token) {
-      router.push('/auth/login?redirect=/orders');
+      router.push('/login?redirect=/orders');
       return;
     }
-    fetch(`${API_URL}/orders/my`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((r) => r.json())
-      .then((j) => {
-        if (j.success) setOrders(j.data?.orders ?? []);
-        else setError(j.message || 'Failed to load orders');
+    api.get('/orders/my')
+      .then((res) => {
+        setOrders(res.data?.data?.orders ?? []);
       })
-      .catch(() => setError('Network error — please try again'))
+      .catch((err) => {
+        const msg = err?.response?.data?.message || 'Failed to load orders';
+        setError(msg);
+      })
       .finally(() => setLoading(false));
   }, [router]);
 

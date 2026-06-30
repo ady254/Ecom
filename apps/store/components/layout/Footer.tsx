@@ -9,9 +9,11 @@ export default function Footer() {
   const links = {
     shop: [
       { label: 'All Products', href: '/products' },
-      { label: 'Gift Hampers', href: '/categories/gift-hampers' },
-      { label: 'Corporate Gifts', href: '/categories/corporate' },
-      { label: 'Featured Gifts', href: '/products?isFeatured=true' },
+      { label: 'Quran Sets', href: '/products?tags=quran' },
+      { label: 'Wedding Gifts', href: '/products?tags=wedding' },
+      { label: 'Gift Hampers', href: '/products?tags=hamper' },
+      { label: 'Hajj Return Gifts', href: '/products?tags=hajj' },
+      { label: 'Home Decor', href: '/products?tags=homedecor' },
     ],
     help: [
       { label: 'Contact Us', href: '/contact' },
