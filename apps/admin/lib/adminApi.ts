@@ -394,6 +394,26 @@ export const settingsApi = {
   update: (data: unknown) => adminPut<{ success: boolean; data: { settings: StoreSettings } }>('/settings', data),
 };
 
+// ─── FAQs ─────────────────────────────────────────────────────────────────────
+
+export interface FAQ {
+  _id: string;
+  question: string;
+  answer: string;
+  order: number;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export const faqApi = {
+  getAll: () => adminFetch<{ success: boolean; data: { faqs: FAQ[] } }>('/faqs/admin/all'),
+  create: (data: { question: string; answer: string; order?: number; isActive?: boolean }) =>
+    adminPost<{ success: boolean; data: { faq: FAQ } }>('/faqs', data),
+  update: (id: string, data: Partial<FAQ>) =>
+    adminPatch<{ success: boolean; data: { faq: FAQ } }>(`/faqs/${id}`, data),
+  delete: (id: string) => adminDelete<{ success: boolean }>(`/faqs/${id}`),
+};
+
 // ─── Pages ────────────────────────────────────────────────────────────────────
 
 export interface CmsPage {

@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Heart, Star, ShoppingCart, ArrowRight } from 'lucide-react';
+import { Heart, Star, ShoppingCart, ArrowRight, Gift } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { formatCurrency, calculateDiscount } from '@minara/utils';
 import { useCartStore } from '@/store/cartStore';
 import { useUIStore } from '@/store/uiStore';
@@ -86,14 +87,18 @@ export default function FeaturedProducts() {
 
         {/* Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-          {products.map((product) => {
+          {products.map((product, i) => {
             const discount = calculateDiscount(product.price, product.comparePrice);
             const image = product.images?.[0];
             const wishlisted = isInWishlist(product._id);
 
             return (
-              <div
+              <motion.div
                 key={product._id}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-60px' }}
+                transition={{ duration: 0.45, delay: (i % 4) * 0.08, ease: 'easeOut' }}
                 className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all duration-300 flex flex-col"
               >
                 {/* Image */}
@@ -108,7 +113,7 @@ export default function FeaturedProducts() {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <span className="text-5xl opacity-20">🎁</span>
+                      <Gift size={36} strokeWidth={1} className="text-[var(--color-gold)] opacity-30" />
                     </div>
                   )}
 
@@ -196,7 +201,7 @@ export default function FeaturedProducts() {
                     </button>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             );
           })}
         </div>

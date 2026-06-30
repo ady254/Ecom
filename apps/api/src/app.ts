@@ -21,6 +21,7 @@ import bannerRoutes from './modules/banners/banner.routes.js';
 import settingsRoutes from './modules/settings/settings.routes.js';
 import pageRoutes from './modules/pages/page.routes.js';
 import newsletterRoutes from './modules/newsletter/newsletter.routes.js';
+import faqRoutes from './modules/faq/faq.routes.js';
 
 const app = express();
 
@@ -123,6 +124,7 @@ app.use('/api/v1/banners', bannerRoutes);
 app.use('/api/v1/settings', settingsRoutes);
 app.use('/api/v1/pages', pageRoutes);
 app.use('/api/v1/newsletter', newsletterRoutes);
+app.use('/api/v1/faqs', faqRoutes);
 
 // ─── 404 Handler ──────────────────────────────────────────────────────────────
 app.use((_req, res) => {

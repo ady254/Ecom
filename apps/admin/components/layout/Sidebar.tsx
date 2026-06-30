@@ -17,6 +17,7 @@ import {
   ChevronLeft,
   ChevronRight,
   LogOut,
+  HelpCircle,
 } from 'lucide-react';
 
 const navItems = [
@@ -29,6 +30,7 @@ const navItems = [
   { href: '/dashboard/reviews', icon: Star, label: 'Reviews' },
   { href: '/dashboard/banners', icon: Image, label: 'Banners' },
   { href: '/dashboard/pages', icon: FileText, label: 'Pages' },
+  { href: '/dashboard/faqs', icon: HelpCircle, label: 'FAQs' },
   { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
 ];
 

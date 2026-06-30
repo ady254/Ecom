@@ -1,12 +1,47 @@
+'use client';
+
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
+import { motion, useInView } from 'framer-motion';
+import { useRef, useEffect, useState } from 'react';
 
 const stats = [
-  { num: '500+',  label: 'Curated Gifts' },
-  { num: '4,200+', label: 'Orders Delivered' },
-  { num: '4.9 ★', label: 'Average Rating' },
-  { num: '48 hrs', label: 'Avg. Delivery Time' },
+  { num: 500,  suffix: '+',   label: 'Curated Gifts' },
+  { num: 4200, suffix: '+',   label: 'Orders Delivered' },
+  { num: 4.9,  suffix: ' ★',  label: 'Average Rating', decimal: 1 },
+  { num: 48,   suffix: ' hrs', label: 'Avg. Delivery Time' },
 ];
+
+function CountUp({ target, suffix, decimal = 0 }: { target: number; suffix: string; decimal?: number }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true, margin: '-60px' });
+  const [value, setValue] = useState(0);
+
+  useEffect(() => {
+    if (!inView) return;
+    const duration = 1200;
+    const steps = 50;
+    const increment = target / steps;
+    let current = 0;
+    const timer = setInterval(() => {
+      current += increment;
+      if (current >= target) {
+        setValue(target);
+        clearInterval(timer);
+      } else {
+        setValue(current);
+      }
+    }, duration / steps);
+    return () => clearInterval(timer);
+  }, [inView, target]);
+
+  return (
+    <span ref={ref}>
+      {decimal > 0 ? value.toFixed(decimal) : Math.round(value).toLocaleString()}
+      {suffix}
+    </span>
+  );
+}
 
 export default function BrandStory() {
   return (
@@ -16,19 +51,30 @@ export default function BrandStory() {
 
           {/* Stats side */}
           <div className="grid grid-cols-2 gap-4">
-            {stats.map((s) => (
-              <div
+            {stats.map((s, i) => (
+              <motion.div
                 key={s.label}
-                className="bg-[var(--color-cream)] rounded-2xl p-6 border border-[rgba(207,169,106,0.2)] hover:border-[rgba(207,169,106,0.5)] transition-colors"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-60px' }}
+                transition={{ duration: 0.45, delay: i * 0.1, ease: 'easeOut' }}
+                className="bg-[var(--color-cream)] rounded-2xl p-6 border border-[rgba(207,169,106,0.2)] hover:border-[rgba(207,169,106,0.5)] hover:shadow-[0_4px_20px_rgba(207,169,106,0.1)] transition-all duration-200"
               >
-                <div className="font-heading text-3xl md:text-4xl text-[var(--color-navy)] mb-1">{s.num}</div>
+                <div className="font-heading text-3xl md:text-4xl text-[var(--color-navy)] mb-1">
+                  <CountUp target={s.num} suffix={s.suffix} decimal={s.decimal} />
+                </div>
                 <div className="text-xs text-gray-500 uppercase tracking-wider font-medium">{s.label}</div>
-              </div>
+              </motion.div>
             ))}
           </div>
 
           {/* Copy side */}
-          <div>
+          <motion.div
+            initial={{ opacity: 0, x: 24 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ duration: 0.5, ease: 'easeOut' }}
+          >
             <p className="text-[var(--color-gold-dark)] text-xs font-semibold tracking-[3px] uppercase mb-4">
               Our Story
             </p>
@@ -50,7 +96,7 @@ export default function BrandStory() {
               Shop Now
               <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
             </Link>
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>
