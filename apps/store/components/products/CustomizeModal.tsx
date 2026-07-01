@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { X, ShoppingBag, Check } from 'lucide-react';
+import { X, ShoppingBag, Check, Gift } from 'lucide-react';
 
 interface CustomField {
   label: string;
@@ -66,7 +66,7 @@ export default function CustomizeModal({ product, quantity, onClose, onAdd }: Pr
             />
           ) : (
             <div className="w-full h-full bg-[var(--color-cream)] flex items-center justify-center">
-              <span className="text-7xl opacity-30">🎁</span>
+              <Gift size={80} strokeWidth={1} className="text-[var(--color-gold)] opacity-30" />
             </div>
           )}
 

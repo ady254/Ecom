@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Star, Heart, Minus, Plus, Flame } from 'lucide-react';
+import { Star, Heart, Minus, Plus, Flame, Sparkles, Truck, RotateCcw, Gift, Lock, CheckCircle2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { formatCurrency } from '@minara/utils';
 import { useCartStore } from '@/store/cartStore';
@@ -40,11 +40,11 @@ interface Props {
 }
 
 const TRUST_ICONS = [
-  { icon: '🚚', label: 'Free Delivery' },
-  { icon: '🔄', label: '10 Days Replacement' },
-  { icon: '🎁', label: 'Premium Packaging' },
-  { icon: '🔒', label: 'Secured Transaction' },
-  { icon: '✅', label: 'Safe Delivery' },
+  { Icon: Truck, label: 'Free Delivery' },
+  { Icon: RotateCcw, label: '10 Days Replacement' },
+  { Icon: Gift, label: 'Premium Packaging' },
+  { Icon: Lock, label: 'Secured Transaction' },
+  { Icon: CheckCircle2, label: 'Safe Delivery' },
 ];
 
 export default function PDPClient({ product, discount, soldCount, deliverySteps }: Props) {
@@ -229,7 +229,8 @@ export default function PDPClient({ product, discount, soldCount, deliverySteps 
                 onClick={() => setShowCustomize(true)}
                 className="w-full py-4 rounded-full font-bold text-sm tracking-widest uppercase bg-[var(--color-gold)] text-[var(--color-navy)] hover:bg-[var(--color-gold-dark)] transition-colors flex items-center justify-center gap-2"
               >
-                ✨ Customize &amp; Personalize
+                <Sparkles size={15} />
+                Customize & Personalize
               </button>
 
               <div className="flex gap-3">
@@ -286,7 +287,7 @@ export default function PDPClient({ product, discount, soldCount, deliverySteps 
         <div className="grid grid-cols-5 gap-2 py-4 border-t border-b border-gray-100">
           {TRUST_ICONS.map((t) => (
             <div key={t.label} className="flex flex-col items-center gap-1 text-center">
-              <span className="text-xl">{t.icon}</span>
+              <t.Icon size={18} strokeWidth={1.75} className="text-[var(--color-gold-dark)]" />
               <p className="text-[9px] text-gray-500 font-medium leading-tight">{t.label}</p>
             </div>
           ))}

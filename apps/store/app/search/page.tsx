@@ -122,7 +122,7 @@ export default function SearchPage() {
               </p>
               {products.length > 0 && (
                 <Link href={`/products?search=${encodeURIComponent(query)}`} className="flex items-center gap-1.5 text-xs text-[var(--color-navy)] hover:text-[var(--color-gold-dark)] font-medium">
-                  <SlidersHorizontal size={13} /> Filter &amp; Sort
+                  <SlidersHorizontal size={13} /> Filter & Sort
                 </Link>
               )}
             </div>

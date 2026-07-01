@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Truck, Gift, RotateCcw, Phone, Lock, CheckCircle2 } from 'lucide-react';
 import { formatCurrency, calculateDiscount } from '@minara/utils';
 import ProductImageGallery from '@/components/products/ProductImageGallery';
 import PDPClient from '@/components/products/PDPClient';
@@ -189,10 +189,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
             <AccordionSection title="Shipping & Return Policy">
               <div className="space-y-3 text-sm text-gray-600">
-                <p>🚚 <span className="font-medium text-gray-700">Free Delivery</span> on orders above ₹999. Standard delivery in 4–7 business days.</p>
-                <p>🎁 <span className="font-medium text-gray-700">Premium Packaging</span> — Every order comes beautifully wrapped at no extra cost.</p>
-                <p>🔄 <span className="font-medium text-gray-700">Easy Replacement</span> — 10-day replacement for damaged or defective items.</p>
-                <p>📞 <span className="font-medium text-gray-700">Support</span> — Reach us via WhatsApp or email for any concerns.</p>
+                <p className="flex items-start gap-2"><Truck size={16} className="shrink-0 mt-0.5 text-[var(--color-gold-dark)]" /><span><span className="font-medium text-gray-700">Free Delivery</span> on orders above ₹999. Standard delivery in 4–7 business days.</span></p>
+                <p className="flex items-start gap-2"><Gift size={16} className="shrink-0 mt-0.5 text-[var(--color-gold-dark)]" /><span><span className="font-medium text-gray-700">Premium Packaging</span> — Every order comes beautifully wrapped at no extra cost.</span></p>
+                <p className="flex items-start gap-2"><RotateCcw size={16} className="shrink-0 mt-0.5 text-[var(--color-gold-dark)]" /><span><span className="font-medium text-gray-700">Easy Replacement</span> — 10-day replacement for damaged or defective items.</span></p>
+                <p className="flex items-start gap-2"><Phone size={16} className="shrink-0 mt-0.5 text-[var(--color-gold-dark)]" /><span><span className="font-medium text-gray-700">Support</span> — Reach us via WhatsApp or email for any concerns.</span></p>
                 <p className="text-xs text-gray-400 mt-2">Personalized/customized orders are non-refundable unless the product arrives damaged.</p>
               </div>
             </AccordionSection>
@@ -203,14 +203,14 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             <div className="bg-[var(--color-cream)] rounded-2xl p-6 border border-[rgba(207,169,106,0.2)]">
               <p className="text-xs font-semibold text-[var(--color-navy)] uppercase tracking-wider mb-4">Why Shop With Us</p>
               {[
-                { icon: '🚚', t: 'Free Delivery', s: 'On orders above ₹999' },
-                { icon: '🔄', t: '10 Days Replacement', s: 'Damaged or defective items' },
-                { icon: '🎁', t: 'Premium Packaging', s: 'Beautifully wrapped' },
-                { icon: '🔒', t: 'Secured Payment', s: '100% safe checkout' },
-                { icon: '✅', t: 'Safe Delivery', s: 'Guaranteed safe arrival' },
+                { Icon: Truck, t: 'Free Delivery', s: 'On orders above ₹999' },
+                { Icon: RotateCcw, t: '10 Days Replacement', s: 'Damaged or defective items' },
+                { Icon: Gift, t: 'Premium Packaging', s: 'Beautifully wrapped' },
+                { Icon: Lock, t: 'Secured Payment', s: '100% safe checkout' },
+                { Icon: CheckCircle2, t: 'Safe Delivery', s: 'Guaranteed safe arrival' },
               ].map((item) => (
                 <div key={item.t} className="flex items-start gap-3 py-3 border-b border-[rgba(207,169,106,0.15)] last:border-0">
-                  <span className="text-xl shrink-0">{item.icon}</span>
+                  <item.Icon size={18} strokeWidth={1.75} className="shrink-0 text-[var(--color-gold-dark)]" />
                   <div>
                     <p className="text-xs font-semibold text-[var(--color-navy)]">{item.t}</p>
                     <p className="text-[11px] text-gray-400">{item.s}</p>
@@ -255,7 +255,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-[var(--color-cream)]">
-                          <span className="text-4xl opacity-30">🎁</span>
+                          <Gift size={36} strokeWidth={1} className="text-[var(--color-gold)] opacity-30" />
                         </div>
                       )}
                     </div>

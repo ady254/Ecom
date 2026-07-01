@@ -102,7 +102,10 @@ export default function FeaturedProducts() {
                 className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all duration-300 flex flex-col"
               >
                 {/* Image */}
-                <div className="relative aspect-[4/5] overflow-hidden bg-[var(--color-cream)]">
+                <Link
+                  href={`/products/${product.slug}`}
+                  className="relative aspect-[4/5] overflow-hidden bg-[var(--color-cream)] block"
+                >
                   {image?.url ? (
                     <Image
                       src={image.url}
@@ -134,7 +137,9 @@ export default function FeaturedProducts() {
 
                   {/* Wishlist */}
                   <button
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
                       toggle(product._id);
                       toast(isInWishlist(product._id) ? 'Removed from wishlist' : 'Added to wishlist!', {
                         icon: isInWishlist(product._id) ? '💔' : '❤️',
@@ -146,7 +151,7 @@ export default function FeaturedProducts() {
                   >
                     <Heart size={13} className={wishlisted ? 'fill-red-500' : ''} />
                   </button>
-                </div>
+                </Link>
 
                 {/* Info */}
                 <div className="p-3.5 flex flex-col flex-1">

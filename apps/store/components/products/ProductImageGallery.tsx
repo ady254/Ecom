@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import { Gift } from 'lucide-react';
 
 interface ProductImage {
   url: string;
@@ -19,7 +20,7 @@ export default function ProductImageGallery({ images, productName }: Props) {
   if (images.length === 0) {
     return (
       <div className="aspect-square rounded-2xl bg-gradient-to-br from-[var(--color-cream)] to-[var(--color-cream-dark)] flex items-center justify-center">
-        <span className="text-8xl opacity-20">🎁</span>
+        <Gift size={96} strokeWidth={1} className="text-[var(--color-gold)] opacity-30" />
       </div>
     );
   }
