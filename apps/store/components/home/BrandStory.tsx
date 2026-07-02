@@ -45,8 +45,21 @@ function CountUp({ target, suffix, decimal = 0 }: { target: number; suffix: stri
 
 export default function BrandStory() {
   return (
-    <section className="py-16 bg-white">
-      <div className="section-container">
+    <section className="py-16 bg-white relative overflow-hidden">
+      {/* Watermark signature */}
+      <p
+        aria-hidden="true"
+        className="pointer-events-none select-none absolute right-0 sm:-right-4 lg:right-0 top-1/2 -translate-y-1/2 -rotate-3 whitespace-nowrap leading-none z-0"
+        style={{
+          fontFamily: 'var(--font-signature)',
+          color: 'rgba(207, 169, 106, 0.16)',
+          fontSize: 'clamp(4.5rem, 13vw, 13rem)',
+        }}
+      >
+        Minara
+      </p>
+
+      <div className="section-container relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
 
           {/* Stats side */}

@@ -1,4 +1,5 @@
 import HeroBanner from '@/components/home/HeroBanner';
+import GiftingHadith from '@/components/home/GiftingHadith';
 import OccasionSection from '@/components/home/OccasionSection';
 import TrustBadges from '@/components/home/TrustBadges';
 import FeaturedProducts from '@/components/home/FeaturedProducts';
@@ -12,6 +13,7 @@ export default function HomePage() {
   return (
     <>
       <HeroBanner />
+      <GiftingHadith />
       <OccasionSection />
       <TrustBadges />
       <FeaturedProducts />

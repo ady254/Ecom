@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
-import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
@@ -189,25 +188,6 @@ export default function HeroBanner() {
                   {slide.subtitle}
                 </p>
               )}
-
-              {/* CTAs */}
-              <div className="flex flex-wrap gap-2 sm:gap-3 mt-4 sm:mt-0">
-                {slide.buttonText && slide.buttonLink && (
-                  <Link
-                    href={slide.buttonLink}
-                    className="inline-flex items-center gap-1.5 sm:gap-2.5 px-5 py-2.5 sm:px-8 sm:py-4 bg-[var(--color-gold)] text-[var(--color-navy)] text-[11px] sm:text-sm font-bold tracking-widest uppercase rounded-full hover:bg-[var(--color-gold-dark)] transition-colors group"
-                  >
-                    {slide.buttonText}
-                    <ArrowRight size={11} className="group-hover:translate-x-0.5 transition-transform sm:w-3.5 sm:h-3.5" />
-                  </Link>
-                )}
-                <Link
-                  href="/products"
-                  className="inline-flex items-center gap-1.5 sm:gap-2 px-5 py-2.5 sm:px-8 sm:py-4 border-2 border-white/40 text-white text-[11px] sm:text-sm font-semibold rounded-full hover:border-white hover:bg-white/10 transition-colors"
-                >
-                  Explore All
-                </Link>
-              </div>
             </motion.div>
           </AnimatePresence>
         </div>
