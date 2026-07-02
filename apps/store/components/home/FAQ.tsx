@@ -132,7 +132,7 @@ export default function FAQ() {
         <p className="text-center text-sm text-gray-400 mt-10">
           Still have questions?{' '}
           <a
-            href="https://wa.me/919876543210"
+            href="https://wa.me/918873355385"
             target="_blank"
             rel="noopener noreferrer"
             className="text-[var(--color-gold-dark)] font-semibold hover:underline"

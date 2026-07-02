@@ -5,7 +5,15 @@ export const BRAND = {
   tagline: 'Luxury Gifting, Reimagined',
   email: 'hello@minara.in',
   supportEmail: 'support@minara.in',
-  phone: '+91 98765 43210',
+  phone: '+91 88733 55385',
+  whatsapp: '918873355385',
+  address: {
+    line1: 'Bahadurpura',
+    city: 'Hyderabad',
+    state: 'Telangana',
+    pincode: '500064',
+    country: 'India',
+  },
   instagram: 'https://instagram.com/minaraofficial',
   colors: {
     navy: '#0B2342',
@@ -72,6 +80,19 @@ export const SHIPPING = {
   estimatedDays: { min: 2, max: 5 },
   processingDays: 1,
 } as const;
+
+// States we currently deliver to. Checked server-side at order creation and
+// used client-side to warn the customer before checkout.
+export const SERVICEABLE_STATES = [
+  'Maharashtra',
+  'Karnataka',
+  'Tamil Nadu',
+  'Punjab',
+  'Jammu & Kashmir',
+  'Telangana',
+  'Uttar Pradesh',
+  'Andhra Pradesh',
+] as const;
 
 // ─── API Constants ────────────────────────────────────────────────────────────
 

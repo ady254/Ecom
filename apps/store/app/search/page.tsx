@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { Suspense, useEffect, useState, useCallback, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -22,6 +22,14 @@ interface Product {
 }
 
 export default function SearchPage() {
+  return (
+    <Suspense fallback={null}>
+      <SearchPageContent />
+    </Suspense>
+  );
+}
+
+function SearchPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const initialQ = searchParams.get('q') || '';

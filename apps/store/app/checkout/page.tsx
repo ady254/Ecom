@@ -9,6 +9,7 @@ import { ChevronLeft, Loader2, CheckCircle, CreditCard, Truck, ShieldCheck, Tag,
 import toast from 'react-hot-toast';
 import { useCartStore } from '@/store/cartStore';
 import { formatCurrency } from '@minara/utils';
+import { SERVICEABLE_STATES } from '@minara/config';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
 const FREE_SHIPPING = 999;
@@ -50,8 +51,35 @@ export default function CheckoutPage() {
     addressLine1: '', addressLine2: '',
     city: '', state: '', pincode: '',
   });
+  const [pincodeStatus, setPincodeStatus] = useState<'idle' | 'checking' | 'serviceable' | 'unserviceable'>('idle');
 
   useEffect(() => setMounted(true), []);
+
+  // Look up the pincode once 6 digits are entered — auto-fills city/state and
+  // warns early if we don't currently deliver there. Fails open (idle) if the
+  // lookup API is unavailable, so checkout is never blocked by a third-party outage.
+  useEffect(() => {
+    if (!/^\d{6}$/.test(form.pincode)) { setPincodeStatus('idle'); return; }
+    let cancelled = false;
+    setPincodeStatus('checking');
+    const timer = setTimeout(() => {
+      fetch(`${API_URL}/shipping/check-pincode/${form.pincode}`)
+        .then((r) => r.json())
+        .then((json) => {
+          if (cancelled || !json.success) return;
+          const { serviceable, state, city } = json.data;
+          if (serviceable === null) { setPincodeStatus('idle'); return; }
+          setPincodeStatus(serviceable ? 'serviceable' : 'unserviceable');
+          setForm((f) => ({
+            ...f,
+            city: f.city.trim() ? f.city : city || f.city,
+            state: f.state ? f.state : state || f.state,
+          }));
+        })
+        .catch(() => { if (!cancelled) setPincodeStatus('idle'); });
+    }, 400);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [form.pincode]);
 
   const sub = subtotal();
   const shipping = sub >= FREE_SHIPPING ? 0 : SHIPPING_CHARGE;
@@ -67,6 +95,10 @@ export default function CheckoutPage() {
     if (!form.city.trim()) { toast.error('City is required'); return false; }
     if (!form.state) { toast.error('State is required'); return false; }
     if (!form.pincode.match(/^\d{6}$/)) { toast.error('Enter a valid 6-digit pincode'); return false; }
+    if (!SERVICEABLE_STATES.includes(form.state as (typeof SERVICEABLE_STATES)[number])) {
+      toast.error(`Sorry, we don't currently deliver to ${form.state}`);
+      return false;
+    }
     return true;
   };
 
@@ -338,7 +370,7 @@ export default function CheckoutPage() {
                     </div>
                     <div>
                       <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Pincode *</label>
-                      <input value={form.pincode} onChange={(e) => set('pincode', e.target.value)} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[var(--color-gold)] transition-colors" placeholder="400001" maxLength={6} required />
+                      <input value={form.pincode} onChange={(e) => set('pincode', e.target.value.replace(/\D/g, ''))} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[var(--color-gold)] transition-colors" placeholder="400001" maxLength={6} required />
                     </div>
                     <div className="sm:col-span-2">
                       <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">State *</label>
@@ -347,6 +379,11 @@ export default function CheckoutPage() {
                         {INDIAN_STATES.map((s) => <option key={s} value={s}>{s}</option>)}
                       </select>
                     </div>
+                    {pincodeStatus === 'unserviceable' && (
+                      <div className="sm:col-span-2 text-xs text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5">
+                        Sorry, we don&apos;t currently deliver to this pincode. We ship to Maharashtra, Karnataka, Tamil Nadu, Punjab, Jammu &amp; Kashmir, Telangana, Uttar Pradesh, and Andhra Pradesh.
+                      </div>
+                    )}
                   </div>
                 </div>
 

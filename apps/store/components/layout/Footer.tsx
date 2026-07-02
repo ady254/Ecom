@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Instagram, Mail, Phone, MessageCircle } from 'lucide-react';
 
-const WHATSAPP_NUMBER = '919876543210';
+const WHATSAPP_NUMBER = '918873355385';
 const WHATSAPP_MSG = encodeURIComponent('Assalamu Alaikum! I have a query about MINARA gifts.');
 const WHATSAPP_BULK_MSG = encodeURIComponent('Assalamu Alaikum! I would like to place a bulk order for Hajj return gifts / wedding hampers. Please assist.');
 
@@ -15,11 +15,13 @@ const shopLinks = [
 ];
 
 const helpLinks = [
-  { label: 'Track My Order',   href: '/orders' },
-  { label: 'Returns & Refunds', href: '/returns' },
-  { label: 'Shipping Info',    href: '/shipping' },
-  { label: 'Privacy Policy',   href: '/privacy' },
-  { label: 'Terms of Service', href: '/terms' },
+  { label: 'Track My Order',    href: '/orders' },
+  { label: 'Returns & Refunds', href: '/return-policy' },
+  { label: 'Shipping Policy',   href: '/shipping-policy' },
+  { label: 'Contact Us',        href: '/contact' },
+  { label: 'About Us',          href: '/about' },
+  { label: 'Privacy Policy',    href: '/privacy' },
+  { label: 'Terms of Service',  href: '/terms' },
 ];
 
 export default function Footer() {
@@ -54,7 +56,7 @@ export default function Footer() {
                 { href: `https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MSG}`, icon: MessageCircle, label: 'WhatsApp' },
                 { href: 'https://instagram.com/minaraofficial', icon: Instagram, label: 'Instagram' },
                 { href: 'mailto:hello@minara.in', icon: Mail, label: 'Email' },
-                { href: 'tel:+919876543210', icon: Phone, label: 'Phone' },
+                { href: 'tel:+918873355385', icon: Phone, label: 'Phone' },
               ].map(({ href, icon: Icon, label }) => (
                 <a
                   key={label}
@@ -122,11 +124,11 @@ export default function Footer() {
                 hello@minara.in
               </a>
               <a
-                href="tel:+919876543210"
+                href="tel:+918873355385"
                 className="flex items-center gap-2.5 text-sm text-white/55 hover:text-white transition-colors"
               >
                 <Phone size={14} strokeWidth={1.5} className="text-[var(--color-gold)] shrink-0" />
-                +91 98765 43210
+                +91 88733 55385
               </a>
             </div>
 

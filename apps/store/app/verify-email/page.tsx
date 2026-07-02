@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
@@ -8,6 +8,14 @@ import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
 
 export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={null}>
+      <VerifyEmailContent />
+    </Suspense>
+  );
+}
+
+function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token') || '';
   const userId = searchParams.get('id') || '';

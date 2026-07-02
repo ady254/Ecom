@@ -230,3 +230,105 @@ export const orderShippedTemplate = (data: {
 </body>
 </html>
 `;
+
+export const orderDeliveredTemplate = (data: { name: string; orderId: string }): string => `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Georgia, serif; background: #f9f7f4; margin: 0; }
+    .container { max-width: 600px; margin: 40px auto; background: #fff; border-radius: 12px; overflow: hidden; }
+    .header { background: #0B2342; padding: 40px 32px; text-align: center; }
+    .header h1 { color: #CFA96A; font-size: 28px; margin: 0; letter-spacing: 4px; font-weight: 300; }
+    .body { padding: 40px 32px; }
+    .body h2 { color: #0B2342; font-size: 22px; }
+    .body p { color: #555; line-height: 1.7; }
+    .order-id { background: #f0ede8; border-radius: 8px; padding: 16px 24px; margin: 24px 0; }
+    .order-id span { color: #0B2342; font-weight: 600; font-size: 18px; }
+    .footer { background: #0B2342; padding: 24px 32px; text-align: center; }
+    .footer p { color: rgba(255,255,255,0.6); font-size: 13px; margin: 0; }
+    .gold { color: #CFA96A; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header"><h1>MINARA</h1></div>
+    <div class="body">
+      <h2>Delivered! We hope you love it. 🎁</h2>
+      <p>Hi ${data.name}, your order has arrived.</p>
+      <div class="order-id">Order ID: <span class="gold">${data.orderId}</span></div>
+      <p>We'd love to hear what you think — your feedback helps us keep every gift unforgettable.</p>
+    </div>
+    <div class="footer"><p>Questions? Email us at <span class="gold">support@minara.in</span></p></div>
+  </div>
+</body>
+</html>
+`;
+
+export const orderCancelledTemplate = (data: { name: string; orderId: string; reason?: string }): string => `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Georgia, serif; background: #f9f7f4; margin: 0; }
+    .container { max-width: 600px; margin: 40px auto; background: #fff; border-radius: 12px; overflow: hidden; }
+    .header { background: #0B2342; padding: 40px 32px; text-align: center; }
+    .header h1 { color: #CFA96A; font-size: 28px; margin: 0; letter-spacing: 4px; font-weight: 300; }
+    .body { padding: 40px 32px; }
+    .body h2 { color: #0B2342; font-size: 22px; }
+    .body p { color: #555; line-height: 1.7; }
+    .order-id { background: #f0ede8; border-radius: 8px; padding: 16px 24px; margin: 24px 0; }
+    .order-id span { color: #0B2342; font-weight: 600; font-size: 18px; }
+    .footer { background: #0B2342; padding: 24px 32px; text-align: center; }
+    .footer p { color: rgba(255,255,255,0.6); font-size: 13px; margin: 0; }
+    .gold { color: #CFA96A; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header"><h1>MINARA</h1></div>
+    <div class="body">
+      <h2>Your order has been cancelled</h2>
+      <p>Hi ${data.name}, order <strong>${data.orderId}</strong> has been cancelled.${data.reason ? ` Reason: ${data.reason}` : ''}</p>
+      <div class="order-id">Order ID: <span class="gold">${data.orderId}</span></div>
+      <p>If a payment was already made, any applicable refund will be processed to your original payment method within 5–7 business days.</p>
+    </div>
+    <div class="footer"><p>Questions? Email us at <span class="gold">support@minara.in</span></p></div>
+  </div>
+</body>
+</html>
+`;
+
+export const paymentFailedTemplate = (data: { name: string }): string => `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Georgia, serif; background: #f9f7f4; margin: 0; }
+    .container { max-width: 600px; margin: 40px auto; background: #fff; border-radius: 12px; overflow: hidden; }
+    .header { background: #0B2342; padding: 40px 32px; text-align: center; }
+    .header h1 { color: #CFA96A; font-size: 28px; margin: 0; letter-spacing: 4px; font-weight: 300; }
+    .body { padding: 40px 32px; }
+    .body h2 { color: #0B2342; font-size: 22px; }
+    .body p { color: #555; line-height: 1.7; }
+    .footer { background: #0B2342; padding: 24px 32px; text-align: center; }
+    .footer p { color: rgba(255,255,255,0.6); font-size: 13px; margin: 0; }
+    .gold { color: #CFA96A; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header"><h1>MINARA</h1></div>
+    <div class="body">
+      <h2>We couldn't confirm your payment</h2>
+      <p>Hi ${data.name}, your recent payment attempt on MINARA could not be verified, so your order was not placed.</p>
+      <p>No amount was charged, or any amount debited will be automatically refunded by your bank within 5–7 business days. Please try again, or reach out if the issue persists.</p>
+    </div>
+    <div class="footer"><p>Questions? Email us at <span class="gold">support@minara.in</span></p></div>
+  </div>
+</body>
+</html>
+`;

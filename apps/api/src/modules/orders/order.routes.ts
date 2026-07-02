@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import crypto from 'crypto';
-import { OrderModel } from './order.model.js';
+import { OrderModel, IOrder } from './order.model.js';
 import { ProductModel } from '../products/product.model.js';
 import { UserModel } from '../users/user.model.js';
 import { CouponModel } from '../coupons/coupon.model.js';
@@ -9,11 +9,28 @@ import { requireAdmin } from '../../middlewares/admin.middleware.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
 import { AppError } from '../../utils/AppError.js';
 import { generateOrderId, calculateEstimatedDelivery } from '@minara/utils';
-import { SHIPPING } from '@minara/config';
+import { SHIPPING, SERVICEABLE_STATES } from '@minara/config';
 import { env } from '../../config/env.js';
-import { sendMail, orderConfirmationTemplate, orderShippedTemplate } from '../../config/email.js';
+import {
+  sendMail,
+  orderConfirmationTemplate,
+  orderShippedTemplate,
+  orderDeliveredTemplate,
+  orderCancelledTemplate,
+  paymentFailedTemplate,
+} from '../../config/email.js';
 
 const router = Router();
+
+// Resolves the email address to notify for an order (guest checkout or registered user)
+async function resolveOrderEmail(order: Pick<IOrder, 'guestInfo' | 'user'>): Promise<string | undefined> {
+  if (order.guestInfo?.email) return order.guestInfo.email;
+  if (order.user) {
+    const user = await UserModel.findById(order.user).select('email').lean();
+    return user?.email;
+  }
+  return undefined;
+}
 
 // ─── Customer Routes ──────────────────────────────────────────────────────────
 
@@ -38,6 +55,9 @@ router.post(
     if (!shippingAddress) throw new AppError('Shipping address is required', 400);
     if (!paymentMethod) throw new AppError('Payment method is required', 400);
     if (!req.user && !guestInfo) throw new AppError('Guest info required for guest checkout', 400);
+    if (!(SERVICEABLE_STATES as readonly string[]).includes(shippingAddress.state)) {
+      throw new AppError(`Sorry, we do not currently deliver to ${shippingAddress.state}`, 400);
+    }
 
     // ── Razorpay signature verification ───────────────────────────────────────
     if (paymentMethod === 'razorpay') {
@@ -52,6 +72,16 @@ router.post(
         .update(`${razorpayOrderId}|${razorpayPaymentId}`)
         .digest('hex');
       if (expected !== razorpaySignature) {
+        const failEmail = req.user
+          ? (await UserModel.findById(req.user.userId).select('email').lean())?.email
+          : guestInfo?.email;
+        if (failEmail) {
+          sendMail({
+            to: failEmail,
+            subject: 'Payment Failed — MINARA',
+            html: paymentFailedTemplate({ name: shippingAddress?.fullName || guestInfo?.name || 'Customer' }),
+          }).catch(console.error);
+        }
         throw new AppError('Invalid payment signature', 400);
       }
     }
@@ -124,13 +154,7 @@ router.post(
     );
 
     // ── Confirmation email ────────────────────────────────────────────────────
-    let recipientEmail: string | undefined;
-    if (req.user) {
-      const user = await UserModel.findById(req.user.userId).select('email').lean();
-      recipientEmail = user?.email;
-    } else {
-      recipientEmail = guestInfo?.email;
-    }
+    const recipientEmail = await resolveOrderEmail(order);
 
     if (recipientEmail) {
       sendMail({
@@ -229,6 +253,19 @@ router.post(
     });
     await order.save();
 
+    const email = await resolveOrderEmail(order);
+    if (email) {
+      sendMail({
+        to: email,
+        subject: `Order Cancelled — ${order.orderId} | MINARA`,
+        html: orderCancelledTemplate({
+          name: order.shippingAddress.fullName,
+          orderId: order.orderId,
+          reason: 'Cancelled by customer',
+        }),
+      }).catch(console.error);
+    }
+
     res.json({ success: true, message: 'Order cancelled successfully', data: { order } });
   })
 );
@@ -275,6 +312,23 @@ router.patch(
     order.timeline.push({ status, message: msg || `Status updated to ${status}`, timestamp: new Date() });
     await order.save();
 
+    if (status === 'delivered' || status === 'cancelled') {
+      const email = await resolveOrderEmail(order);
+      if (email) {
+        sendMail({
+          to: email,
+          subject:
+            status === 'delivered'
+              ? `Your MINARA order has arrived! — ${order.orderId}`
+              : `Order Cancelled — ${order.orderId} | MINARA`,
+          html:
+            status === 'delivered'
+              ? orderDeliveredTemplate({ name: order.shippingAddress.fullName, orderId: order.orderId })
+              : orderCancelledTemplate({ name: order.shippingAddress.fullName, orderId: order.orderId, reason: msg }),
+        }).catch(console.error);
+      }
+    }
+
     res.json({ success: true, message: 'Order status updated', data: { order } });
   })
 );
@@ -300,12 +354,7 @@ router.patch(
     });
     await order.save();
 
-    // Resolve email from guest or registered user
-    let email = order.guestInfo?.email;
-    if (!email && order.user) {
-      const user = await UserModel.findById(order.user).select('email').lean();
-      email = user?.email;
-    }
+    const email = await resolveOrderEmail(order);
 
     if (email) {
       sendMail({
