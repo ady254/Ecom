@@ -109,8 +109,10 @@ export default function HeroBanner() {
     <section
       className="relative w-full overflow-hidden"
       style={{
-        /* dvh accounts for mobile browser chrome (address bar) */
-        height: 'calc(100dvh - 64px)',
+        /* dvh accounts for mobile browser chrome; ~150px covers the
+           announcement bar + two-row header (logo/icons + search) so the
+           CTA and dots stay above the fold */
+        height: 'calc(100dvh - 150px)',
         minHeight: '480px',
         maxHeight: '900px',
       }}

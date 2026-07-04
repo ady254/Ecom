@@ -1,10 +1,12 @@
 import Link from 'next/link';
+import { getStoreSettings } from '@/lib/settings';
 
 export const metadata = {
   title: 'Return Policy — MINARA',
 };
 
-export default function ReturnPolicyPage() {
+export default async function ReturnPolicyPage() {
+  const { storeEmail } = await getStoreSettings();
   return (
     <div className="pb-20 pt-10">
       <div className="section-container max-w-3xl">
@@ -50,7 +52,7 @@ export default function ReturnPolicyPage() {
           <section>
             <h2 className="font-heading text-2xl text-[var(--color-navy)] mb-3">How to Initiate a Return</h2>
             <ol className="list-decimal pl-5 mt-2 space-y-2">
-              <li>Email us at <a href="mailto:support@minara.in" className="text-[var(--color-gold-dark)] hover:underline">support@minara.in</a> with your order number and reason for return</li>
+              <li>Email us at <a href={`mailto:${storeEmail}`} className="text-[var(--color-gold-dark)] hover:underline">{storeEmail}</a> with your order number and reason for return</li>
               <li>Attach photographs of the item and packaging (required for damaged/incorrect items)</li>
               <li>Our team will respond within 24 hours with return instructions</li>
               <li>Pack the item securely and hand it to our pickup partner</li>
@@ -79,7 +81,7 @@ export default function ReturnPolicyPage() {
 
           <section>
             <h2 className="font-heading text-2xl text-[var(--color-navy)] mb-3">Contact Us</h2>
-            <p>Have questions about a return? Reach us at <a href="mailto:support@minara.in" className="text-[var(--color-gold-dark)] hover:underline">support@minara.in</a> or WhatsApp us for faster support.</p>
+            <p>Have questions about a return? Reach us at <a href={`mailto:${storeEmail}`} className="text-[var(--color-gold-dark)] hover:underline">{storeEmail}</a> or WhatsApp us for faster support.</p>
           </section>
         </div>
 

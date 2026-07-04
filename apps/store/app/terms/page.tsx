@@ -1,10 +1,12 @@
 import Link from 'next/link';
+import { getStoreSettings } from '@/lib/settings';
 
 export const metadata = {
   title: 'Terms of Service — MINARA',
 };
 
-export default function TermsPage() {
+export default async function TermsPage() {
+  const { storeEmail } = await getStoreSettings();
   return (
     <div className="pb-20 pt-10">
       <div className="section-container max-w-3xl">
@@ -58,7 +60,7 @@ export default function TermsPage() {
 
           <section>
             <h2 className="font-heading text-2xl text-[var(--color-navy)] mb-3">9. Contact</h2>
-            <p>For any questions regarding these terms, please contact us at <a href="mailto:support@minara.in" className="text-[var(--color-gold-dark)] hover:underline">support@minara.in</a>.</p>
+            <p>For any questions regarding these terms, please contact us at <a href={`mailto:${storeEmail}`} className="text-[var(--color-gold-dark)] hover:underline">{storeEmail}</a>.</p>
           </section>
         </div>
 

@@ -7,9 +7,10 @@ import HowItWorks from '@/components/home/HowItWorks';
 import BrandStory from '@/components/home/BrandStory';
 import Testimonials from '@/components/home/Testimonials';
 import FAQ from '@/components/home/FAQ';
-import Newsletter from '@/components/home/Newsletter';
+import { getStoreSettings } from '@/lib/settings';
 
-export default function HomePage() {
+export default async function HomePage() {
+  const settings = await getStoreSettings();
   return (
     <>
       <HeroBanner />
@@ -20,8 +21,7 @@ export default function HomePage() {
       <HowItWorks />
       <BrandStory />
       <Testimonials />
-      <FAQ />
-      <Newsletter />
+      <FAQ whatsappNumber={settings.whatsappNumber} />
     </>
   );
 }

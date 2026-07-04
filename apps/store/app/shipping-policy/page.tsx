@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { getStoreSettings } from '@/lib/settings';
 
 export const metadata = {
   title: 'Shipping Policy — MINARA',
@@ -9,7 +10,8 @@ const SERVICEABLE_STATES = [
   'Jammu & Kashmir', 'Telangana', 'Uttar Pradesh', 'Andhra Pradesh',
 ];
 
-export default function ShippingPolicyPage() {
+export default async function ShippingPolicyPage() {
+  const { storeEmail } = await getStoreSettings();
   return (
     <div className="pb-20 pt-10">
       <div className="section-container max-w-3xl">
@@ -67,7 +69,7 @@ export default function ShippingPolicyPage() {
 
           <section>
             <h2 className="font-heading text-2xl text-[var(--color-navy)] mb-3">Delays & Issues</h2>
-            <p>Occasionally, deliveries may be delayed due to weather, regional restrictions, or courier network disruptions. If your order is taking longer than expected, contact us at <a href="mailto:support@minara.in" className="text-[var(--color-gold-dark)] hover:underline">support@minara.in</a> with your order number and we&apos;ll look into it right away.</p>
+            <p>Occasionally, deliveries may be delayed due to weather, regional restrictions, or courier network disruptions. If your order is taking longer than expected, contact us at <a href={`mailto:${storeEmail}`} className="text-[var(--color-gold-dark)] hover:underline">{storeEmail}</a> with your order number and we&apos;ll look into it right away.</p>
           </section>
         </div>
 

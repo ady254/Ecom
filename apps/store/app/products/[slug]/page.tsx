@@ -24,13 +24,14 @@ interface Product {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
 
-async function fetchProduct(slug: string): Promise<Product | null> {
+async function fetchProduct(slug: string): Promise<{ product: Product; soldLast24h: number } | null> {
   try {
     const res = await fetch(`${API_URL}/products/slug/${slug}`, { cache: 'no-store' });
     if (res.status === 404) return null;
     if (!res.ok) return null;
     const json = await res.json();
-    return json.data?.product ?? null;
+    if (!json.data?.product) return null;
+    return { product: json.data.product, soldLast24h: json.data.soldLast24h ?? 0 };
   } catch { return null; }
 }
 
@@ -45,8 +46,9 @@ async function fetchRelated(categoryId: string, excludeId: string): Promise<Prod
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const product = await fetchProduct(slug);
-  if (!product) return { title: 'Product Not Found' };
+  const result = await fetchProduct(slug);
+  if (!result) return { title: 'Product Not Found' };
+  const { product } = result;
   return {
     title: product.name,
     description: product.shortDescription || product.description?.slice(0, 160),
@@ -56,8 +58,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const product = await fetchProduct(slug);
-  if (!product) notFound();
+  const result = await fetchProduct(slug);
+  if (!result) notFound();
+  const { product, soldLast24h } = result;
 
   const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://minara.in';
   const discount = calculateDiscount(product.price, product.comparePrice);
@@ -99,12 +102,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const day2 = new Date(today); day2.setDate(today.getDate() + 1);
   const day4 = new Date(today); day4.setDate(today.getDate() + 4);
 
-  // Deterministic per product per day — stable across requests/refreshes,
-  // unlike Math.random() which changed on every page load.
-  const seed = `${product._id}-${today.toDateString()}`;
-  let hash = 0;
-  for (let i = 0; i < seed.length; i++) hash = (hash * 31 + seed.charCodeAt(i)) | 0;
-  const soldCount = (Math.abs(hash) % 18) + 8;
+  // Real sales from the orders collection — the badge only shows when
+  // customers actually bought this product in the last 24 hours.
+  const soldCount = soldLast24h;
 
   return (
     <>

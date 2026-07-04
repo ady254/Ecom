@@ -1,10 +1,12 @@
 import Link from 'next/link';
+import { getStoreSettings } from '@/lib/settings';
 
 export const metadata = {
   title: 'Privacy Policy — MINARA',
 };
 
-export default function PrivacyPage() {
+export default async function PrivacyPage() {
+  const { storeEmail } = await getStoreSettings();
   return (
     <div className="pb-20 pt-10">
       <div className="section-container max-w-3xl">
@@ -67,7 +69,7 @@ export default function PrivacyPage() {
               <li>Request deletion of your account and data</li>
               <li>Withdraw consent for marketing communications</li>
             </ul>
-            <p className="mt-2">To exercise these rights, contact us at <a href="mailto:support@minara.in" className="text-[var(--color-gold-dark)] hover:underline">support@minara.in</a>.</p>
+            <p className="mt-2">To exercise these rights, contact us at <a href={`mailto:${storeEmail}`} className="text-[var(--color-gold-dark)] hover:underline">{storeEmail}</a>.</p>
           </section>
 
           <section>
@@ -82,7 +84,7 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="font-heading text-2xl text-[var(--color-navy)] mb-3">9. Contact Us</h2>
-            <p>For privacy-related queries, please email <a href="mailto:support@minara.in" className="text-[var(--color-gold-dark)] hover:underline">support@minara.in</a>.</p>
+            <p>For privacy-related queries, please email <a href={`mailto:${storeEmail}`} className="text-[var(--color-gold-dark)] hover:underline">{storeEmail}</a>.</p>
           </section>
         </div>
 

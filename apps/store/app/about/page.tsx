@@ -1,10 +1,12 @@
 import Link from 'next/link';
+import { getStoreSettings } from '@/lib/settings';
 
 export const metadata = {
   title: 'About Us — MINARA',
 };
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const { storeEmail } = await getStoreSettings();
   return (
     <div className="pb-20 pt-10">
       <div className="section-container max-w-3xl">
@@ -34,7 +36,7 @@ export default function AboutPage() {
 
           <section>
             <h2 className="font-heading text-2xl text-[var(--color-navy)] mb-3">Get In Touch</h2>
-            <p>Questions, custom orders, or feedback — we&apos;d love to hear from you. Visit our <Link href="/contact" className="text-[var(--color-gold-dark)] hover:underline">Contact page</Link> or reach us at <a href="mailto:support@minara.in" className="text-[var(--color-gold-dark)] hover:underline">support@minara.in</a>.</p>
+            <p>Questions, custom orders, or feedback — we&apos;d love to hear from you. Visit our <Link href="/contact" className="text-[var(--color-gold-dark)] hover:underline">Contact page</Link> or reach us at <a href={`mailto:${storeEmail}`} className="text-[var(--color-gold-dark)] hover:underline">{storeEmail}</a>.</p>
           </section>
         </div>
 

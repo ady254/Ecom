@@ -45,7 +45,7 @@ const FALLBACK: FAQItem[] = [
   },
 ];
 
-export default function FAQ() {
+export default function FAQ({ whatsappNumber = '918873355385' }: { whatsappNumber?: string }) {
   const [faqs, setFaqs] = useState<FAQItem[]>([]);
   const [open, setOpen] = useState<string | null>(null);
 
@@ -132,7 +132,7 @@ export default function FAQ() {
         <p className="text-center text-sm text-gray-400 mt-10">
           Still have questions?{' '}
           <a
-            href="https://wa.me/918873355385"
+            href={`https://wa.me/${whatsappNumber}`}
             target="_blank"
             rel="noopener noreferrer"
             className="text-[var(--color-gold-dark)] font-semibold hover:underline"

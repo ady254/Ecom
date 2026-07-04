@@ -1,11 +1,25 @@
 import { Request, Response } from 'express';
 import fs from 'fs';
+import mongoose from 'mongoose';
 import { ProductService } from './product.service.js';
+import { OrderModel } from '../orders/order.model.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
 import { uploadToCloudinary } from '../../config/cloudinary.js';
 import { CLOUDINARY_FOLDERS } from '@minara/config';
 
 const productService = new ProductService();
+
+/** Real units sold in the last 24 hours (excludes cancelled/refunded orders). */
+const getSoldLast24h = async (productId: mongoose.Types.ObjectId): Promise<number> => {
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const result = await OrderModel.aggregate([
+    { $match: { createdAt: { $gte: since }, status: { $nin: ['cancelled', 'refunded'] } } },
+    { $unwind: '$items' },
+    { $match: { 'items.product': productId } },
+    { $group: { _id: null, qty: { $sum: '$items.quantity' } } },
+  ]);
+  return result[0]?.qty ?? 0;
+};
 
 export const getAdminProducts = asyncHandler(async (req: Request, res: Response) => {
   const { category, isFeatured, minPrice, maxPrice, search, page, limit, sort, tags, isActive } = req.query;
@@ -46,7 +60,8 @@ export const getProducts = asyncHandler(async (req: Request, res: Response) => {
 
 export const getProductBySlug = asyncHandler(async (req: Request, res: Response) => {
   const product = await productService.getProductBySlug(req.params.slug as string);
-  res.json({ success: true, message: 'Product fetched', data: { product } });
+  const soldLast24h = await getSoldLast24h(product._id as mongoose.Types.ObjectId);
+  res.json({ success: true, message: 'Product fetched', data: { product, soldLast24h } });
 });
 
 export const getProductById = asyncHandler(async (req: Request, res: Response) => {

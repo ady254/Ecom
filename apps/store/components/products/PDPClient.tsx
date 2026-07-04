@@ -117,13 +117,15 @@ export default function PDPClient({ product, discount, soldCount, deliverySteps 
   return (
     <>
       <div className="flex flex-col">
-        {/* Urgency badge */}
-        <div className="flex items-center gap-1.5 mb-4">
-          <span className="flex items-center gap-1.5 text-xs font-semibold text-orange-600 bg-orange-50 border border-orange-100 px-3 py-1.5 rounded-full">
-            <Flame size={12} className="text-orange-500" />
-            {soldCount} sold in last 24 hours
-          </span>
-        </div>
+        {/* Urgency badge — real sales only; hidden when nothing sold recently */}
+        {soldCount > 0 && (
+          <div className="flex items-center gap-1.5 mb-4">
+            <span className="flex items-center gap-1.5 text-xs font-semibold text-orange-600 bg-orange-50 border border-orange-100 px-3 py-1.5 rounded-full">
+              <Flame size={12} className="text-orange-500" />
+              {soldCount} sold in last 24 hours
+            </span>
+          </div>
+        )}
 
         {/* Category */}
         {product.category && (
@@ -309,8 +311,8 @@ export default function PDPClient({ product, discount, soldCount, deliverySteps 
           </div>
         </div>
 
-        {/* Trust icons strip */}
-        <div className="grid grid-cols-5 gap-2 py-4 border-t border-b border-gray-100">
+        {/* Trust icons strip — 3-up on small phones so labels stay readable */}
+        <div className="grid grid-cols-3 sm:grid-cols-5 gap-x-2 gap-y-4 py-4 border-t border-b border-gray-100">
           {TRUST_ICONS.map((t) => (
             <div key={t.label} className="flex flex-col items-center gap-1 text-center">
               <t.Icon size={18} strokeWidth={1.75} className="text-[var(--color-gold-dark)]" />

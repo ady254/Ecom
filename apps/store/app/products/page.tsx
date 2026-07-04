@@ -94,7 +94,8 @@ export default async function ProductsPage({
           </p>
         </div>
 
-        <div className="flex gap-8 items-start">
+        {/* Stacks on mobile (filter button above grid), side-by-side from md up */}
+        <div className="flex flex-col md:flex-row gap-4 md:gap-8 md:items-start">
           {/* Sidebar */}
           <Suspense fallback={<div className="hidden md:block w-56 shrink-0" />}>
             <ProductSidebar categories={categories} />

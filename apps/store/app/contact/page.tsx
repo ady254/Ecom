@@ -1,13 +1,14 @@
 import { Mail, Phone, MapPin, MessageCircle, Clock } from 'lucide-react';
+import { getStoreSettings } from '@/lib/settings';
 
 export const metadata = {
   title: 'Contact Us — MINARA',
 };
 
-const WHATSAPP_NUMBER = '918873355385';
 const WHATSAPP_MSG = encodeURIComponent('Assalamu Alaikum! I have a query about MINARA gifts.');
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const settings = await getStoreSettings();
   return (
     <div className="pb-20 pt-10">
       <div className="section-container max-w-3xl">
@@ -17,7 +18,7 @@ export default function ContactPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-10">
           <a
-            href={`https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MSG}`}
+            href={`https://wa.me/${settings.whatsappNumber}?text=${WHATSAPP_MSG}`}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-start gap-3.5 bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:border-[var(--color-gold-light)] transition-colors"
@@ -32,7 +33,7 @@ export default function ContactPage() {
           </a>
 
           <a
-            href="mailto:support@minara.in"
+            href={`mailto:${settings.storeEmail}`}
             className="flex items-start gap-3.5 bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:border-[var(--color-gold-light)] transition-colors"
           >
             <span className="w-10 h-10 rounded-full bg-[var(--color-cream)] flex items-center justify-center shrink-0">
@@ -40,12 +41,12 @@ export default function ContactPage() {
             </span>
             <div>
               <p className="font-semibold text-[var(--color-navy)] text-sm mb-0.5">Email</p>
-              <p className="text-sm text-gray-500">support@minara.in</p>
+              <p className="text-sm text-gray-500">{settings.storeEmail}</p>
             </div>
           </a>
 
           <a
-            href="tel:+918873355385"
+            href={`tel:${settings.storePhoneTel}`}
             className="flex items-start gap-3.5 bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:border-[var(--color-gold-light)] transition-colors"
           >
             <span className="w-10 h-10 rounded-full bg-[var(--color-cream)] flex items-center justify-center shrink-0">
@@ -53,7 +54,7 @@ export default function ContactPage() {
             </span>
             <div>
               <p className="font-semibold text-[var(--color-navy)] text-sm mb-0.5">Phone</p>
-              <p className="text-sm text-gray-500">+91 88733 55385</p>
+              <p className="text-sm text-gray-500">{settings.storePhone}</p>
             </div>
           </a>
 
@@ -76,10 +77,8 @@ export default function ContactPage() {
             <div>
               <p className="font-semibold text-[var(--color-navy)] text-sm mb-1">Registered Address</p>
               <p className="text-sm text-gray-500 leading-relaxed">
-                MINARA<br />
-                Bahadurpura, Hyderabad<br />
-                Telangana – 500064<br />
-                India
+                {settings.storeName}<br />
+                {settings.storeAddress}
               </p>
             </div>
           </div>
