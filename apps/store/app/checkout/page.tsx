@@ -135,13 +135,12 @@ export default function CheckoutPage() {
     setCouponApplied(false);
   };
 
-  const buildOrderPayload = (razorpayData?: { razorpayOrderId: string; razorpayPaymentId: string; razorpaySignature: string }) => {
+  // The server prices every item from the database — we only say WHAT we
+  // want to buy (product + quantity + variant), never how much it costs.
+  const buildOrderPayload = (method: 'cod' | 'razorpay') => {
     return {
       items: items.map((i) => ({
         product: i.productId,
-        name: i.name,
-        image: i.image,
-        price: i.price,
         quantity: i.quantity,
         ...(i.variant && Object.keys(i.variant).length > 0 ? { variant: i.variant } : {}),
       })),
@@ -155,36 +154,45 @@ export default function CheckoutPage() {
         pincode: form.pincode,
         country: 'India',
       },
-      paymentMethod: razorpayData ? 'razorpay' : 'cod',
+      paymentMethod: method,
       guestInfo: { name: form.fullName, email: form.email, phone: form.phone },
       ...(giftMessage.trim() ? { giftMessage: giftMessage.trim() } : {}),
-      ...(couponApplied ? { couponCode: couponCode.trim().toUpperCase(), discount: couponDiscount } : {}),
-      ...razorpayData,
+      ...(couponApplied ? { couponCode: couponCode.trim().toUpperCase() } : {}),
+    };
+  };
+
+  const authHeaders = (): Record<string, string> => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    return {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     };
   };
 
   const placeOrder = async (payload: object) => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
     const res = await fetch(`${API_URL}/orders`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
+      headers: authHeaders(),
       body: JSON.stringify(payload),
     });
     const json = await res.json();
     if (!res.ok) throw new Error(json.message || 'Failed to place order');
-    return json.data.order;
+    return json.data as {
+      order: { orderId: string };
+      payment?: { keyId: string; razorpayOrderId: string; amount: number; currency: string };
+    };
   };
+
+  const orderUrl = (orderId: string) =>
+    `/orders/${orderId}?success=1&email=${encodeURIComponent(form.email)}`;
 
   const handleCOD = async () => {
     if (!validate()) return;
     setSubmitting(true);
     try {
-      const order = await placeOrder(buildOrderPayload());
+      const { order } = await placeOrder(buildOrderPayload('cod'));
       clearCart();
-      router.push(`/orders/${order.orderId}?success=1`);
+      router.push(orderUrl(order.orderId));
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Failed to place order');
     } finally {
@@ -196,41 +204,49 @@ export default function CheckoutPage() {
     if (!validate()) return;
     setSubmitting(true);
     try {
-      const rzpRes = await fetch(`${API_URL}/payments/razorpay/create-order`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: total }),
-      });
-      if (!rzpRes.ok) {
-        const j = await rzpRes.json();
-        throw new Error(j.message || 'Could not initiate payment');
-      }
-      const { data } = await rzpRes.json();
+      // 1. Create the order — the server computes the amount and creates the
+      //    Razorpay order, so the amount charged can never be tampered with.
+      const { order, payment } = await placeOrder(buildOrderPayload('razorpay'));
+      if (!payment) throw new Error('Could not initiate payment');
 
       const rzp = new window.Razorpay({
-        key: data.keyId,
-        amount: data.amount,
-        currency: data.currency,
+        key: payment.keyId,
+        amount: payment.amount,
+        currency: payment.currency,
         name: 'MINARA',
         description: 'Luxury Gifting',
-        order_id: data.razorpayOrderId,
+        order_id: payment.razorpayOrderId,
         prefill: { name: form.fullName, email: form.email, contact: form.phone },
         theme: { color: '#0B2342' },
         handler: async (response: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) => {
+          // 2. Confirm on the server: it verifies the signature AND the amount
+          //    with Razorpay before marking the order paid.
           try {
-            const order = await placeOrder(buildOrderPayload({
-              razorpayOrderId: response.razorpay_order_id,
-              razorpayPaymentId: response.razorpay_payment_id,
-              razorpaySignature: response.razorpay_signature,
-            }));
+            const res = await fetch(`${API_URL}/orders/${order.orderId}/pay/confirm`, {
+              method: 'POST',
+              headers: authHeaders(),
+              body: JSON.stringify({
+                razorpayOrderId: response.razorpay_order_id,
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpaySignature: response.razorpay_signature,
+              }),
+            });
+            const json = await res.json();
+            if (!res.ok) throw new Error(json.message || 'Verification failed');
             clearCart();
-            router.push(`/orders/${order.orderId}?success=1`);
+            router.push(orderUrl(order.orderId));
           } catch {
-            toast.error('Payment succeeded but order creation failed. Contact support.');
+            // The webhook will still mark it paid server-side
+            toast.error('Payment received — confirmation is taking a moment. Check your email for the receipt.');
+            clearCart();
+            router.push(orderUrl(order.orderId));
           }
         },
         modal: {
-          ondismiss: () => setSubmitting(false),
+          ondismiss: () => {
+            setSubmitting(false);
+            toast('Payment not completed. Your order will be cancelled automatically.', { icon: 'ℹ️' });
+          },
         },
       });
       rzp.open();
@@ -541,6 +557,19 @@ export default function CheckoutPage() {
                       paymentMethod === 'cod' ? 'Place Order (COD)' : `Pay ${formatCurrency(total)}`
                     )}
                   </button>
+
+                  {/* Trust row — the last thing they see before committing */}
+                  <div className="flex items-center justify-center gap-4 text-[10px] text-gray-400 mt-4">
+                    <span className="flex items-center gap-1">
+                      <ShieldCheck size={11} className="text-emerald-500" /> 10-day replacement
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Truck size={11} className="text-emerald-500" /> Ships in 24 hrs
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Gift size={11} className="text-emerald-500" /> Gift-wrapped
+                    </span>
+                  </div>
 
                   <p className="text-center text-xs text-gray-400 mt-3">
                     By placing this order you agree to our{' '}

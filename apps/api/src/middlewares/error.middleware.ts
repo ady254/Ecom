@@ -23,9 +23,10 @@ export const errorHandler = (
     return;
   }
 
-  // Mongoose duplicate key error
-  if ('code' in err && (err as NodeJS.ErrnoException).code === '11000') {
-    const field = Object.keys((err as Record<string, unknown>).keyValue as object)[0];
+  // Mongoose duplicate key error (code is a number; coerce defensively)
+  if ('code' in err && Number((err as { code?: unknown }).code) === 11000) {
+    const keyValue = (err as Record<string, unknown>).keyValue;
+    const field = keyValue && typeof keyValue === 'object' ? Object.keys(keyValue)[0] : 'value';
     res.status(409).json({ success: false, message: `${field} already exists` });
     return;
   }

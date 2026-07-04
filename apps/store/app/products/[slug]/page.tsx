@@ -99,7 +99,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const day2 = new Date(today); day2.setDate(today.getDate() + 1);
   const day4 = new Date(today); day4.setDate(today.getDate() + 4);
 
-  const soldCount = Math.floor(Math.random() * 18) + 8;
+  // Deterministic per product per day — stable across requests/refreshes,
+  // unlike Math.random() which changed on every page load.
+  const seed = `${product._id}-${today.toDateString()}`;
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) hash = (hash * 31 + seed.charCodeAt(i)) | 0;
+  const soldCount = (Math.abs(hash) % 18) + 8;
 
   return (
     <>

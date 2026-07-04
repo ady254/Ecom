@@ -12,38 +12,27 @@ const router = Router();
 // POST /api/v1/coupons/validate — Validate a coupon code against an order amount
 router.post(
   '/validate',
-  asyncHandler(async (req, res) => {
+  asyncHandler(async (req, res): Promise<void> => {
     const { code, orderAmount } = req.body;
 
     if (!code) throw new AppError('Coupon code is required', 400);
     if (orderAmount === undefined || orderAmount === null)
       throw new AppError('Order amount is required', 400);
 
+    const invalid = (message: string): void => {
+      res.json({ valid: false, discount: 0, message, coupon: null });
+    };
+
     const coupon = await CouponModel.findOne({ code: String(code).toUpperCase() });
 
-    if (!coupon) {
-      return res.json({ valid: false, discount: 0, message: 'Invalid coupon code', coupon: null });
-    }
-
-    if (!coupon.isActive) {
-      return res.json({ valid: false, discount: 0, message: 'This coupon is no longer active', coupon: null });
-    }
-
-    if (coupon.expiresAt && coupon.expiresAt < new Date()) {
-      return res.json({ valid: false, discount: 0, message: 'This coupon has expired', coupon: null });
-    }
-
+    if (!coupon) return invalid('Invalid coupon code');
+    if (!coupon.isActive) return invalid('This coupon is no longer active');
+    if (coupon.expiresAt && coupon.expiresAt < new Date()) return invalid('This coupon has expired');
     if (coupon.usageLimit !== undefined && coupon.usageLimit !== null && coupon.usageCount >= coupon.usageLimit) {
-      return res.json({ valid: false, discount: 0, message: 'This coupon has reached its usage limit', coupon: null });
+      return invalid('This coupon has reached its usage limit');
     }
-
     if (orderAmount < coupon.minOrderAmount) {
-      return res.json({
-        valid: false,
-        discount: 0,
-        message: `Minimum order amount of ₹${coupon.minOrderAmount} required for this coupon`,
-        coupon: null,
-      });
+      return invalid(`Minimum order amount of ₹${coupon.minOrderAmount} required for this coupon`);
     }
 
     let discount = 0;

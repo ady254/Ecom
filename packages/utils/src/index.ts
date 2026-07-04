@@ -25,12 +25,20 @@ export const slugify = (text: string): string => {
 
 // ─── Order ID Generator ───────────────────────────────────────────────────────
 
+// No I, L, O, 0, 1 — avoids ambiguity when customers read IDs over the phone.
+const ORDER_ID_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+const ORDER_ID_LENGTH = 10;
+
+// ~31^10 (≈8×10^14) possible IDs per year: collision-safe at any realistic
+// volume and not guessable/enumerable (uses the platform CSPRNG, which exists
+// in both Node 20+ and browsers).
 export const generateOrderId = (): string => {
   const year = new Date().getFullYear();
-  const random = Math.floor(Math.random() * 100000)
-    .toString()
-    .padStart(5, '0');
-  return `MIN-${year}-${random}`;
+  const bytes = new Uint8Array(ORDER_ID_LENGTH);
+  globalThis.crypto.getRandomValues(bytes);
+  let suffix = '';
+  for (const b of bytes) suffix += ORDER_ID_ALPHABET[b % ORDER_ID_ALPHABET.length];
+  return `MIN-${year}-${suffix}`;
 };
 
 // ─── Delivery Date Calculator ─────────────────────────────────────────────────

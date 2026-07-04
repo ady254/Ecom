@@ -1,11 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useUIStore } from '@/store/uiStore';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
 
 export default function WhatsAppButton() {
   const [phone, setPhone] = useState('');
+  const stickyBarVisible = useUIStore((s) => s.stickyBarVisible);
 
   useEffect(() => {
     fetch(`${API_URL}/settings`)
@@ -30,7 +32,9 @@ export default function WhatsAppButton() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Chat with us on WhatsApp"
-      className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-[0_4px_20px_rgba(37,211,102,0.4)] hover:scale-110 transition-transform duration-200"
+      className={`fixed right-6 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-[0_4px_20px_rgba(37,211,102,0.4)] hover:scale-110 transition-all duration-300 ${
+        stickyBarVisible ? 'bottom-24 lg:bottom-6' : 'bottom-6'
+      }`}
       style={{ background: '#25D366' }}
     >
       <svg viewBox="0 0 24 24" fill="white" className="w-7 h-7" aria-hidden="true">

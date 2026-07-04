@@ -27,6 +27,10 @@ const envSchema = z.object({
   EMAIL_FROM: z.string().default('MINARA <noreply@minara.in>'),
   FRONTEND_URL: z.string().default('http://localhost:3000'),
   ADMIN_URL: z.string().default('http://localhost:3001'),
+  // 'lax' works when the API and storefront share a registrable domain
+  // (api.minara.in + www.minara.in). Set to 'none' only if they are on
+  // completely different domains (forces Secure).
+  COOKIE_SAMESITE: z.enum(['lax', 'strict', 'none']).default('lax'),
 });
 
 const parsed = envSchema.safeParse(process.env);

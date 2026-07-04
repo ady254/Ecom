@@ -97,8 +97,9 @@ const orderSchema = new Schema<IOrder>(
       enum: ['pending', 'paid', 'failed', 'refunded'],
       default: 'pending',
     },
-    razorpayOrderId: String,
-    razorpayPaymentId: String,
+    razorpayOrderId: { type: String, index: true },
+    // unique+sparse: one captured payment can never be attached to two orders
+    razorpayPaymentId: { type: String, unique: true, sparse: true },
     awbNumber: String,
     status: {
       type: String,
@@ -120,5 +121,8 @@ const orderSchema = new Schema<IOrder>(
     toJSON: { transform: (_doc, ret) => { delete (ret as Record<string,unknown>).__v; return ret; } },
   }
 );
+
+// For the stale-unpaid-order sweeper
+orderSchema.index({ paymentMethod: 1, paymentStatus: 1, status: 1, createdAt: 1 });
 
 export const OrderModel = mongoose.model<IOrder>('Order', orderSchema);

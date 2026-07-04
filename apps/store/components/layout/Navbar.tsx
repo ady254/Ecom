@@ -120,7 +120,7 @@ export default function Navbar() {
             <div className="flex items-center gap-1">
               <Link
                 href="/search"
-                className="p-2 text-gray-500 hover:text-[var(--color-navy)] transition-colors rounded-full hover:bg-gray-100 hidden md:flex"
+                className="p-2 text-gray-500 hover:text-[var(--color-navy)] transition-colors rounded-full hover:bg-gray-100 flex"
                 aria-label="Search"
               >
                 <Search size={19} />

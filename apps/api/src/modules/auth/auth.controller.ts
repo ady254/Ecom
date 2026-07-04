@@ -3,14 +3,17 @@ import { AuthRequest } from '../../middlewares/auth.middleware.js';
 import { AuthService } from './auth.service.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
 import { AppError } from '../../utils/AppError.js';
+import { env } from '../../config/env.js';
 
 const authService = new AuthService();
 
 const REFRESH_COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax' as const,
+  // SameSite=None is rejected by browsers without Secure
+  secure: env.NODE_ENV === 'production' || env.COOKIE_SAMESITE === 'none',
+  sameSite: env.COOKIE_SAMESITE,
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  path: '/api/v1/auth', // only sent to auth endpoints
 };
 
 export const register = asyncHandler(async (req: AuthRequest, res: Response) => {
@@ -63,7 +66,7 @@ export const logout = asyncHandler(async (req: AuthRequest, res: Response) => {
   if (req.user) {
     await authService.logout(req.user.userId);
   }
-  res.clearCookie('refreshToken');
+  res.clearCookie('refreshToken', { path: '/api/v1/auth' });
   res.json({ success: true, message: 'Logged out successfully' });
 });
 

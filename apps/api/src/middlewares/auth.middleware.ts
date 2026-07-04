@@ -30,7 +30,8 @@ export const authenticate = async (
       return next(new AppError('User not found or inactive', 401));
     }
 
-    req.user = { userId: decoded.userId, role: decoded.role };
+    // Role comes from the DB, not the token — a demoted admin loses access immediately
+    req.user = { userId: decoded.userId, role: user.role };
     next();
   } catch {
     next(new AppError('Invalid or expired token', 401));
@@ -47,9 +48,9 @@ export const optionalAuth = async (
     const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
     if (token) {
       const decoded = verifyAccessToken(token);
-      const user = await UserModel.findById(decoded.userId).select('isActive').lean();
+      const user = await UserModel.findById(decoded.userId).select('role isActive').lean();
       if (user?.isActive) {
-        req.user = { userId: decoded.userId, role: decoded.role };
+        req.user = { userId: decoded.userId, role: user.role };
       }
       // Blocked user: token is silently ignored — they proceed as a guest
     }

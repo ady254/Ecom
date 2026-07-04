@@ -1,13 +1,11 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
-import { fileURLToPath } from 'url';
-import { dirname, resolve } from 'path';
+import { resolve } from 'path';
+import { UserModel } from '../modules/users/user.model.js';
 
-// Resolve .env relative to this file's location (apps/api/.env)
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-dotenv.config({ path: resolve(__dirname, '../../.env') });
+// Run from apps/api (pnpm seed:admin) — .env lives in the package root
+dotenv.config({ path: resolve(process.cwd(), '.env') });
 
 const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI) {
@@ -15,68 +13,44 @@ if (!MONGODB_URI) {
   process.exit(1);
 }
 
-// ─── Admin credentials ────────────────────────────────────────────────────────
-const ADMIN_EMAIL = 'itsadnanahmad5@gmail.com';
-const ADMIN_PASSWORD = 'Admin@1234';
-const ADMIN_NAME = 'Adnan Ahmed';
+// ─── Admin credentials (override via env in production!) ─────────────────────
+const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL || 'itsadnanahmad5@gmail.com';
+const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD || 'Admin@1234';
+const ADMIN_NAME = process.env.SEED_ADMIN_NAME || 'Adnan Ahmed';
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function seed() {
+  if (process.env.NODE_ENV === 'production' && !process.env.SEED_ADMIN_PASSWORD) {
+    console.error('❌  In production you must set SEED_ADMIN_PASSWORD — refusing to seed the default password');
+    process.exit(1);
+  }
+
   console.log('🔌  Connecting to MongoDB (minara)...');
   await mongoose.connect(MONGODB_URI!, { dbName: 'minara' });
   console.log(`✅  Connected to: ${mongoose.connection.host}`);
 
-  // Use the exact same schema as user.model.ts so pre-save hooks work
-  const userSchema = new mongoose.Schema(
-    {
-      name: { type: String, required: true, trim: true },
-      email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-      password: { type: String, minlength: 8, select: false },
-      phone: String,
-      role: { type: String, enum: ['customer', 'admin'], default: 'customer' },
-      googleId: String,
-      avatar: String,
-      addresses: { type: Array, default: [] },
-      wishlist: { type: Array, default: [] },
-      isActive: { type: Boolean, default: true },
-      refreshToken: { type: String, select: false },
-    },
-    { timestamps: true }
-  );
-
-  // Add the same pre-save bcrypt hook as the real UserModel
-  userSchema.pre('save', async function (next) {
-    if (!this.isModified('password') || !this.password) return next();
-    this.password = await bcrypt.hash(this.password as string, 12);
-    next();
-  });
-
-  // Reuse registered model if it already exists in this connection
-  const User = (mongoose.models.User as mongoose.Model<mongoose.Document> | undefined)
-    ?? mongoose.model('User', userSchema);
-
-  const existing = await User.findOne({ email: ADMIN_EMAIL }).select('+password');
+  const existing = await UserModel.findOne({ email: ADMIN_EMAIL }).select('+password');
 
   if (existing) {
     // Always reset password so we know exactly what it is
-    (existing as mongoose.Document & { password: string; role: string; name: string }).password = ADMIN_PASSWORD;
-    (existing as mongoose.Document & { role: string }).role = 'admin';
-    (existing as mongoose.Document & { name: string }).name = ADMIN_NAME;
+    existing.password = ADMIN_PASSWORD;
+    existing.role = 'admin';
+    existing.name = ADMIN_NAME;
     await existing.save();
-    console.log(`✅  Existing user updated → role: admin, password reset`);
+    console.log('✅  Existing user updated → role: admin, password reset');
   } else {
-    await User.create({
+    await UserModel.create({
       name: ADMIN_NAME,
       email: ADMIN_EMAIL,
       password: ADMIN_PASSWORD,
       role: 'admin',
+      emailVerified: true,
     });
-    console.log(`✅  Admin user created`);
+    console.log('✅  Admin user created');
   }
 
   // Verify — try a bcrypt compare to confirm password is correct
-  const check = await User.findOne({ email: ADMIN_EMAIL }).select('+password') as
-    (mongoose.Document & { password: string }) | null;
+  const check = await UserModel.findOne({ email: ADMIN_EMAIL }).select('+password');
 
   if (!check?.password) {
     console.error('❌  Password not found after save — something went wrong');
@@ -92,12 +66,9 @@ async function seed() {
   console.log('\n──────────────────────────────────────────');
   console.log('   MINARA Admin Dashboard — Login Details  ');
   console.log('──────────────────────────────────────────');
-  console.log(`   URL:      http://localhost:3001/login`);
   console.log(`   Email:    ${ADMIN_EMAIL}`);
-  console.log(`   Password: ${ADMIN_PASSWORD}`);
+  console.log(`   Password: ${process.env.SEED_ADMIN_PASSWORD ? '(from SEED_ADMIN_PASSWORD)' : ADMIN_PASSWORD}`);
   console.log('──────────────────────────────────────────\n');
-  console.log('⚡  Make sure the API server is running:');
-  console.log('   cd apps/api && pnpm dev\n');
 
   await mongoose.disconnect();
   process.exit(0);

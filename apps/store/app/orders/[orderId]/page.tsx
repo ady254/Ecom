@@ -58,29 +58,54 @@ export default function OrderDetailPage() {
   const searchParams = useSearchParams();
   const orderId = params.orderId as string;
   const isSuccess = searchParams.get('success') === '1';
+  const emailParam = searchParams.get('email') || '';
 
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [cancelling, setCancelling] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  // Guest orders are only shown to someone who knows the email used at checkout
+  const [needEmail, setNeedEmail] = useState(false);
+  const [emailInput, setEmailInput] = useState('');
+  const [verifiedEmail, setVerifiedEmail] = useState(emailParam);
 
-  useEffect(() => {
-    api.get(`/orders/${orderId}`)
+  const fetchOrder = (email: string) => {
+    setLoading(true);
+    setError('');
+    api.get(`/orders/${orderId}`, { params: email ? { email } : {} })
       .then((res) => {
-        if (res.data?.success) setOrder(res.data.data.order);
-        else setError(res.data?.message || 'Could not load order');
+        if (res.data?.success) {
+          setOrder(res.data.data.order);
+          setNeedEmail(false);
+          setVerifiedEmail(email);
+        } else {
+          setError(res.data?.message || 'Could not load order');
+        }
       })
       .catch((err) => {
-        setError(err?.response?.data?.message || 'Could not load order');
+        const msg = err?.response?.data?.message;
+        if (msg === 'EMAIL_REQUIRED') {
+          setNeedEmail(true);
+        } else if (email && err?.response?.status === 403) {
+          setNeedEmail(true);
+          toast.error('That email does not match this order');
+        } else {
+          setError(msg || 'Could not load order');
+        }
       })
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchOrder(emailParam);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderId]);
 
   const handleCancel = async () => {
     setCancelling(true);
     try {
-      await api.post(`/orders/${orderId}/cancel`);
+      await api.post(`/orders/${orderId}/cancel`, verifiedEmail ? { email: verifiedEmail } : {});
       setOrder((prev) => prev ? { ...prev, status: 'cancelled' } : prev);
       toast.success('Order cancelled successfully');
     } catch (err: unknown) {
@@ -96,6 +121,38 @@ export default function OrderDetailPage() {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <Loader2 size={32} className="animate-spin text-[var(--color-navy)]" />
+      </div>
+    );
+  }
+
+  if (needEmail && !order) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-5 text-center p-8">
+        <Package size={48} className="text-[var(--color-gold-dark)]" />
+        <h2 className="font-heading text-2xl text-[var(--color-navy)]">Verify Your Order</h2>
+        <p className="text-gray-500 text-sm max-w-sm">
+          For your privacy, enter the email address you used when placing order{' '}
+          <span className="font-semibold">{orderId}</span>.
+        </p>
+        <form
+          onSubmit={(e) => { e.preventDefault(); if (emailInput.trim()) fetchOrder(emailInput.trim()); }}
+          className="flex flex-col sm:flex-row gap-3 w-full max-w-md"
+        >
+          <input
+            type="email"
+            required
+            value={emailInput}
+            onChange={(e) => setEmailInput(e.target.value)}
+            placeholder="you@example.com"
+            className="flex-1 px-4 py-3 rounded-full border border-gray-200 text-sm focus:outline-none focus:border-[var(--color-gold)]"
+          />
+          <button
+            type="submit"
+            className="px-6 py-3 bg-[var(--color-navy)] text-white rounded-full text-sm font-semibold hover:bg-[var(--color-navy-light)] transition-colors"
+          >
+            View Order
+          </button>
+        </form>
       </div>
     );
   }

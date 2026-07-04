@@ -105,8 +105,10 @@ export const categoriesApi = {
 
 export const ordersApi = {
   create: (data: unknown) => api.post('/orders', data),
+  confirmPayment: (orderId: string, data: unknown) => api.post(`/orders/${orderId}/pay/confirm`, data),
   getMy: (page = 1) => api.get('/orders/my', { params: { page } }),
-  getById: (orderId: string) => api.get(`/orders/${orderId}`),
+  getById: (orderId: string, email?: string) =>
+    api.get(`/orders/${orderId}`, { params: email ? { email } : {} }),
 };
 
 export const usersApi = {

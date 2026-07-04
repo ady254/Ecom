@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Star, Heart, Minus, Plus, Flame, Sparkles, Truck, RotateCcw, Gift, Lock, CheckCircle2 } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Star, Heart, Minus, Plus, Flame, Sparkles, Truck, RotateCcw, Gift, Lock, CheckCircle2, ShoppingBag } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { formatCurrency } from '@minara/utils';
 import { useCartStore } from '@/store/cartStore';
@@ -50,13 +50,35 @@ const TRUST_ICONS = [
 export default function PDPClient({ product, discount, soldCount, deliverySteps }: Props) {
   const [qty, setQty] = useState(1);
   const [showCustomize, setShowCustomize] = useState(false);
+  const [showSticky, setShowSticky] = useState(false);
+  const ctaRef = useRef<HTMLDivElement>(null);
 
   const { addItem } = useCartStore();
-  const { openCart } = useUIStore();
+  const { openCart, setStickyBarVisible } = useUIStore();
   const { toggle, isInWishlist } = useWishlistStore();
   const wishlisted = isInWishlist(product._id);
 
   const mainImage = product.images?.[0]?.url ?? '';
+
+  // Show the sticky mobile buy bar once the main CTA scrolls out of view above
+  useEffect(() => {
+    const el = ctaRef.current;
+    if (!el || product.stock <= 0) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setShowSticky(!entry.isIntersecting && entry.boundingClientRect.top < 0);
+      },
+      { threshold: 0 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [product.stock]);
+
+  // Let floating widgets (WhatsApp) lift themselves above the bar
+  useEffect(() => {
+    setStickyBarVisible(showSticky);
+    return () => setStickyBarVisible(false);
+  }, [showSticky, setStickyBarVisible]);
 
   const handleAddToCart = () => {
     addItem({
@@ -133,7 +155,7 @@ export default function PDPClient({ product, discount, soldCount, deliverySteps 
         </h1>
 
         {/* Rating */}
-        {product.reviewCount > 0 && (
+        {product.reviewCount > 0 ? (
           <div className="flex items-center gap-3 mb-4">
             <div className="flex items-center gap-0.5">
               {[1, 2, 3, 4, 5].map((s) => (
@@ -152,6 +174,10 @@ export default function PDPClient({ product, discount, soldCount, deliverySteps 
               {product.averageRating.toFixed(1)} · {product.reviewCount} reviews
             </a>
           </div>
+        ) : (
+          <a href="#reviews" className="text-sm text-gray-400 hover:text-[var(--color-gold-dark)] mb-4 inline-block">
+            ✨ New arrival — be the first to review
+          </a>
         )}
 
         {/* Price */}
@@ -224,7 +250,7 @@ export default function PDPClient({ product, discount, soldCount, deliverySteps 
             </div>
 
             {/* CTA buttons */}
-            <div className="space-y-3 mb-6">
+            <div ref={ctaRef} className="space-y-3 mb-6">
               <button
                 onClick={() => setShowCustomize(true)}
                 className="w-full py-4 rounded-full font-bold text-sm tracking-widest uppercase bg-[var(--color-gold)] text-[var(--color-navy)] hover:bg-[var(--color-gold-dark)] transition-colors flex items-center justify-center gap-2"
@@ -293,6 +319,39 @@ export default function PDPClient({ product, discount, soldCount, deliverySteps 
           ))}
         </div>
       </div>
+
+      {/* Sticky mobile buy bar — appears once the main CTA scrolls away */}
+      {product.stock > 0 && (
+        <div
+          className={`fixed bottom-0 inset-x-0 z-40 lg:hidden bg-white border-t border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] transition-transform duration-300 ${
+            showSticky ? 'translate-y-0' : 'translate-y-full'
+          }`}
+          style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+        >
+          <div className="flex items-center gap-3 px-4 py-3">
+            <div className="min-w-0">
+              <p className="text-xs text-gray-400 truncate max-w-[120px]">{product.name}</p>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-lg font-bold text-[var(--color-navy)]">
+                  {formatCurrency(product.price)}
+                </span>
+                {product.comparePrice && (
+                  <span className="text-xs text-gray-400 line-through">
+                    {formatCurrency(product.comparePrice)}
+                  </span>
+                )}
+              </div>
+            </div>
+            <button
+              onClick={handleAddToCart}
+              className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-full font-bold text-xs tracking-widest uppercase bg-[var(--color-navy)] text-white active:scale-[0.98] transition-transform"
+            >
+              <ShoppingBag size={15} />
+              Add to Cart
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Customize modal */}
       {showCustomize && (

@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Minus, Plus, Trash2, ShoppingBag, ArrowRight, Gift, Sparkles } from 'lucide-react';
+import { X, Minus, Plus, Trash2, ShoppingBag, ArrowRight, Gift, Sparkles, Lock, Banknote } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCartStore } from '@/store/cartStore';
@@ -191,9 +191,23 @@ export default function CartDrawer() {
                     onClick={closeCart}
                     className="flex items-center justify-center gap-2 w-full py-4 bg-[var(--color-navy)] text-white font-semibold tracking-wider rounded-full hover:bg-[var(--color-navy-light)] transition-all duration-300 hover:shadow-lg"
                   >
-                    Proceed to Checkout
+                    Checkout · {formatCurrency(total)}
                     <ArrowRight size={16} />
                   </Link>
+
+                  {/* Trust microcopy — reduces last-second hesitation */}
+                  <div className="flex items-center justify-center gap-4 text-[10px] text-gray-400">
+                    <span className="flex items-center gap-1">
+                      <Lock size={10} /> Secure checkout
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Banknote size={10} /> COD available
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Gift size={10} /> Gift-wrapped free
+                    </span>
+                  </div>
+
                   <button
                     onClick={closeCart}
                     className="w-full text-center text-sm text-gray-400 hover:text-[var(--color-navy)] transition-colors"

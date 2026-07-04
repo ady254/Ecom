@@ -1,14 +1,33 @@
 import { Router } from 'express';
 import mongoose from 'mongoose';
+import rateLimit from 'express-rate-limit';
+import { z } from 'zod';
 import { ReviewModel } from './review.model.js';
 import { ProductRepository } from '../products/product.repository.js';
 import { authenticate, optionalAuth, AuthRequest } from '../../middlewares/auth.middleware.js';
 import { requireAdmin } from '../../middlewares/admin.middleware.js';
+import { validate } from '../../middlewares/validate.middleware.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
 import { AppError } from '../../utils/AppError.js';
 
 const router = Router();
 const productRepo = new ProductRepository();
+
+const reviewLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Too many reviews submitted. Please try again later.' },
+});
+
+const submitReviewSchema = z.object({
+  rating: z.number().int().min(1).max(5),
+  title: z.string().trim().max(120).optional(),
+  comment: z.string().trim().min(1).max(2000),
+  guestName: z.string().trim().min(1).max(100).optional(),
+  guestEmail: z.string().trim().toLowerCase().email().optional(),
+});
 
 // ─── Public Routes ────────────────────────────────────────────────────────────
 
@@ -42,13 +61,15 @@ router.get(
 // POST /api/v1/reviews/product/:productId — Submit a review for a product
 router.post(
   '/product/:productId',
+  reviewLimiter,
   optionalAuth,
+  validate(submitReviewSchema),
   asyncHandler(async (req: AuthRequest, res) => {
-    const { rating, title, comment, guestName, guestEmail } = req.body;
+    const { rating, title, comment, guestName, guestEmail } = req.body as z.infer<typeof submitReviewSchema>;
 
-    if (!rating) throw new AppError('Rating is required', 400);
-    if (!comment) throw new AppError('Comment is required', 400);
-
+    if (!mongoose.isValidObjectId(req.params.productId)) {
+      throw new AppError('Invalid product', 400);
+    }
     if (!req.user && !guestName) {
       throw new AppError('Guest name is required', 400);
     }

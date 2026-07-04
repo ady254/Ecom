@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import Link from 'next/link';
+import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
@@ -188,6 +189,29 @@ export default function HeroBanner() {
                   {slide.subtitle}
                 </p>
               )}
+
+              {/* CTAs — the primary action for every slide */}
+              <div className="flex flex-wrap items-center gap-3 sm:gap-4 mt-2 sm:mt-0">
+                <Link
+                  href={slide.buttonLink || '/products'}
+                  className="inline-flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-[var(--color-gold)] text-[var(--color-navy)] text-xs sm:text-sm font-bold tracking-widest uppercase rounded-full hover:bg-[var(--color-gold-dark)] hover:shadow-[0_8px_30px_rgba(207,169,106,0.45)] transition-all duration-300"
+                >
+                  {slide.buttonText || 'Shop All Gifts'}
+                  <ArrowRight size={15} />
+                </Link>
+                <Link
+                  href="/products"
+                  className="hidden sm:inline-flex items-center gap-2 px-8 py-4 border border-white/40 text-white text-sm font-semibold tracking-widest uppercase rounded-full hover:bg-white/10 hover:border-white/70 transition-all duration-300 backdrop-blur-sm"
+                >
+                  Explore Collections
+                </Link>
+              </div>
+
+              {/* Social proof line under CTAs */}
+              <p className="flex items-center gap-2 text-white/60 text-[11px] sm:text-xs mt-4 sm:mt-6">
+                <span className="text-[var(--color-gold)]">★★★★★</span>
+                Trusted by 4,200+ customers across India
+              </p>
             </motion.div>
           </AnimatePresence>
         </div>
