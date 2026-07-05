@@ -30,6 +30,7 @@ import {
   sendOrderConfirmationEmail,
   markOrderPaid,
   cancelOrder,
+  buildTrackUrl,
 } from './order.lifecycle.js';
 import { sendMail, orderShippedTemplate, orderDeliveredTemplate } from '../../config/email.js';
 
@@ -44,22 +45,19 @@ const orderLimiter = rateLimit({
 });
 
 /**
- * A guest order can be read/cancelled only by someone who knows BOTH the
- * (unguessable) orderId and the email it was placed with.
+ * An order can be read/cancelled by: an admin, the logged-in owner, or anyone
+ * who knows BOTH the (unguessable) orderId and the email it was placed with —
+ * the latter is what makes one-click links in order emails work without login.
  */
-const assertOrderAccess = (order: IOrder, req: AuthRequest, email?: string): void => {
+const assertOrderAccess = async (order: IOrder, req: AuthRequest, email?: string): Promise<void> => {
   if (req.user?.role === 'admin') return;
+  if (order.user && order.user.toString() === req.user?.userId) return;
 
-  if (order.user) {
-    if (order.user.toString() !== req.user?.userId) throw new AppError('Unauthorized', 403);
-    return;
-  }
-
-  // Guest order
-  const guestEmail = order.guestInfo?.email?.toLowerCase();
-  if (!guestEmail) throw new AppError('Unauthorized', 403);
+  // Email-verified access (guest orders, or email links opened while logged out)
+  const orderEmail = (await resolveOrderEmail(order))?.toLowerCase();
+  if (!orderEmail) throw new AppError('Unauthorized', 403);
   if (!email) throw new AppError('EMAIL_REQUIRED', 401);
-  if (email.trim().toLowerCase() !== guestEmail) throw new AppError('Unauthorized', 403);
+  if (email.trim().toLowerCase() !== orderEmail) throw new AppError('Unauthorized', 403);
 };
 
 // ─── Customer Routes ──────────────────────────────────────────────────────────
@@ -249,7 +247,7 @@ router.get(
     const order = await OrderModel.findOne({ orderId: req.params.orderId });
     if (!order) throw new AppError('Order not found', 404);
 
-    assertOrderAccess(order, req, req.query.email as string | undefined);
+    await assertOrderAccess(order, req, req.query.email as string | undefined);
 
     res.json({ success: true, message: 'Order fetched', data: { order } });
   })
@@ -263,7 +261,7 @@ router.post(
     const order = await OrderModel.findOne({ orderId: req.params.orderId });
     if (!order) throw new AppError('Order not found', 404);
 
-    assertOrderAccess(order, req, req.body?.email as string | undefined);
+    await assertOrderAccess(order, req, req.body?.email as string | undefined);
 
     const cancelled = await cancelOrder(order, { reason: 'Order cancelled by customer' });
     if (!cancelled) {
@@ -336,7 +334,11 @@ router.patch(
         sendMail({
           to: email,
           subject: `Your MINARA order has arrived! — ${order.orderId}`,
-          html: orderDeliveredTemplate({ name: order.shippingAddress.fullName, orderId: order.orderId }),
+          html: orderDeliveredTemplate({
+            name: order.shippingAddress.fullName,
+            orderId: order.orderId,
+            trackUrl: buildTrackUrl(order.orderId, email),
+          }),
         }).catch(console.error);
       }
     }
@@ -378,6 +380,7 @@ router.patch(
           name: order.shippingAddress.fullName,
           orderId: order.orderId,
           awbNumber,
+          trackUrl: buildTrackUrl(order.orderId, email),
         }),
       }).catch(console.error);
     }

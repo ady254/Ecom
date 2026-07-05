@@ -7,6 +7,7 @@ import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { authApi } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
+import GoogleSignInButton from '@/components/auth/GoogleSignInButton';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -128,6 +129,8 @@ export default function RegisterPage() {
             )}
           </button>
         </form>
+
+        <GoogleSignInButton />
 
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-500">

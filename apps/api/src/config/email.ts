@@ -46,6 +46,7 @@ export const orderConfirmationTemplate = (data: {
   orderId: string;
   total: number;
   items: Array<{ name: string; quantity: number; price: number }>;
+  trackUrl?: string;
 }): string => `
 <!DOCTYPE html>
 <html>
@@ -66,6 +67,7 @@ export const orderConfirmationTemplate = (data: {
     th { text-align: left; border-bottom: 2px solid #0B2342; padding: 10px; color: #0B2342; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
     td { padding: 12px 10px; border-bottom: 1px solid #eee; color: #444; }
     .total-row td { font-weight: 700; color: #0B2342; border-top: 2px solid #0B2342; border-bottom: none; font-size: 16px; }
+    .btn { display: inline-block; margin: 8px 0 16px; padding: 14px 32px; background: #CFA96A; color: #0B2342 !important; text-decoration: none; border-radius: 50px; font-size: 15px; font-weight: 700; letter-spacing: 1px; }
     .footer { background: #0B2342; padding: 24px 32px; text-align: center; }
     .footer p { color: rgba(255,255,255,0.6); font-size: 13px; margin: 0; }
     .gold { color: #CFA96A; }
@@ -109,6 +111,7 @@ export const orderConfirmationTemplate = (data: {
           </tr>
         </tbody>
       </table>
+      ${data.trackUrl ? `<div style="text-align:center;"><a href="${data.trackUrl}" class="btn">Track My Order</a></div>` : ''}
       <p>We'll notify you when your order ships. Expected delivery: <strong>2–5 business days</strong>.</p>
     </div>
     <div class="footer">
@@ -194,6 +197,7 @@ export const orderShippedTemplate = (data: {
   name: string;
   orderId: string;
   awbNumber: string;
+  trackUrl?: string;
 }): string => `
 <!DOCTYPE html>
 <html>
@@ -209,6 +213,7 @@ export const orderShippedTemplate = (data: {
     .awb-box { background: #f0ede8; border-left: 4px solid #CFA96A; border-radius: 8px; padding: 20px 24px; margin: 24px 0; }
     .awb-box p { margin: 0; color: #444; }
     .awb-box strong { color: #0B2342; font-size: 18px; }
+    .btn { display: inline-block; margin: 8px 0 16px; padding: 14px 32px; background: #CFA96A; color: #0B2342 !important; text-decoration: none; border-radius: 50px; font-size: 15px; font-weight: 700; letter-spacing: 1px; }
     .footer { background: #0B2342; padding: 24px 32px; text-align: center; }
     .footer p { color: rgba(255,255,255,0.6); font-size: 13px; margin: 0; }
   </style>
@@ -224,6 +229,7 @@ export const orderShippedTemplate = (data: {
         <strong>${data.awbNumber}</strong>
       </div>
       <p>You can track your shipment on the XpressBees website using the AWB number above.</p>
+      ${data.trackUrl ? `<div style="text-align:center;"><a href="${data.trackUrl}" class="btn">Track My Order</a></div>` : ''}
     </div>
     <div class="footer"><p>Questions? Email us at support@minara.in</p></div>
   </div>
@@ -231,7 +237,7 @@ export const orderShippedTemplate = (data: {
 </html>
 `;
 
-export const orderDeliveredTemplate = (data: { name: string; orderId: string }): string => `
+export const orderDeliveredTemplate = (data: { name: string; orderId: string; trackUrl?: string }): string => `
 <!DOCTYPE html>
 <html>
 <head>
@@ -246,6 +252,7 @@ export const orderDeliveredTemplate = (data: { name: string; orderId: string }):
     .body p { color: #555; line-height: 1.7; }
     .order-id { background: #f0ede8; border-radius: 8px; padding: 16px 24px; margin: 24px 0; }
     .order-id span { color: #0B2342; font-weight: 600; font-size: 18px; }
+    .btn { display: inline-block; margin: 8px 0 16px; padding: 14px 32px; background: #CFA96A; color: #0B2342 !important; text-decoration: none; border-radius: 50px; font-size: 15px; font-weight: 700; letter-spacing: 1px; }
     .footer { background: #0B2342; padding: 24px 32px; text-align: center; }
     .footer p { color: rgba(255,255,255,0.6); font-size: 13px; margin: 0; }
     .gold { color: #CFA96A; }
@@ -259,6 +266,7 @@ export const orderDeliveredTemplate = (data: { name: string; orderId: string }):
       <p>Hi ${data.name}, your order has arrived.</p>
       <div class="order-id">Order ID: <span class="gold">${data.orderId}</span></div>
       <p>We'd love to hear what you think — your feedback helps us keep every gift unforgettable.</p>
+      ${data.trackUrl ? `<div style="text-align:center;"><a href="${data.trackUrl}" class="btn">View My Order</a></div>` : ''}
     </div>
     <div class="footer"><p>Questions? Email us at <span class="gold">support@minara.in</span></p></div>
   </div>

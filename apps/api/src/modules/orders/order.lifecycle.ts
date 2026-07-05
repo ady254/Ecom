@@ -2,11 +2,16 @@ import { OrderModel, IOrder } from './order.model.js';
 import { UserModel } from '../users/user.model.js';
 import { releaseStock, releaseCoupon, toPaise } from './order.pricing.js';
 import { getRazorpay } from '../../config/razorpay.js';
+import { env } from '../../config/env.js';
 import {
   sendMail,
   orderConfirmationTemplate,
   orderCancelledTemplate,
 } from '../../config/email.js';
+
+/** One-click order link for emails — works without login (email-verified access). */
+export const buildTrackUrl = (orderId: string, email: string): string =>
+  `${env.FRONTEND_URL}/orders/${orderId}?email=${encodeURIComponent(email)}`;
 
 export const resolveOrderEmail = async (
   order: Pick<IOrder, 'guestInfo' | 'user'>
@@ -30,6 +35,7 @@ export const sendOrderConfirmationEmail = async (order: IOrder): Promise<void> =
       orderId: order.orderId,
       total: order.total,
       items: order.items.map((i) => ({ name: i.name, quantity: i.quantity, price: i.price })),
+      trackUrl: buildTrackUrl(order.orderId, email),
     }),
   }).catch(console.error);
 };

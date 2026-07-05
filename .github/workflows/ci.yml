@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  api:
+    name: API — typecheck, test, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4 # version read from packageManager field
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      # apps/api and packages/* resolve from the ROOT workspace
+      - name: Install (root workspace)
+        run: pnpm install --frozen-lockfile
+      - name: Typecheck
+        run: pnpm --dir apps/api typecheck
+      - name: Test (money path)
+        run: pnpm --dir apps/api test
+      - name: Build
+        run: pnpm --dir apps/api build
+
+  store:
+    name: Store — typecheck, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      # apps/store is its own pnpm workspace root (has its own lockfile)
+      - name: Install
+        run: pnpm install --frozen-lockfile
+        working-directory: apps/store
+      - name: Typecheck
+        run: pnpm typecheck
+        working-directory: apps/store
+      - name: Build
+        run: pnpm build
+        working-directory: apps/store
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:5000/api/v1
+
+  admin:
+    name: Admin — typecheck, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      # apps/admin is its own pnpm workspace root (has its own lockfile)
+      - name: Install
+        run: pnpm install --frozen-lockfile
+        working-directory: apps/admin
+      - name: Typecheck
+        run: pnpm typecheck
+        working-directory: apps/admin
+      - name: Build
+        run: pnpm build
+        working-directory: apps/admin
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:5000/api/v1
