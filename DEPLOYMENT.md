@@ -1,323 +1,286 @@
-# MINARA — Deployment Guide (Hostinger Node.js hosting + Vercel)
+# MINARA — Deploying all 3 apps on Hostinger (Beginner's Guide)
 
-This guide assumes you have **never deployed a server before** and explains
-each step, not just the command. You have a **Hostinger Node.js hosting
-plan** (shared hosting), not a VPS — that changes the approach:
+You're hosting everything on your **Hostinger Business plan** (Node.js
+support, 3 GB RAM, 2 cores). No custom domain yet — you'll use **3 free
+temporary URLs**, one per app, and swap in a real domain later.
 
-- A VPS gives you root access to a whole computer — you install and control
-  nginx/PM2/SSL yourself.
-- Node.js hosting (what you have) is **managed** — Hostinger runs the app
-  for you through a form in hPanel. No terminal required for the app
-  itself, and no ability to run 3 apps behind your own nginx.
+## The big picture
 
-So here's the plan, and it's genuinely a good one, not a compromise:
+Your project is 3 separate programs. On Hostinger, each one becomes its own
+**Website** (with its own temporary URL) running as a **Node.js app**:
 
-| App | Where it runs | Cost | Why |
+| App | Folder | Becomes Hostinger website | Port role |
 |---|---|---|---|
-| **API** (`apps/api`) | Your Hostinger Node.js plan | Already paid for | It's the one thing that must stay running 24/7 for payments/webhooks — perfect fit for hosting you already own. |
-| **Store** (`apps/store`) | **Vercel** | Free | Vercel is built by the Next.js team specifically for apps like this. Free tier is generous, deploy is "connect GitHub → click deploy." |
-| **Admin** (`apps/admin`) | **Vercel** | Free | Same reasoning. |
+| **API** | `apps/api` | e.g. `api-xxxx.hostingersite.com` | Express backend — the brain |
+| **Store** | `apps/store` | e.g. `store-xxxx.hostingersite.com` | Customer website |
+| **Admin** | `apps/admin` | e.g. `admin-xxxx.hostingersite.com` | Your dashboard |
 
-Total setup time: roughly **1–2 hours**, mostly waiting on DNS.
+**Do them in this order: API first.** Both the Store and Admin are useless
+until the API is live, and the API is the simplest to deploy — so it's the
+perfect one to learn the workflow on.
 
----
-
-## Before you start — things you need
-
-- [ ] Your Hostinger **Node.js hosting** plan active — a domain is **not**
-      required to follow this guide. See "Testing without a domain first"
-      right below.
-- [ ] A **free Vercel account** — sign up at vercel.com using your GitHub
-      account (this also connects your repo automatically).
-- [ ] A **free MongoDB Atlas account** — your database. Hostinger doesn't
-      include one. Sign up at mongodb.com/cloud/atlas, create a free **M0**
-      cluster.
-- [ ] A **Razorpay account in live mode** (not test mode), KYC approved.
-- [ ] Your code already on GitHub — done, `github.com/ady254/Ecom`.
+> **Honest heads-up:** deploying 3 Node apps by hand on shared hosting is
+> more involved than a one-click host. You'll use SSH (a terminal into your
+> server) and repeat a recipe 3 times. Take it one app at a time. Once the
+> API works, the two frontends are the same steps twice.
 
 ---
 
-## Testing without a domain first (recommended — do this before buying anything)
+## Before you start
 
-You don't need to own a domain to test the entire site end-to-end,
-including real payments and webhooks. Both Vercel and Hostinger give you a
-free temporary web address before you attach a custom domain:
-
-- **Vercel** automatically gives every project a URL like
-  `minara-store.vercel.app` — no setup needed, it's there the moment you
-  deploy.
-- **Hostinger** gives your hosting account a temporary preview URL too —
-  look on your hosting's main hPanel screen (or inside the Node.js
-  application screen once created) for something like
-  `https://yourusername.hostingersite.com` or a similar auto-generated
-  address. If you don't see one listed, open a chat with Hostinger support
-  and ask "what's the temporary URL for my Node.js hosting account before I
-  connect a domain?" — every shared hosting account has one.
-
-**How this changes the steps below:** everywhere this guide says
-`https://minara.in`, `https://admin.minara.in`, or `https://api.minara.in`,
-substitute your temporary URLs instead (e.g. `https://minara-store.vercel.app`,
-`https://minara-admin.vercel.app`, `https://yourusername.hostingersite.com`).
-Every env var, the CORS settings, the Razorpay webhook — all of it works
-identically with temporary URLs, because none of the code cares *which*
-domain it's given, only that `FRONTEND_URL`/`ADMIN_URL`/`NEXT_PUBLIC_API_URL`
-are set correctly and consistently.
-
-**Once you buy a real domain later:** you just replace these URLs in the
-same three places (Vercel project → Settings → Environment Variables;
-Hostinger's Node.js app → Environment Variables; and Vercel → Settings →
-Domains to attach the real domain) — then redeploy Store/Admin
-(automatic on Vercel) and restart the API. No code changes, nothing to
-rebuild from scratch, no data lost — it's a pure address swap.
+- [ ] The standalone code changes are pushed to GitHub. (Already prepared in
+      `apps/store/next.config.ts` and `apps/admin/next.config.ts` — just make
+      sure your latest commit is pushed, since the server pulls from GitHub.)
+- [ ] **MongoDB Atlas** free cluster ready, and its connection string handy.
+- [ ] **Razorpay live keys** ready.
+- [ ] **SSH access enabled** — hPanel → your hosting → **Advanced → SSH
+      Access**. Note the SSH IP, port, username, and password shown there.
 
 ---
 
-## Step 1 — Deploy the Store to Vercel (free)
+## PHASE 1 — Deploy the API
 
-1. Go to vercel.com → **Add New → Project** → pick your `Ecom` GitHub repo.
-2. Vercel will ask for a **Root Directory** — click "Edit" and set it to
-   `apps/store`. This tells Vercel "only build this folder," which matters
-   because your repo has 3 separate apps in it.
-3. Under **Environment Variables**, add:
-   ```
-   NEXT_PUBLIC_API_URL = https://api.minara.in/api/v1
-   NEXT_PUBLIC_GOOGLE_CLIENT_ID = (only if you use Google sign-in, else skip)
-   ```
-   (You'll set up `api.minara.in` in Step 3 — that's fine, add the value
-   now, it doesn't need to exist yet.)
-4. Click **Deploy**. Takes 1–3 minutes.
+### 1.1 Create the API website
 
-**✅ Checkpoint:** Vercel gives you a URL like `minara.vercel.app` — open it,
-your store should load (product data will fail until Step 4, that's
-expected for now).
+hPanel → **Websites → Add Website**. When it asks for a domain, choose the
+**temporary domain** option (don't connect a real domain). You'll get a URL
+like `api-xxxxx.hostingersite.com`. Write it down — this is your **API URL**.
 
-### Connect your real domain
+### 1.2 SSH into your server
 
-In the Vercel project → **Settings → Domains**, add `minara.in` (and
-`www.minara.in`). Vercel shows you DNS records to add. Go to Hostinger
-hPanel → **Domains → DNS**, and add exactly what Vercel showed you
-(usually an `A` record for `@` and a `CNAME` for `www`). Vercel issues free
-HTTPS automatically once DNS points to it — no certbot, nothing to install.
+On your Windows PC, open **PowerShell**:
+```
+ssh your-ssh-username@your-ssh-ip -p your-ssh-port
+```
+(all three values are on the SSH Access page). Enter the password when
+prompted (characters won't show as you type — normal).
 
-**No domain yet?** Skip this "Connect your real domain" part entirely for
-now — your `minara-store.vercel.app` URL already works over HTTPS and is
-all you need for testing. Come back to this step once you've bought a
-domain.
+**✅ Checkpoint:** your prompt changes to something like `u268180176@server1881`.
 
----
+### 1.3 Get the code and build it
 
-## Step 2 — Deploy the Admin to Vercel (free)
-
-Repeat Step 1 exactly, but:
-- Root Directory: `apps/admin`
-- Env var: `NEXT_PUBLIC_API_URL = https://api.minara.in/api/v1`
-- Domain: use a subdomain like `admin.minara.in` instead of the main domain
-  (Vercel → Settings → Domains → add `admin.minara.in`, then add the CNAME
-  record it shows you in Hostinger's DNS panel).
-
-**✅ Checkpoint:** `admin.minara.in` loads the admin login page (login will
-fail until later steps — expected).
-
----
-
-## Step 3 — Deploy the API to your Hostinger Node.js plan
-
-1. In hPanel, go to your hosting plan → **Websites** (or **Advanced**) →
-   look for **Node.js**. This opens Hostinger's Node.js application
-   manager.
-2. **Create Application**:
-   - **Node.js version:** 20.x
-   - **Application root:** a folder for your code, e.g. `minara-api`
-   - **Application URL:** the subdomain `api.minara.in` (add this
-     subdomain first under Domains if it doesn't exist yet)
-   - **Application startup file:** `apps/api/dist/server.js` (you'll
-     upload the built code — see next step)
-3. Getting your code onto the hosting: if your plan includes **SSH/Git
-   access** (check hPanel → Advanced → SSH Access), the easiest way is:
-   ```bash
-   ssh your-username@your-server -p your-port
-   cd ~/minara-api   # or wherever your Application root points
-   git clone https://github.com/ady254/Ecom.git .
-   cd apps/api
-   npm install --production=false
-   npm run build
-   ```
-   If your plan has **no SSH access**, use hPanel's **File Manager** to
-   upload the contents of `apps/api` (you'll need to build it on your own
-   PC first — run `pnpm --filter @minara/api build` locally, then upload
-   the `dist` folder plus `package.json`, then use hPanel's Node.js screen
-   to run `npm install --production` on the server).
-4. In the same Node.js application screen, there's an **Environment
-   Variables** section — add each of these (values explained below):
-
-   | Variable | Where to get it |
-   |---|---|
-   | `MONGODB_URI` | MongoDB Atlas → Database → **Connect** → **Drivers** → copy the string, replace `<password>` with your Atlas user's password |
-   | `JWT_ACCESS_SECRET` | Run locally: `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"` |
-   | `JWT_REFRESH_SECRET` | Run that command again — must be a **different** value |
-   | `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` | Razorpay Dashboard → Settings → API Keys — make sure the **Live mode** toggle (top-left) is on |
-   | `RAZORPAY_WEBHOOK_SECRET` | Set up in Step 5 below — come back and fill this in after |
-   | `FRONTEND_URL` | Your Vercel store URL, e.g. `https://minara.in` |
-   | `ADMIN_URL` | Your Vercel admin URL, e.g. `https://admin.minara.in` |
-   | `NODE_ENV` | `production` |
-   | `COOKIE_SAMESITE` | `none` — **important**: because the store/admin (Vercel) and API (Hostinger) are on different hosting providers, cookies need `SameSite=None`. The code already sends `Secure` automatically whenever this is set to `none`, so this is safe over HTTPS. |
-   | Email settings (`EMAIL_HOST`, `EMAIL_USER`, etc.) | Your email provider's SMTP details |
-
-   Also, in Atlas → **Network Access**, add `0.0.0.0/0` (allow from
-   anywhere) — shared hosting IPs can change, unlike a VPS's fixed IP, so
-   you can't lock this down to one address here.
-
-5. Click **Restart Application** in the Node.js manager screen after
-   saving env vars — this is the shared-hosting equivalent of the PM2
-   restart you'd do on a VPS.
-
-**✅ Checkpoint:** visit `https://api.minara.in/health/check` — it should
-report MongoDB connected.
-
----
-
-## Step 4 — Confirm the store and admin can now reach the API
-
-Revisit `https://minara.in` — products should now load. Revisit
-`https://admin.minara.in` — try logging in (you'll create the actual admin
-account in Step 6).
-
-If products *don't* load, open your browser's DevTools (F12) → Network tab
-→ reload → look for a red/failed request. A CORS error in the console
-almost always means `FRONTEND_URL`/`ADMIN_URL` in the API's env vars don't
-exactly match your real Vercel domains (including `https://`, no trailing
-slash).
-
----
-
-## Step 5 — Connect Razorpay's webhook (don't skip this)
-
-This guarantees you never lose track of a payment, even if the customer's
-browser closes right after paying.
-
-1. Razorpay Dashboard → **Settings → Webhooks → Add New Webhook**
-2. **URL:** `https://api.minara.in/api/v1/payments/razorpay/webhook`
-3. **Secret:** make up a random string, save it somewhere safe
-4. **Active events:** tick `payment.captured`, `payment.failed`,
-   `refund.processed`
-
-Now go back to the API's environment variables in hPanel, paste that same
-secret into `RAZORPAY_WEBHOOK_SECRET`, save, and click **Restart
-Application** again.
-
----
-
-## Step 6 — Create your admin login
-
-If you have SSH access (Step 3), run:
+Find your API website's folder first — usually under `domains/` or
+`public_html`. List what's there:
 ```bash
-cd ~/minara-api/apps/api
-SEED_ADMIN_EMAIL=you@example.com SEED_ADMIN_PASSWORD='Choose-A-Strong-Password-1' npm run seed:admin
+ls ~/domains
+```
+You'll see a folder named after your API's temporary URL. Go into it and
+clone your project **inside** it:
+```bash
+cd ~/domains/api-xxxxx.hostingersite.com
+git clone https://github.com/ady254/Ecom.git app
+cd app
+corepack enable && corepack prepare pnpm@10.33.0 --activate
+pnpm install
+pnpm --filter @minara/api build
+```
+This installs everything and compiles the API to `apps/api/dist/server.js`.
+
+**✅ Checkpoint:** `ls apps/api/dist/server.js` prints the path (no error).
+
+### 1.4 Create the API's environment file
+
+```bash
+cd ~/domains/api-xxxxx.hostingersite.com/app/apps/api
+cp .env.example .env
+nano .env
+```
+Fill in each value (arrow keys to move, `Ctrl+O` then `Enter` to save,
+`Ctrl+X` to exit):
+
+| Variable | Value |
+|---|---|
+| `MONGODB_URI` | Your Atlas connection string (replace `<password>`) |
+| `JWT_ACCESS_SECRET` | Run `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"` and paste |
+| `JWT_REFRESH_SECRET` | Run that again — a **different** value |
+| `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` | Razorpay → Settings → API Keys (**Live mode**) |
+| `RAZORPAY_WEBHOOK_SECRET` | Set in Phase 4 — leave blank for now |
+| `FRONTEND_URL` | Your Store URL, e.g. `https://store-xxxxx.hostingersite.com` |
+| `ADMIN_URL` | Your Admin URL, e.g. `https://admin-xxxxx.hostingersite.com` |
+| `NODE_ENV` | `production` |
+| `COOKIE_SAMESITE` | `none` (the apps are on different subdomains) |
+| Email (`EMAIL_HOST`, `EMAIL_USER`, …) | Your SMTP details |
+
+In Atlas → **Network Access**, add `0.0.0.0/0` (shared hosting IPs vary).
+
+### 1.5 Register the API as a Node.js app
+
+hPanel → your API website → **Advanced → Node.js** (or the **Node.js**
+section) → **Create Application**:
+- **Node.js version:** 20.x
+- **Application root:** `domains/api-xxxxx.hostingersite.com/app/apps/api`
+- **Application URL:** your API temporary URL
+- **Application startup file:** `dist/server.js`
+
+Save, then click **Restart Application**.
+
+**✅ Checkpoint:** open `https://api-xxxxx.hostingersite.com/health/check` in
+your browser — it should report MongoDB connected. **The API is live.** 🎉
+
+---
+
+## PHASE 2 — Deploy the Store
+
+### 2.1 Create the Store website
+hPanel → **Add Website** → temporary domain → note the URL
+(`store-xxxxx.hostingersite.com`).
+
+### 2.2 Clone and build (with the API URL baked in)
+```bash
+cd ~/domains/store-xxxxx.hostingersite.com
+git clone https://github.com/ady254/Ecom.git app
+cd app
+corepack enable && corepack prepare pnpm@10.33.0 --activate
+pnpm install
+```
+Tell the Store where the API is, then build:
+```bash
+cd apps/store
+echo "NEXT_PUBLIC_API_URL=https://api-xxxxx.hostingersite.com/api/v1" > .env.production
+# (optional) if you use Google sign-in, add on the next line:
+# echo "NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-id" >> .env.production
+cd ../..
+pnpm --filter @minara/store build
 ```
 
-If you don't have SSH access, run this **locally** on your own PC instead,
-pointing it at your live database — temporarily set `MONGODB_URI` in your
-local `apps/api/.env` to the same Atlas connection string you used on the
-server, then:
+### 2.3 Copy the static files into the standalone folder
+Next.js standalone doesn't include images/CSS by default — copy them in:
 ```bash
-cd apps/api
-SEED_ADMIN_EMAIL=you@example.com SEED_ADMIN_PASSWORD='Choose-A-Strong-Password-1' pnpm seed:admin
+cd ~/domains/store-xxxxx.hostingersite.com/app/apps/store
+cp -r public .next/standalone/apps/store/
+cp -r .next/static .next/standalone/apps/store/.next/
 ```
-(It talks directly to Atlas over the internet, so it doesn't matter which
-machine runs it.)
+
+### 2.4 Register the Store as a Node.js app
+hPanel → Store website → **Node.js → Create Application**:
+- **Node.js version:** 20.x
+- **Application root:**
+  `domains/store-xxxxx.hostingersite.com/app/apps/store/.next/standalone/apps/store`
+- **Application URL:** your Store temporary URL
+- **Application startup file:** `server.js`
+
+Save → **Restart Application**.
+
+**✅ Checkpoint:** open `https://store-xxxxx.hostingersite.com` — the store
+loads **and** products appear (proving it reached the API).
 
 ---
 
-## Step 7 — Test that everything actually works
+## PHASE 3 — Deploy the Admin
 
-Go through this in order — don't call the deployment done until every box
-is checked.
+Exactly the same as Phase 2, replacing `store` with `admin` everywhere:
 
-- [ ] `curl https://api.minara.in/health/check` shows MongoDB connected.
-- [ ] Log into `https://admin.minara.in` with the account from Step 6.
-- [ ] Place a **Cash on Delivery test order** on the store — confirmation
-      email arrives, order appears in the admin dashboard, product stock
-      decreases.
-- [ ] Create a ₹1 test product, buy it with a **real Razorpay payment** —
-      order shows `paid`; Razorpay Dashboard → Webhooks shows a `200`
-      delivery logged.
-- [ ] Cancel that order from the admin — Razorpay shows an automatic
-      refund, and stock is restored.
-- [ ] Try logging into the admin dashboard with a normal customer
-      account — it should be refused.
+```bash
+cd ~/domains/admin-xxxxx.hostingersite.com
+git clone https://github.com/ady254/Ecom.git app
+cd app
+corepack enable && corepack prepare pnpm@10.33.0 --activate
+pnpm install
+cd apps/admin
+echo "NEXT_PUBLIC_API_URL=https://api-xxxxx.hostingersite.com/api/v1" > .env.production
+cd ../..
+pnpm --filter @minara/admin build
+cd apps/admin
+cp -r public .next/standalone/apps/admin/ 2>/dev/null || true
+cp -r .next/static .next/standalone/apps/admin/.next/
+```
 
----
+Node.js app:
+- **Application root:**
+  `domains/admin-xxxxx.hostingersite.com/app/apps/admin/.next/standalone/apps/admin`
+- **Startup file:** `server.js`
 
-## Updating your site after this
-
-- **Store or Admin changed:** just `git push` — Vercel automatically
-  rebuilds and redeploys within a minute or two. Nothing else to do.
-- **API changed:**
-  ```bash
-  cd ~/minara-api        # via SSH
-  git pull
-  cd apps/api
-  npm install --production=false
-  npm run build
-  ```
-  Then click **Restart Application** in hPanel's Node.js screen. (No SSH?
-  Repeat the local-build-then-upload process from Step 3.)
+**✅ Checkpoint:** `https://admin-xxxxx.hostingersite.com` loads the login page.
 
 ---
 
-## Free monitoring (worth the 5 minutes)
+## PHASE 4 — Razorpay webhook + admin account
 
-- **UptimeRobot** (free, uptimerobot.com) — point it at
-  `https://api.minara.in/health/check` and your store's homepage, checked
-  every 5 minutes, alerts you by email/WhatsApp the moment something's down.
-- **Vercel dashboard** — shows build logs and runtime errors for
-  Store/Admin automatically, no setup needed.
-- **Hostinger hPanel → Node.js → Logs** — shows the API's console output,
-  useful when something breaks.
-- **MongoDB Atlas → Alerts** — free built-in warnings for storage/connection
-  issues.
+### 4.1 Webhook
+Razorpay Dashboard → **Settings → Webhooks → Add New Webhook**:
+- **URL:** `https://api-xxxxx.hostingersite.com/api/v1/payments/razorpay/webhook`
+- **Secret:** make up a random string, save it
+- **Events:** `payment.captured`, `payment.failed`, `refund.processed`
+
+Then put that secret into the API's `.env`:
+```bash
+cd ~/domains/api-xxxxx.hostingersite.com/app/apps/api
+nano .env      # set RAZORPAY_WEBHOOK_SECRET=...
+```
+Restart the API application in hPanel.
+
+### 4.2 Create your admin login
+```bash
+cd ~/domains/api-xxxxx.hostingersite.com/app/apps/api
+SEED_ADMIN_EMAIL=you@example.com SEED_ADMIN_PASSWORD='A-Strong-Password-1' pnpm seed:admin
+```
+
+---
+
+## PHASE 5 — Test everything
+
+- [ ] `https://api-xxxxx.hostingersite.com/health/check` → DB connected.
+- [ ] Log into the Admin with the account from 4.2.
+- [ ] Place a **Cash on Delivery** order on the Store → confirmation email
+      arrives, order shows in Admin, stock drops.
+- [ ] Buy a ₹1 test product with **real Razorpay** → order shows `paid`;
+      Razorpay → Webhooks shows a `200` delivery.
+- [ ] Cancel that order in Admin → Razorpay shows an auto-refund, stock restored.
+- [ ] Log into Admin with a normal customer account → refused.
+
+---
+
+## Updating an app later
+
+```bash
+cd ~/domains/<that-app>.hostingersite.com/app
+git pull
+pnpm install
+pnpm --filter @minara/<api|store|admin> build
+# For store/admin only, re-copy static files (Phase 2.3 / 3):
+#   cp -r apps/store/public apps/store/.next/standalone/apps/store/
+#   cp -r apps/store/.next/static apps/store/.next/standalone/apps/store/.next/
+```
+Then **Restart Application** in hPanel for that app.
+
+---
+
+## When you buy a real domain later
+
+It's a pure swap, no rebuild-from-scratch:
+1. In hPanel, connect the domain / point subdomains (`api.`, `admin.`, `@`)
+   to the matching websites.
+2. Update `FRONTEND_URL` / `ADMIN_URL` in the API's `.env`, and
+   `NEXT_PUBLIC_API_URL` in each frontend's `.env.production`, to the real
+   URLs.
+3. Rebuild the two frontends (their API URL is baked in at build time),
+   re-copy static files, restart all three apps.
+4. Update the Razorpay webhook URL to the real API domain.
 
 ---
 
 ## Troubleshooting
 
-**Store loads but no products show, and DevTools console shows a CORS
-error**
-→ `FRONTEND_URL` or `ADMIN_URL` in the API's env vars don't exactly match
-your Vercel URLs. Fix, save, restart the application.
+**`health/check` doesn't load / app shows stopped in hPanel**
+→ hPanel → Node.js → your app → check the **log**. Almost always a wrong
+`MONGODB_URI` or a missing env var. Also confirm the **startup file** path
+matches exactly.
 
-**Login works but you get logged out immediately / refresh doesn't work**
-→ `COOKIE_SAMESITE` must be `none` (Step 3) since Store and API are on
-different domains. Also double check the API is being served over
-**HTTPS** — `SameSite=None` cookies are rejected by browsers over plain
-HTTP.
+**Store loads but no products; browser console (F12) shows a CORS error**
+→ `FRONTEND_URL`/`ADMIN_URL` in the API `.env` must exactly match the real
+Store/Admin URLs (with `https://`, no trailing slash). Fix, restart the API.
 
-**API's Node.js app shows as crashed/stopped in hPanel**
-→ Check **Logs** in the same Node.js manager screen for the actual error —
-almost always a wrong `MONGODB_URI` or a missing environment variable.
+**Store shows unstyled / broken images**
+→ You skipped the static-file copy (Phase 2.3). Re-run those two `cp`
+commands, then restart the app.
 
-**Vercel build fails**
-→ Click into the failed deployment → **Build Logs**. If it complains about
-the wrong folder, double-check **Root Directory** is set to `apps/store`
-(or `apps/admin`) in Project Settings → General.
+**Login works then immediately logs out**
+→ `COOKIE_SAMESITE=none` must be set in the API `.env`, and every app must
+be on **https** (Hostinger temporary URLs already are).
 
-**A payment succeeded in Razorpay but the order still shows "pending"**
-→ Razorpay Dashboard → Webhooks → your webhook → check recent deliveries.
-A red/failed delivery almost always means `RAZORPAY_WEBHOOK_SECRET` in
-hPanel doesn't match what you entered in Razorpay. Fix and restart the
-application.
+**Payment succeeded but order still `pending`**
+→ Razorpay → Webhooks → check recent deliveries. A failed one means
+`RAZORPAY_WEBHOOK_SECRET` doesn't match. Fix in `.env`, restart the API.
 
-**MongoDB Atlas connection fails ("could not connect")**
-→ Confirm Atlas → Network Access has `0.0.0.0/0` allowed (Step 3) — shared
-hosting doesn't have one fixed IP the way a VPS does.
-
----
-
-## If you later want more control (optional, not required)
-
-Everything above works well for a launch and steady small-to-medium
-traffic. If you ever outgrow shared hosting or want everything on one
-server you fully control, upgrading to a **Hostinger VPS** plan lets you
-run all 3 apps yourself with PM2 + nginx — ask me for that guide when
-you're ready; the money-path code doesn't change at all, only how it's
-hosted.
+**`pnpm: command not found` after reconnecting SSH**
+→ Re-run `corepack enable && corepack prepare pnpm@10.33.0 --activate`.
