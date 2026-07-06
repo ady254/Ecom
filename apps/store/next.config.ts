@@ -7,6 +7,10 @@ const nextConfig: NextConfig = {
   output: 'standalone',
   // Trace deps from the monorepo root so workspace packages are included.
   outputFileTracingRoot: path.join(__dirname, '../../'),
+  // Disable Turbopack (too memory-intensive for shared hosting) — use Webpack instead.
+  experimental: {
+    turbopack: false,
+  },
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'res.cloudinary.com' },
