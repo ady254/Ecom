@@ -1,7 +1,6 @@
-import type { NextConfig } from 'next';
-import path from 'path';
+const path = require('path');
 
-const nextConfig: NextConfig = {
+const nextConfig = {
   // Produces a self-contained .next/standalone/ with its own server.js —
   // this is what Hostinger's Passenger runtime runs (respects PORT/HOSTNAME).
   output: 'standalone',
@@ -10,10 +9,9 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'res.cloudinary.com' },
-      { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
     ],
   },
   transpilePackages: ['@minara/config', '@minara/types', '@minara/utils'],
 };
 
-export default nextConfig;
+module.exports = nextConfig;
