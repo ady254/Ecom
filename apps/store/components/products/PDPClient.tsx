@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Star, Heart, Minus, Plus, Flame, Sparkles, Truck, RotateCcw, Gift, Lock, CheckCircle2, ShoppingBag } from 'lucide-react';
+import { Star, Heart, Minus, Plus, Flame, Sparkles, Truck, RotateCcw, Gift, Lock, CheckCircle2, ShoppingBag, CreditCard } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { formatCurrency } from '@minara/utils';
 import { useCartStore } from '@/store/cartStore';
@@ -27,6 +27,7 @@ interface PDPProduct {
   sku?: string;
   shortDescription?: string;
   isCustomizable?: boolean;
+  codAvailable?: boolean;
   customFields?: CustomField[];
 }
 
@@ -310,6 +311,21 @@ export default function PDPClient({ product, discount, soldCount, deliverySteps 
             ))}
           </div>
         </div>
+
+        {/* Set the payment expectation here rather than letting checkout be the
+            first place they hear "no COD". Only an explicit false restricts —
+            products saved before this setting existed still allow COD. */}
+        {product.codAvailable === false && (
+          <div className="mb-6 flex items-start gap-2.5 p-3 bg-amber-50 border border-amber-200 rounded-xl">
+            <CreditCard size={15} className="text-amber-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-xs font-semibold text-amber-800">Prepaid orders only</p>
+              <p className="text-[11px] text-amber-700 leading-snug">
+                Cash on Delivery isn&apos;t available for this item — you can pay securely by UPI, card, or net banking at checkout.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Trust icons strip — 3-up on small phones so labels stay readable */}
         <div className="grid grid-cols-3 sm:grid-cols-5 gap-x-2 gap-y-4 py-4 border-t border-b border-gray-100">

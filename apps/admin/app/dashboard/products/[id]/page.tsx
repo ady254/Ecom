@@ -33,6 +33,7 @@ export default function EditProductPage() {
   const [isFeatured, setIsFeatured] = useState(false);
   const [isActive, setIsActive] = useState(true);
   const [isCustomizable, setIsCustomizable] = useState(false);
+  const [codAvailable, setCodAvailable] = useState(true);
   const [customFields, setCustomFields] = useState<Array<{ label: string; placeholder: string; required: boolean }>>([]);
   const [newField, setNewField] = useState({ label: '', placeholder: '', required: false });
 
@@ -59,6 +60,7 @@ export default function EditProductPage() {
         setIsFeatured(p.isFeatured);
         setIsActive(p.isActive);
         setIsCustomizable(p.isCustomizable ?? false);
+        setCodAvailable(p.codAvailable ?? true);
         setCustomFields((p.customFields ?? []).map((f) => ({
           label: f.label,
           placeholder: f.placeholder ?? '',
@@ -103,6 +105,7 @@ export default function EditProductPage() {
         isFeatured,
         isActive,
         isCustomizable,
+        codAvailable,
         customFields: isCustomizable ? customFields : [],
         images: images.map((url, i) => ({ url, alt: `${name} ${i + 1}` })),
       });
@@ -262,6 +265,18 @@ export default function EditProductPage() {
               </div>
               <div onClick={() => setIsCustomizable(!isCustomizable)} className={`relative w-11 h-6 rounded-full transition-colors cursor-pointer ${isCustomizable ? 'bg-[var(--color-gold)]' : 'bg-gray-200'}`}>
                 <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${isCustomizable ? 'translate-x-5' : ''}`} />
+              </div>
+            </label>
+
+            <label className="flex items-center justify-between cursor-pointer">
+              <div>
+                <p className="text-sm font-medium text-gray-700">Cash on Delivery</p>
+                <p className="text-xs text-gray-400">
+                  {codAvailable ? 'Customers can pay on delivery' : 'Prepaid (online payment) only'}
+                </p>
+              </div>
+              <div onClick={() => setCodAvailable(!codAvailable)} className={`relative w-11 h-6 rounded-full transition-colors cursor-pointer ${codAvailable ? 'bg-emerald-500' : 'bg-gray-200'}`}>
+                <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${codAvailable ? 'translate-x-5' : ''}`} />
               </div>
             </label>
           </div>

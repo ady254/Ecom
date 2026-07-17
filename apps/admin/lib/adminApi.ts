@@ -203,6 +203,7 @@ export interface AdminProduct {
   isActive: boolean;
   isFeatured: boolean;
   isCustomizable?: boolean;
+  codAvailable?: boolean;
   customFields?: Array<{ label: string; placeholder?: string; required?: boolean }>;
   images: { url: string; alt?: string }[];
   category?: { _id: string; name: string };

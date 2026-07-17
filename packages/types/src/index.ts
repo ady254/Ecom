@@ -103,6 +103,7 @@ export const ProductSchema = z.object({
   variants: z.array(ProductVariantSchema),
   isFeatured: z.boolean(),
   isActive: z.boolean(),
+  codAvailable: z.boolean().default(true),
   weight: z.number().optional(),
   sku: z.string().optional(),
   metaTitle: z.string().optional(),

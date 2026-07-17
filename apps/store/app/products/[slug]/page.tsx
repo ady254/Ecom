@@ -19,6 +19,7 @@ interface Product {
   tags: string[]; category?: { _id: string; name: string; slug: string };
   stock: number; sku?: string; weight?: number;
   isCustomizable?: boolean;
+  codAvailable?: boolean;
   customFields?: CustomField[];
 }
 
@@ -154,6 +155,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               sku: product.sku,
               shortDescription: product.shortDescription,
               isCustomizable: product.isCustomizable,
+              codAvailable: product.codAvailable,
               customFields: product.customFields,
             }}
             discount={discount}

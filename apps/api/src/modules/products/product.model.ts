@@ -18,6 +18,8 @@ export interface IProduct extends Document {
   isFeatured: boolean;
   isActive: boolean;
   isCustomizable: boolean;
+  /** When false, this product can only be bought with an online (prepaid) payment. */
+  codAvailable: boolean;
   customFields: Array<{ label: string; placeholder?: string; required?: boolean }>;
   weight?: number;
   sku?: string;
@@ -54,6 +56,7 @@ const productSchema = new Schema<IProduct>(
     isFeatured: { type: Boolean, default: false, index: true },
     isActive: { type: Boolean, default: true, index: true },
     isCustomizable: { type: Boolean, default: false },
+    codAvailable: { type: Boolean, default: true },
     customFields: [{ label: String, placeholder: String, required: Boolean }],
     weight: Number,
     sku: { type: String, sparse: true, index: true },

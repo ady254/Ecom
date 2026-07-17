@@ -79,8 +79,19 @@ router.post(
     }
 
     // 1. Authoritative pricing from the database — client prices are never trusted
-    const { pricedItems, subtotal } = await priceOrderItems(body.items);
+    const { pricedItems, subtotal, codIneligible } = await priceOrderItems(body.items);
     const shippingCharge = computeShipping(subtotal);
+
+    // COD is a per-product setting the admin controls. Enforce it here as well as
+    // in the UI — nothing has been claimed yet, so there is nothing to roll back.
+    if (body.paymentMethod === 'cod' && codIneligible.length > 0) {
+      throw new AppError(
+        `Cash on Delivery isn't available for ${codIneligible
+          .map((n) => `"${n}"`)
+          .join(', ')}. Please pay online to place this order.`,
+        400
+      );
+    }
 
     // 2. Atomically claim the coupon (throws if invalid/expired/limit reached)
     let discount = 0;

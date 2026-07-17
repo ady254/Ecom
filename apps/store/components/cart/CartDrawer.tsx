@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useCartStore } from '@/store/cartStore';
 import { useUIStore } from '@/store/uiStore';
+import { useCodEligibility } from '@/hooks/useCodEligibility';
 import { formatCurrency } from '@minara/utils';
 
 const FREE_SHIPPING_THRESHOLD = 999;
@@ -14,6 +15,9 @@ const SHIPPING_CHARGE = 99;
 export default function CartDrawer() {
   const { cartOpen, closeCart } = useUIStore();
   const { items, removeItem, updateQuantity, subtotal } = useCartStore();
+
+  // This drawer is mounted on every page, so only look COD up while it's open.
+  const { codAllowed } = useCodEligibility(cartOpen ? items.map((i) => i.productId) : []);
 
   const sub = subtotal();
   const freeShipping = sub >= FREE_SHIPPING_THRESHOLD;
@@ -201,7 +205,7 @@ export default function CartDrawer() {
                       <Lock size={10} /> Secure checkout
                     </span>
                     <span className="flex items-center gap-1">
-                      <Banknote size={10} /> COD available
+                      <Banknote size={10} /> {codAllowed ? 'COD available' : 'Prepaid only'}
                     </span>
                     <span className="flex items-center gap-1">
                       <Gift size={10} /> Gift-wrapped free

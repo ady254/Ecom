@@ -110,19 +110,27 @@ export interface PricedItem {
 /**
  * Look up every ordered product in the database and price the order from
  * DB values only. Throws if a product is missing or inactive.
+ *
+ * `codIneligible` lists the names of any products the admin has switched COD
+ * off for — the caller decides what to do with it, since it only matters when
+ * the customer actually asked to pay cash on delivery.
  */
 export const priceOrderItems = async (
   items: OrderItemInput[]
-): Promise<{ pricedItems: PricedItem[]; subtotal: number }> => {
+): Promise<{ pricedItems: PricedItem[]; subtotal: number; codIneligible: string[] }> => {
   const ids = [...new Set(items.map((i) => i.product))];
   const products = await ProductModel.find({ _id: { $in: ids } }).lean();
   const byId = new Map(products.map((p) => [String(p._id), p]));
+  const codIneligible = new Set<string>();
 
   const pricedItems: PricedItem[] = items.map((item) => {
     const product = byId.get(item.product);
     if (!product || !product.isActive) {
       throw new AppError('One of the products in your cart is no longer available', 409);
     }
+    // Products saved before this flag existed have no value — those predate any
+    // COD restriction, so absence means "COD is fine".
+    if (product.codAvailable === false) codIneligible.add(product.name);
     return {
       product: item.product,
       name: product.name,
@@ -134,7 +142,7 @@ export const priceOrderItems = async (
   });
 
   const subtotal = round2(pricedItems.reduce((acc, i) => acc + i.price * i.quantity, 0));
-  return { pricedItems, subtotal };
+  return { pricedItems, subtotal, codIneligible: [...codIneligible] };
 };
 
 // ─── Coupon Claim / Release ───────────────────────────────────────────────────

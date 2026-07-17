@@ -8,6 +8,7 @@ import Script from 'next/script';
 import { ChevronLeft, Loader2, CheckCircle, CreditCard, Truck, ShieldCheck, Tag, X, Gift } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useCartStore } from '@/store/cartStore';
+import { useCodEligibility } from '@/hooks/useCodEligibility';
 import { formatCurrency } from '@minara/utils';
 import { SERVICEABLE_STATES } from '@minara/config';
 
@@ -52,8 +53,14 @@ export default function CheckoutPage() {
     city: '', state: '', pincode: '',
   });
   const [pincodeStatus, setPincodeStatus] = useState<'idle' | 'checking' | 'serviceable' | 'unserviceable'>('idle');
+  const { codBlockedBy, codAllowed } = useCodEligibility(items.map((i) => i.productId));
 
   useEffect(() => setMounted(true), []);
+
+  // Never leave a disallowed method selected.
+  useEffect(() => {
+    if (!codAllowed) setPaymentMethod('razorpay');
+  }, [codAllowed]);
 
   // Look up the pincode once 6 digits are entered — auto-fills city/state and
   // warns early if we don't currently deliver there. Fails open (idle) if the
@@ -451,24 +458,29 @@ export default function CheckoutPage() {
                     Payment Method
                   </h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {/* COD */}
+                    {/* COD — unavailable when any item in the cart is prepaid-only */}
                     <button
                       type="button"
                       onClick={() => setPaymentMethod('cod')}
+                      disabled={!codAllowed}
                       className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left ${
-                        paymentMethod === 'cod'
-                          ? 'border-[var(--color-navy)] bg-[var(--color-cream)]'
-                          : 'border-gray-200 hover:border-gray-300'
+                        !codAllowed
+                          ? 'border-gray-100 bg-gray-50 cursor-not-allowed opacity-60'
+                          : paymentMethod === 'cod'
+                            ? 'border-[var(--color-navy)] bg-[var(--color-cream)]'
+                            : 'border-gray-200 hover:border-gray-300'
                       }`}
                     >
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${paymentMethod === 'cod' ? 'bg-[var(--color-navy)]' : 'bg-gray-100'}`}>
-                        <Truck size={18} className={paymentMethod === 'cod' ? 'text-white' : 'text-gray-400'} />
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${paymentMethod === 'cod' && codAllowed ? 'bg-[var(--color-navy)]' : 'bg-gray-100'}`}>
+                        <Truck size={18} className={paymentMethod === 'cod' && codAllowed ? 'text-white' : 'text-gray-400'} />
                       </div>
                       <div>
-                        <p className="font-semibold text-sm text-[var(--color-navy)]">Cash on Delivery</p>
-                        <p className="text-xs text-gray-400">Pay when your order arrives</p>
+                        <p className={`font-semibold text-sm ${codAllowed ? 'text-[var(--color-navy)]' : 'text-gray-400'}`}>Cash on Delivery</p>
+                        <p className="text-xs text-gray-400">
+                          {codAllowed ? 'Pay when your order arrives' : 'Not available for your cart'}
+                        </p>
                       </div>
-                      {paymentMethod === 'cod' && <CheckCircle size={16} className="text-[var(--color-navy)] ml-auto" />}
+                      {paymentMethod === 'cod' && codAllowed && <CheckCircle size={16} className="text-[var(--color-navy)] ml-auto" />}
                     </button>
 
                     {/* Razorpay */}
@@ -491,6 +503,14 @@ export default function CheckoutPage() {
                       {paymentMethod === 'razorpay' && <CheckCircle size={16} className="text-[var(--color-gold-dark)] ml-auto" />}
                     </button>
                   </div>
+
+                  {!codAllowed && (
+                    <div className="mt-3 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                      {codBlockedBy.length === 1
+                        ? `“${codBlockedBy[0]}” is available on prepaid payment only, so this order needs to be paid online.`
+                        : `${codBlockedBy.map((n) => `“${n}”`).join(', ')} are available on prepaid payment only, so this order needs to be paid online.`}
+                    </div>
+                  )}
 
                   {paymentMethod === 'razorpay' && (
                     <div className="mt-3 flex items-center gap-2 text-xs text-gray-400 bg-gray-50 rounded-lg px-3 py-2">
