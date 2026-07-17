@@ -69,7 +69,7 @@ export default function AdminLoginPage() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="admin@minara.in"
+                    placeholder="admin@minaragifting.com"
                     className="admin-input pl-10"
                     required
                   />

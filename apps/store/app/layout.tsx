@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_IN',
-    url: 'https://minara.in',
+    url: 'https://minaragifting.com',
     siteName: 'MINARA',
     title: 'MINARA — Luxury Gifting, Reimagined',
     description: 'Premium luxury gifting platform.',

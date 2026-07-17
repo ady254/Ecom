@@ -3,8 +3,8 @@
 export const BRAND = {
   name: 'MINARA',
   tagline: 'Luxury Gifting, Reimagined',
-  email: 'hello@minara.in',
-  supportEmail: 'support@minara.in',
+  email: 'minaragifting01@gmail.com',
+  supportEmail: 'minaragifting01@gmail.com',
   phone: '+91 88733 55385',
   whatsapp: '918873355385',
   address: {
@@ -96,8 +96,17 @@ export const SERVICEABLE_STATES = [
 
 // ─── API Constants ────────────────────────────────────────────────────────────
 
+declare const process:
+  | {
+      env: {
+        NEXT_PUBLIC_API_URL?: string;
+      };
+    }
+  | undefined;
+
 export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+  (typeof process !== 'undefined' ? process?.env?.NEXT_PUBLIC_API_URL : undefined) ||
+  'http://localhost:5000/api/v1';
 
 export const DEFAULT_PAGE_SIZE = 12;
 export const MAX_PAGE_SIZE = 48;

@@ -131,7 +131,7 @@ export default function SettingsPage() {
                 </div>
                 <div>
                   <label className="settings-label">Store Email</label>
-                  <input type="email" value={settings.storeEmail} onChange={(e) => set('storeEmail', e.target.value)} className="admin-input" placeholder="hello@minara.in" />
+                  <input type="email" value={settings.storeEmail} onChange={(e) => set('storeEmail', e.target.value)} className="admin-input" placeholder="minaragifting01@gmail.com" />
                 </div>
                 <div>
                   <label className="settings-label">Store Phone</label>
@@ -241,7 +241,7 @@ export default function SettingsPage() {
                   <p className="text-xs font-semibold text-gray-500 mb-3 uppercase tracking-wider">Google Preview</p>
                   <div className="space-y-0.5">
                     <p className="text-[#1a0dab] text-base hover:underline cursor-pointer">{settings.metaTitle || 'Page Title'}</p>
-                    <p className="text-[#006621] text-xs">https://www.minara.in</p>
+                    <p className="text-[#006621] text-xs">https://www.minaragifting.com</p>
                     <p className="text-[#545454] text-sm leading-snug">{settings.metaDescription || 'Page description will appear here…'}</p>
                   </div>
                 </div>

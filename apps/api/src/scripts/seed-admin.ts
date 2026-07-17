@@ -14,8 +14,8 @@ if (!MONGODB_URI) {
 }
 
 // ─── Admin credentials (override via env in production!) ─────────────────────
-const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL || 'itsadnanahmad5@gmail.com';
-const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD || 'Admin@1234';
+const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL || 'admin@minaragifting.com';
+const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD || 'Minara@admin@gifting2026';
 const ADMIN_NAME = process.env.SEED_ADMIN_NAME || 'Adnan Ahmed';
 // ─────────────────────────────────────────────────────────────────────────────
 

@@ -115,7 +115,7 @@ export const orderConfirmationTemplate = (data: {
       <p>We'll notify you when your order ships. Expected delivery: <strong>2–5 business days</strong>.</p>
     </div>
     <div class="footer">
-      <p>Questions? Email us at <span class="gold">support@minara.in</span></p>
+      <p>Questions? Email us at <span class="gold">minaragifting01@gmail.com</span></p>
     </div>
   </div>
 </body>
@@ -152,7 +152,7 @@ export const passwordResetTemplate = (data: { name: string; resetUrl: string }):
       <a href="${data.resetUrl}" class="btn">Reset Password</a>
       <p class="note">This link expires in <strong>1 hour</strong>. If you did not request a password reset, you can safely ignore this email — your account remains secure.</p>
     </div>
-    <div class="footer"><p>Questions? Email us at <span class="gold">support@minara.in</span></p></div>
+    <div class="footer"><p>Questions? Email us at <span class="gold">minaragifting01@gmail.com</span></p></div>
   </div>
 </body>
 </html>
@@ -187,7 +187,7 @@ export const emailVerificationTemplate = (data: { name: string; verifyUrl: strin
       <a href="${data.verifyUrl}" class="btn">Verify My Email</a>
       <p class="note">If you didn't create an account with us, please ignore this email.</p>
     </div>
-    <div class="footer"><p>Questions? Email us at <span class="gold">support@minara.in</span></p></div>
+    <div class="footer"><p>Questions? Email us at <span class="gold">minaragifting01@gmail.com</span></p></div>
   </div>
 </body>
 </html>
@@ -231,7 +231,7 @@ export const orderShippedTemplate = (data: {
       <p>You can track your shipment on the XpressBees website using the AWB number above.</p>
       ${data.trackUrl ? `<div style="text-align:center;"><a href="${data.trackUrl}" class="btn">Track My Order</a></div>` : ''}
     </div>
-    <div class="footer"><p>Questions? Email us at support@minara.in</p></div>
+    <div class="footer"><p>Questions? Email us at minaragifting01@gmail.com</p></div>
   </div>
 </body>
 </html>
@@ -268,7 +268,7 @@ export const orderDeliveredTemplate = (data: { name: string; orderId: string; tr
       <p>We'd love to hear what you think — your feedback helps us keep every gift unforgettable.</p>
       ${data.trackUrl ? `<div style="text-align:center;"><a href="${data.trackUrl}" class="btn">View My Order</a></div>` : ''}
     </div>
-    <div class="footer"><p>Questions? Email us at <span class="gold">support@minara.in</span></p></div>
+    <div class="footer"><p>Questions? Email us at <span class="gold">minaragifting01@gmail.com</span></p></div>
   </div>
 </body>
 </html>
@@ -303,7 +303,7 @@ export const orderCancelledTemplate = (data: { name: string; orderId: string; re
       <div class="order-id">Order ID: <span class="gold">${data.orderId}</span></div>
       <p>If a payment was already made, any applicable refund will be processed to your original payment method within 5–7 business days.</p>
     </div>
-    <div class="footer"><p>Questions? Email us at <span class="gold">support@minara.in</span></p></div>
+    <div class="footer"><p>Questions? Email us at <span class="gold">minaragifting01@gmail.com</span></p></div>
   </div>
 </body>
 </html>
@@ -335,7 +335,7 @@ export const paymentFailedTemplate = (data: { name: string }): string => `
       <p>Hi ${data.name}, your recent payment attempt on MINARA could not be verified, so your order was not placed.</p>
       <p>No amount was charged, or any amount debited will be automatically refunded by your bank within 5–7 business days. Please try again, or reach out if the issue persists.</p>
     </div>
-    <div class="footer"><p>Questions? Email us at <span class="gold">support@minara.in</span></p></div>
+    <div class="footer"><p>Questions? Email us at <span class="gold">minaragifting01@gmail.com</span></p></div>
   </div>
 </body>
 </html>

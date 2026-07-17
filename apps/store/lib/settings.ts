@@ -15,7 +15,7 @@ export interface StoreSettings {
 // Used when the API is unreachable (e.g. during build) or a field is blank in admin
 const DEFAULTS: StoreSettings = {
   storeName: 'MINARA',
-  storeEmail: 'support@minara.in',
+  storeEmail: 'minaragifting01@gmail.com',
   storePhone: '+91 88733 55385',
   storePhoneTel: '+918873355385',
   storeAddress: 'Bahadurpura, Hyderabad, Telangana – 500064, India',

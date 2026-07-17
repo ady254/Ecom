@@ -63,7 +63,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   if (!result) notFound();
   const { product, soldLast24h } = result;
 
-  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://minara.in';
+  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://minaragifting.com';
   const discount = calculateDiscount(product.price, product.comparePrice);
   const related = product.category ? await fetchRelated(product.category._id, product._id) : [];
 
