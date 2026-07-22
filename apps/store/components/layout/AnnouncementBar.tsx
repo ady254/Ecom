@@ -5,7 +5,6 @@ import { Pause, Play, Sparkles, Zap, Gift, Tag, HeartHandshake, Star } from 'luc
 
 const items = [
   { text: 'Free Shipping on all orders above ₹999', Icon: Sparkles },
-  { text: 'Same-day dispatch on orders placed before 3 PM', Icon: Zap },
   { text: 'Every order arrives beautifully gift-wrapped', Icon: Gift },
   { text: 'Use code WELCOME10 for 10% off your first order', Icon: Tag },
   { text: 'Trusted by 4,200+ customers across India', Icon: HeartHandshake },

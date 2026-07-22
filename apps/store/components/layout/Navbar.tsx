@@ -19,9 +19,9 @@ const navLinks = [
       { label: 'Quran Sets', href: '/products?search=quran' },
       { label: 'Wedding Gifts', href: '/products?search=wedding' },
       { label: 'Gift Hampers', href: '/products?search=hamper' },
-      { label: 'Hajj Return Gifts', href: '/products?search=hajj' },
-      { label: 'Tasbih Cards for Kids', href: '/products?search=tasbih' },
-      { label: 'Home Decor', href: '/products?search=homedecor' },
+      { label: 'Hajj Return Favours', href: '/products?search=hajj' },
+      { label: 'Aqeeqah Favours', href: '/products?search=aqeeqah' },
+      { label: 'Personalised Gifts', href: '/products?search=personalised' },
     ],
   },
 ];
@@ -165,11 +165,10 @@ export default function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`px-3 py-1.5 text-sm font-medium tracking-wider transition-colors rounded-lg hover:bg-gray-50 ${
-                  pathname === link.href
+                className={`px-3 py-1.5 text-sm font-medium tracking-wider transition-colors rounded-lg hover:bg-gray-50 ${pathname === link.href
                     ? 'text-[var(--color-gold-dark)]'
                     : 'text-[var(--color-navy)] hover:text-[var(--color-gold-dark)]'
-                }`}
+                  }`}
               >
                 {link.label}
               </Link>
