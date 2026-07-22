@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState, useCallback, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Search, X, Loader2, SlidersHorizontal } from 'lucide-react';
+import { Search, X, Loader2, SlidersHorizontal, Gift } from 'lucide-react';
 import { formatCurrency } from '@minara/utils';
 import WishlistButton from '@/components/products/WishlistButton';
 
@@ -162,7 +162,7 @@ function SearchPageContent() {
                             className="object-cover group-hover:scale-105 transition-transform duration-500"
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-4xl">🎁</div>
+                          <div className="w-full h-full flex items-center justify-center text-4xl"><Gift size={32} className="text-gray-300" strokeWidth={1.5} /></div>
                         )}
                       </div>
                       <div className="p-3 md:p-4">

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Heart, Loader2, ShoppingBag } from 'lucide-react';
+import { Heart, Loader2, ShoppingBag, Gift } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useWishlistStore } from '@/store/wishlistStore';
 import { useCartStore } from '@/store/cartStore';
@@ -114,7 +114,7 @@ export default function WishlistPage() {
                       className="object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-4xl">🎁</div>
+                    <div className="w-full h-full flex items-center justify-center text-4xl"><Gift size={32} className="text-gray-300" strokeWidth={1.5} /></div>
                   )}
                 </Link>
                 <div className="p-3 md:p-4">

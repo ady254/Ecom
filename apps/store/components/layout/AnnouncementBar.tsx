@@ -1,15 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { Pause, Play } from 'lucide-react';
+import { Pause, Play, Sparkles, Zap, Gift, Tag, HeartHandshake, Star } from 'lucide-react';
 
 const items = [
-  '✦ Free Shipping on all orders above ₹999',
-  '⚡ Same-day dispatch on orders placed before 3 PM',
-  '🎁 Every order arrives beautifully gift-wrapped',
-  '✦ Use code WELCOME10 for 10% off your first order',
-  '🏆 Trusted by 4,200+ customers across India',
-  '⭐ Rated 4.9 / 5 — Handcrafted with love',
+  { text: 'Free Shipping on all orders above ₹999', Icon: Sparkles },
+  { text: 'Same-day dispatch on orders placed before 3 PM', Icon: Zap },
+  { text: 'Every order arrives beautifully gift-wrapped', Icon: Gift },
+  { text: 'Use code WELCOME10 for 10% off your first order', Icon: Tag },
+  { text: 'Trusted by 4,200+ customers across India', Icon: HeartHandshake },
+  { text: 'Rated 4.9 / 5 — Handcrafted with love', Icon: Star },
 ];
 
 const ticker = [...items, ...items];
@@ -43,7 +43,8 @@ export default function AnnouncementBar() {
         >
           {ticker.map((item, i) => (
             <span key={i} className="inline-flex items-center gap-2 text-xs tracking-wide px-8">
-              {item}
+              <item.Icon size={12} className="text-[var(--color-gold)]" strokeWidth={1.5} />
+              {item.text}
               <span className="w-1 h-1 rounded-full bg-[var(--color-gold)] inline-block ml-4" aria-hidden="true" />
             </span>
           ))}
@@ -66,7 +67,7 @@ export default function AnnouncementBar() {
       {/* Screen-reader-accessible promotion list */}
       <ul className="sr-only">
         {items.map((item, i) => (
-          <li key={i}>{item.replace(/[✦⚡🎁🏆⭐]/gu, '').trim()}</li>
+          <li key={i}>{item.text}</li>
         ))}
       </ul>
     </div>

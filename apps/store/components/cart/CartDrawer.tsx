@@ -159,7 +159,7 @@ export default function CartDrawer() {
                         {item.image ? (
                           <Image src={item.image} alt={item.name} fill sizes="80px" className="object-cover" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-2xl">🎁</div>
+                          <div className="w-full h-full flex items-center justify-center text-2xl"><Gift size={20} className="text-gray-300" strokeWidth={1.5} /></div>
                         )}
                       </Link>
                       <div className="flex-1 min-w-0">

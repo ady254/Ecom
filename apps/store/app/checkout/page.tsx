@@ -364,7 +364,7 @@ export default function CheckoutPage() {
                   <textarea
                     value={giftMessage}
                     onChange={(e) => setGiftMessage(e.target.value)}
-                    placeholder="e.g. JazakAllah Khair for attending our Nikkah — this is a small token of our love. 🎁"
+                    placeholder="e.g. JazakAllah Khair for attending our Nikkah — this is a small token of our love."
                     maxLength={300}
                     rows={3}
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[var(--color-gold)] transition-colors resize-none"
@@ -542,7 +542,7 @@ export default function CheckoutPage() {
                           {item.image ? (
                             <Image src={item.image} alt={item.name} fill sizes="56px" className="object-cover" />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center text-xl">🎁</div>
+                            <div className="w-full h-full flex items-center justify-center text-xl"><Gift size={16} className="text-gray-300" strokeWidth={1.5} /></div>
                           )}
                           <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[var(--color-navy)] text-white text-[9px] font-bold flex items-center justify-center">
                             {item.quantity}

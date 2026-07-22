@@ -372,7 +372,7 @@ export default function OrderDetailPage() {
                   {item.image ? (
                     <Image src={item.image} alt={item.name} fill sizes="64px" className="object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-2xl">🎁</div>
+                    <div className="w-full h-full flex items-center justify-center text-2xl"><Gift size={24} className="text-gray-300" strokeWidth={1.5} /></div>
                   )}
                 </div>
                 <div className="flex-1 min-w-0">

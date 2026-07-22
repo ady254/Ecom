@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Search, Loader2, ArrowRight } from 'lucide-react';
+import { Search, Loader2, ArrowRight, Gift } from 'lucide-react';
 import { formatCurrency } from '@minara/utils';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
@@ -134,7 +134,7 @@ export default function SearchBar({ mobile = false }: { mobile?: boolean }) {
                             className="object-cover"
                           />
                         ) : (
-                          <span className="w-full h-full flex items-center justify-center text-lg">🎁</span>
+                          <span className="w-full h-full flex items-center justify-center text-lg"><Gift size={16} className="text-gray-300" strokeWidth={1.5} /></span>
                         )}
                       </span>
                       <span className="flex-1 min-w-0">

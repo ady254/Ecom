@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Suspense } from 'react';
-import { Star, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Star, ChevronRight, ChevronLeft, Gift } from 'lucide-react';
 import { formatCurrency, calculateDiscount } from '@minara/utils';
 import ProductSidebar from '@/components/products/ProductSidebar';
 import AddToCartButton from '@/components/products/AddToCartButton';
@@ -109,7 +109,7 @@ export default async function ProductsPage({
           <div className="flex-1 min-w-0">
             {products.length === 0 ? (
               <div className="text-center py-24">
-                <p className="text-5xl mb-4">🎁</p>
+                <div className="mb-4"><Gift size={48} className="text-gray-300 mx-auto" strokeWidth={1.5} /></div>
                 <p className="text-gray-400 text-lg mb-2">
                   {result === null ? 'Could not connect to the store' : 'No products match your filters'}
                 </p>
@@ -136,7 +136,7 @@ export default async function ProductsPage({
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[var(--color-cream)] to-[var(--color-cream-dark)]">
-                              <span className="text-5xl opacity-30">🎁</span>
+                              <span className="text-5xl opacity-30"><Gift size={32} className="text-gray-300" strokeWidth={1.5} /></span>
                             </div>
                           )}
 
