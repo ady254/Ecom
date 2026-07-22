@@ -97,7 +97,7 @@ export default function HeroBanner({ initialBanners = [] }: { initialBanners?: S
 
   return (
     <section
-      className="relative w-full overflow-hidden h-[65vh] sm:h-[60vh] md:h-[65vh] lg:h-[75vh] min-h-[420px] max-h-[700px]"
+      className="relative w-full overflow-hidden h-[50vh] sm:h-[60vh] md:h-[65vh] lg:h-[75vh] min-h-[320px] max-h-[700px]"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onTouchStart={onTouchStart}
@@ -119,7 +119,7 @@ export default function HeroBanner({ initialBanners = [] }: { initialBanners?: S
               alt={slide.title || 'Banner'}
               fill
               sizes="100vw"
-              className="object-cover object-center"
+              className="object-contain sm:object-cover object-center"
               priority
             />
           ) : (

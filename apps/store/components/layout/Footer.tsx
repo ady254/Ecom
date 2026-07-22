@@ -101,7 +101,7 @@ export default async function Footer() {
         <div className="section-container py-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-10 md:gap-10">
             {/* Shop links */}
-            <div>
+            <div className="col-span-1">
               <h3 className="text-[10px] font-semibold tracking-[3px] uppercase text-[var(--color-gold)] mb-2">
                 Shop
               </h3>
@@ -121,7 +121,7 @@ export default async function Footer() {
             </div>
 
             {/* Help links */}
-            <div>
+            <div className="col-span-1">
               <h3 className="text-[10px] font-semibold tracking-[3px] uppercase text-[var(--color-gold)] mb-2">
                 Help
               </h3>
@@ -141,7 +141,7 @@ export default async function Footer() {
             </div>
 
             {/* Contact */}
-            <div>
+            <div className="col-span-2 md:col-span-1">
               <h3 className="text-[10px] font-semibold tracking-[3px] uppercase text-[var(--color-gold)] mb-2">
                 Get In Touch
               </h3>
@@ -149,7 +149,7 @@ export default async function Footer() {
               <div className="space-y-3.5">
                 <a
                   href={`mailto:${settings.storeEmail}`}
-                  className="flex items-center gap-2.5 text-sm text-white/75 hover:text-[var(--color-gold)] transition-colors"
+                  className="flex items-center gap-2.5 text-sm text-white/75 hover:text-[var(--color-gold)] transition-colors break-all"
                 >
                   <Mail size={14} strokeWidth={1.5} className="text-[var(--color-gold)] shrink-0" />
                   {settings.storeEmail}
@@ -169,7 +169,7 @@ export default async function Footer() {
             </div>
 
             {/* Bulk orders */}
-            <div>
+            <div className="col-span-2 md:col-span-1">
               <h3 className="text-[10px] font-semibold tracking-[3px] uppercase text-[var(--color-gold)] mb-2">
                 Bulk & Corporate
               </h3>

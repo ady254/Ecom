@@ -175,13 +175,13 @@ export default function FeaturedProducts() {
                     )}
                   </Link>
 
-                  <div className="flex items-center justify-between gap-2">
-                    <div>
+                  <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-2 sm:items-center sm:justify-between mt-auto pt-2">
+                    <div className="flex items-baseline flex-wrap gap-1.5">
                       <span className="text-base font-bold text-[var(--color-navy)]">
                         {formatCurrency(product.price)}
                       </span>
                       {product.comparePrice && (
-                        <span className="text-xs text-gray-400 line-through ml-1.5">
+                        <span className="text-xs text-gray-400 line-through">
                           {formatCurrency(product.comparePrice)}
                         </span>
                       )}
@@ -199,7 +199,7 @@ export default function FeaturedProducts() {
                         openCart();
                         toast.success('Added to cart!');
                       }}
-                      className="flex items-center gap-1.5 bg-[var(--color-navy)] text-white text-[11px] font-semibold px-3 py-2 rounded-full hover:bg-[var(--color-navy-light)] transition-colors shrink-0"
+                      className="w-full sm:w-auto flex items-center justify-center gap-1.5 bg-[var(--color-navy)] text-white text-[11px] font-semibold px-3 py-2.5 sm:py-2 rounded-full hover:bg-[var(--color-navy-light)] transition-colors shrink-0"
                     >
                       <ShoppingCart size={11} />
                       Add
