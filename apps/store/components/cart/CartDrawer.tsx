@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Minus, Plus, Trash2, ShoppingBag, ArrowRight, Gift, Sparkles, Lock, Banknote } from 'lucide-react';
 import Image from 'next/image';
@@ -24,6 +25,40 @@ export default function CartDrawer() {
   const shipping = freeShipping ? 0 : (items.length > 0 ? SHIPPING_CHARGE : 0);
   const total = sub + shipping;
   const progress = Math.min((sub / FREE_SHIPPING_THRESHOLD) * 100, 100);
+  const drawerRef = useRef<HTMLDivElement>(null);
+
+  // Focus trap effect
+  useEffect(() => {
+    if (!cartOpen) return;
+    const focusableElements = drawerRef.current?.querySelectorAll(
+      'a[href], button:not([disabled]), textarea, input, select'
+    );
+    if (!focusableElements || focusableElements.length === 0) return;
+    
+    const firstElement = focusableElements[0] as HTMLElement;
+    const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+    
+    // Focus the first element when drawer opens (e.g., close button or link)
+    setTimeout(() => firstElement?.focus(), 100);
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+      if (e.shiftKey) {
+        if (document.activeElement === firstElement) {
+          lastElement.focus();
+          e.preventDefault();
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          firstElement.focus();
+          e.preventDefault();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [cartOpen]);
 
   return (
     <AnimatePresence>
@@ -40,6 +75,10 @@ export default function CartDrawer() {
 
           {/* Drawer */}
           <motion.div
+            ref={drawerRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Shopping Cart"
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}

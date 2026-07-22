@@ -71,7 +71,7 @@ export default async function Footer() {
               MINARA
             </span>
           </Link>
-          <p className="font-heading italic text-white/45 text-base sm:text-lg max-w-md mx-auto leading-relaxed">
+          <p className="font-heading italic text-white/65 text-base sm:text-lg max-w-md mx-auto leading-relaxed">
             Gifts rooted in faith, made with love — delivered across India.
           </p>
 
@@ -111,7 +111,7 @@ export default async function Footer() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="inline-block text-sm text-white/50 hover:text-[var(--color-gold)] hover:translate-x-1 transition-all duration-200"
+                      className="inline-block text-sm text-white/75 hover:text-[var(--color-gold)] hover:translate-x-1 transition-all duration-200"
                     >
                       {link.label}
                     </Link>
@@ -131,7 +131,7 @@ export default async function Footer() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="inline-block text-sm text-white/50 hover:text-[var(--color-gold)] hover:translate-x-1 transition-all duration-200"
+                      className="inline-block text-sm text-white/75 hover:text-[var(--color-gold)] hover:translate-x-1 transition-all duration-200"
                     >
                       {link.label}
                     </Link>
@@ -149,19 +149,19 @@ export default async function Footer() {
               <div className="space-y-3.5">
                 <a
                   href={`mailto:${settings.storeEmail}`}
-                  className="flex items-center gap-2.5 text-sm text-white/50 hover:text-[var(--color-gold)] transition-colors"
+                  className="flex items-center gap-2.5 text-sm text-white/75 hover:text-[var(--color-gold)] transition-colors"
                 >
                   <Mail size={14} strokeWidth={1.5} className="text-[var(--color-gold)] shrink-0" />
                   {settings.storeEmail}
                 </a>
                 <a
                   href={`tel:${settings.storePhoneTel}`}
-                  className="flex items-center gap-2.5 text-sm text-white/50 hover:text-[var(--color-gold)] transition-colors"
+                  className="flex items-center gap-2.5 text-sm text-white/75 hover:text-[var(--color-gold)] transition-colors"
                 >
                   <Phone size={14} strokeWidth={1.5} className="text-[var(--color-gold)] shrink-0" />
                   {settings.storePhone}
                 </a>
-                <p className="flex items-start gap-2.5 text-sm text-white/50">
+                 <p className="flex items-start gap-2.5 text-sm text-white/65">
                   <MapPin size={14} strokeWidth={1.5} className="text-[var(--color-gold)] shrink-0 mt-0.5" />
                   {settings.storeAddress}
                 </p>
@@ -174,7 +174,7 @@ export default async function Footer() {
                 Bulk & Corporate
               </h3>
               <span className="block w-6 h-px bg-[rgba(207,169,106,0.4)] mb-5" aria-hidden="true" />
-              <p className="text-sm text-white/50 leading-relaxed mb-5">
+               <p className="text-sm text-white/65 leading-relaxed mb-5">
                 Hajj return sets, Nikkah hampers & corporate gifting — we handle custom quantities with care.
               </p>
               <a
@@ -193,14 +193,13 @@ export default async function Footer() {
         {/* ── Bottom bar ──────────────────────────────────────────────────── */}
         <div className="border-t border-[rgba(207,169,106,0.12)]">
           <div className="section-container py-5">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/35">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/60">
               <p>© {year} MINARA. All rights reserved.</p>
-              <p className="text-white/25">Made with love in India 🇮🇳</p>
+              <p className="text-white/60">Made with love in India 🇮🇳</p>
               <div className="flex items-center gap-1.5">
-                <span className="text-white/25">Secured by</span>
-                <span className="text-[var(--color-gold)] font-semibold opacity-70">Razorpay</span>
-                <span className="text-white/20 mx-1">·</span>
-                <span className="text-white/25">UPI · Cards · COD</span>
+                <span className="text-white/60">Secured by</span>
+                <span className="text-[var(--color-gold)] font-semibold opacity-80">Razorpay</span>
+                <span className="text-white/50">UPI · Cards · COD</span>
               </div>
             </div>
           </div>

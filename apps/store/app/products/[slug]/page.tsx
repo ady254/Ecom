@@ -97,6 +97,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       : {}),
   };
 
+  // Escape "<" so a product name/description containing "</script>" cannot break
+  // out of the JSON-LD <script> tag and run — JSON.stringify alone does not do this.
+  const jsonLdHtml = JSON.stringify(jsonLd).replace(/</g, '\\u003c');
+
   // Delivery timeline dates
   const today = new Date();
   const fmt = (d: Date) => d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
@@ -111,7 +115,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml }}
       />
     <div className="pb-20 pt-6">
       <div className="section-container">

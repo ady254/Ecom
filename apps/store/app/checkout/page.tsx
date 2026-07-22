@@ -337,16 +337,16 @@ export default function CheckoutPage() {
                   </h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="sm:col-span-2">
-                      <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Full Name *</label>
-                      <input value={form.fullName} onChange={(e) => set('fullName', e.target.value)} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[var(--color-gold)] transition-colors" placeholder="Aarav Sharma" required />
+                      <label htmlFor="fullName" className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Full Name *</label>
+                      <input id="fullName" value={form.fullName} onChange={(e) => set('fullName', e.target.value)} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[var(--color-gold)] transition-colors" placeholder="Aarav Sharma" required />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Mobile Number *</label>
-                      <input value={form.phone} onChange={(e) => set('phone', e.target.value)} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[var(--color-gold)] transition-colors" placeholder="9876543210" maxLength={10} required />
+                      <label htmlFor="phone" className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Mobile Number *</label>
+                      <input id="phone" value={form.phone} onChange={(e) => set('phone', e.target.value)} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[var(--color-gold)] transition-colors" placeholder="9876543210" maxLength={10} required />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Email Address *</label>
-                      <input type="email" value={form.email} onChange={(e) => set('email', e.target.value)} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[var(--color-gold)] transition-colors" placeholder="you@example.com" required />
+                      <label htmlFor="email" className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Email Address *</label>
+                      <input id="email" type="email" value={form.email} onChange={(e) => set('email', e.target.value)} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[var(--color-gold)] transition-colors" placeholder="you@example.com" required />
                     </div>
                   </div>
                 </div>
@@ -380,24 +380,24 @@ export default function CheckoutPage() {
                   </h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="sm:col-span-2">
-                      <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Address Line 1 *</label>
-                      <input value={form.addressLine1} onChange={(e) => set('addressLine1', e.target.value)} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[var(--color-gold)] transition-colors" placeholder="Flat no, Building, Street" required />
+                      <label htmlFor="addressLine1" className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Address Line 1 *</label>
+                      <input id="addressLine1" value={form.addressLine1} onChange={(e) => set('addressLine1', e.target.value)} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[var(--color-gold)] transition-colors" placeholder="Flat no, Building, Street" required />
                     </div>
                     <div className="sm:col-span-2">
-                      <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Address Line 2</label>
-                      <input value={form.addressLine2} onChange={(e) => set('addressLine2', e.target.value)} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[var(--color-gold)] transition-colors" placeholder="Locality, Landmark (optional)" />
+                      <label htmlFor="addressLine2" className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Address Line 2</label>
+                      <input id="addressLine2" value={form.addressLine2} onChange={(e) => set('addressLine2', e.target.value)} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[var(--color-gold)] transition-colors" placeholder="Locality, Landmark (optional)" />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">City *</label>
-                      <input value={form.city} onChange={(e) => set('city', e.target.value)} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[var(--color-gold)] transition-colors" placeholder="Mumbai" required />
+                      <label htmlFor="city" className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">City *</label>
+                      <input id="city" value={form.city} onChange={(e) => set('city', e.target.value)} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[var(--color-gold)] transition-colors" placeholder="Mumbai" required />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Pincode *</label>
-                      <input value={form.pincode} onChange={(e) => set('pincode', e.target.value.replace(/\D/g, ''))} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[var(--color-gold)] transition-colors" placeholder="400001" maxLength={6} required />
+                      <label htmlFor="pincode" className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Pincode *</label>
+                      <input id="pincode" value={form.pincode} onChange={(e) => set('pincode', e.target.value.replace(/\D/g, ''))} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[var(--color-gold)] transition-colors" placeholder="400001" maxLength={6} required />
                     </div>
                     <div className="sm:col-span-2">
-                      <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">State *</label>
-                      <select value={form.state} onChange={(e) => set('state', e.target.value)} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[var(--color-gold)] transition-colors bg-white" required>
+                      <label htmlFor="state" className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">State *</label>
+                      <select id="state" value={form.state} onChange={(e) => set('state', e.target.value)} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[var(--color-gold)] transition-colors bg-white" required>
                         <option value="">Select state</option>
                         {INDIAN_STATES.map((s) => <option key={s} value={s}>{s}</option>)}
                       </select>
@@ -411,11 +411,14 @@ export default function CheckoutPage() {
                 </div>
 
                 {/* Coupon code */}
-                <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-                  <h2 className="font-semibold text-[var(--color-navy)] mb-5 flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-[var(--color-navy)] text-white text-xs flex items-center justify-center">3</span>
-                    Coupon Code
-                  </h2>
+                <details className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm group">
+                  <summary className="font-semibold text-[var(--color-navy)] flex items-center gap-2 cursor-pointer list-none">
+                    <span className="w-6 h-6 rounded-full bg-gray-50 text-gray-400 text-xs flex items-center justify-center group-open:bg-[var(--color-gold)] group-open:text-[var(--color-navy)] transition-colors">
+                      <Tag size={12} />
+                    </span>
+                    Have a coupon code?
+                  </summary>
+                  <div className="mt-5">
                   {couponApplied ? (
                     <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3">
                       <div className="flex items-center gap-2">
@@ -423,7 +426,7 @@ export default function CheckoutPage() {
                         <span className="font-semibold text-sm text-emerald-700">{couponCode.toUpperCase()}</span>
                         <span className="text-xs text-emerald-600">— {formatCurrency(couponDiscount)} off</span>
                       </div>
-                      <button onClick={removeCoupon} className="p-1 text-emerald-500 hover:text-red-500 transition-colors">
+                      <button onClick={removeCoupon} type="button" aria-label="Remove coupon" className="p-1 text-emerald-500 hover:text-red-500 transition-colors">
                         <X size={15} />
                       </button>
                     </div>
@@ -449,12 +452,13 @@ export default function CheckoutPage() {
                       </button>
                     </div>
                   )}
-                </div>
+                  </div>
+                </details>
 
                 {/* Payment method */}
                 <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
                   <h2 className="font-semibold text-[var(--color-navy)] mb-5 flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-[var(--color-navy)] text-white text-xs flex items-center justify-center">4</span>
+                    <span className="w-6 h-6 rounded-full bg-[var(--color-navy)] text-white text-xs flex items-center justify-center">3</span>
                     Payment Method
                   </h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

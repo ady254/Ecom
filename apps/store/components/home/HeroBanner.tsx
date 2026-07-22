@@ -25,6 +25,7 @@ const FALLBACK: Slide[] = [
     subtitle: 'Handcrafted Islamic gifts — Quran sets, wedding hampers, Hajj favours & more, beautifully wrapped and delivered across India.',
     buttonText: 'Shop All Gifts',
     buttonLink: '/products',
+    image: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=2000&auto=format&fit=crop',
     bgColor: '#0B2342',
   },
   {
@@ -33,6 +34,7 @@ const FALLBACK: Slide[] = [
     subtitle: 'Exquisite Nikkah hampers, Quran sets, and keepsakes for the most blessed celebrations.',
     buttonText: 'Shop Wedding Gifts',
     buttonLink: '/products?tags=wedding',
+    image: 'https://images.unsplash.com/photo-1623517409249-18f4a1cc3779?q=80&w=2000&auto=format&fit=crop',
     bgColor: '#1a0f2e',
   },
   {
@@ -41,6 +43,7 @@ const FALLBACK: Slide[] = [
     subtitle: 'Thoughtful return favours for your loved ones — Zamzam sets, prayer gifts, and blessed keepsakes.',
     buttonText: 'Explore Hajj Gifts',
     buttonLink: '/products?tags=hajj',
+    image: 'https://images.unsplash.com/photo-1598285520973-2b22ec7e0c40?q=80&w=2000&auto=format&fit=crop',
     bgColor: '#0d2010',
   },
   {
@@ -49,6 +52,7 @@ const FALLBACK: Slide[] = [
     subtitle: 'Premium Quran collections, Tasbih cards, and home decor — crafted with love for every occasion.',
     buttonText: 'Browse Collections',
     buttonLink: '/products?tags=quran',
+    image: 'https://images.unsplash.com/photo-1608889476561-6242cfdbf622?q=80&w=2000&auto=format&fit=crop',
     bgColor: '#1a1007',
   },
 ];
@@ -187,7 +191,7 @@ export default function HeroBanner() {
 
               {/* Subtitle — hidden on small phones to avoid overflow */}
               {slide.subtitle && (
-                <p className="hidden sm:block text-white/70 text-sm md:text-base lg:text-lg leading-relaxed mb-6 sm:mb-9 max-w-xs sm:max-w-sm lg:max-w-md">
+                <p className="text-white/75 text-[11px] leading-relaxed sm:text-sm md:text-base lg:text-lg mb-5 sm:mb-9 max-w-[15rem] sm:max-w-sm lg:max-w-md">
                   {slide.subtitle}
                 </p>
               )}

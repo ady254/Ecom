@@ -24,8 +24,6 @@ const navLinks = [
       { label: 'Home Decor', href: '/products?tags=homedecor' },
     ],
   },
-  { label: 'Gift Hampers', href: '/products?tags=hamper' },
-  { label: 'Wedding Gifts', href: '/products?tags=wedding' },
 ];
 
 export default function Navbar() {
@@ -122,14 +120,27 @@ export default function Navbar() {
                 className="relative"
                 onMouseEnter={() => setOpenDropdown(link.label)}
                 onMouseLeave={() => setOpenDropdown(null)}
+                onFocus={() => setOpenDropdown(link.label)}
+                onBlur={(e) => {
+                  if (!e.currentTarget.contains(e.relatedTarget)) {
+                    setOpenDropdown(null);
+                  }
+                }}
               >
-                <button className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium tracking-wider text-[var(--color-navy)] hover:text-[var(--color-gold-dark)] transition-colors rounded-lg hover:bg-gray-50">
+                <button
+                  className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium tracking-wider text-[var(--color-navy)] hover:text-[var(--color-gold-dark)] transition-colors rounded-lg hover:bg-gray-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-gold)]"
+                  aria-expanded={openDropdown === link.label}
+                  aria-haspopup="true"
+                  aria-controls={`dropdown-${link.label}`}
+                >
                   {link.label}
-                  <ChevronDown size={13} className={`transition-transform ${openDropdown === link.label ? 'rotate-180' : ''}`} />
+                  <ChevronDown size={13} className={`transition-transform ${openDropdown === link.label ? 'rotate-180' : ''}`} aria-hidden="true" />
                 </button>
                 <AnimatePresence>
                   {openDropdown === link.label && (
                     <motion.div
+                      id={`dropdown-${link.label}`}
+                      role="menu"
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 8 }}
@@ -140,7 +151,8 @@ export default function Navbar() {
                         <Link
                           key={child.href}
                           href={child.href}
-                          className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-[var(--color-cream)] hover:text-[var(--color-navy)] transition-colors"
+                          role="menuitem"
+                          className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-[var(--color-cream)] hover:text-[var(--color-navy)] transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--color-gold)]"
                         >
                           {child.label}
                         </Link>

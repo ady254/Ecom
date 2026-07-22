@@ -1,9 +1,19 @@
 'use client';
 
-import { Star, Quote } from 'lucide-react';
+import { Star, Quote, ExternalLink } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const testimonials = [
+interface Testimonial {
+  name: string;
+  location: string;
+  rating: number;
+  text: string;
+  verified: boolean;
+  date: string;
+  source: 'google' | 'whatsapp' | 'instagram';
+}
+
+const testimonials: Testimonial[] = [
   {
     name: 'Fatima Shaikh',
     location: 'Mumbai',
@@ -11,6 +21,7 @@ const testimonials = [
     text: 'Ordered the Hajj return gift set for my parents and it was absolutely beautiful — Zamzam packaging, premium Quran, tasbihs. Everyone who received one was so touched.',
     verified: true,
     date: '2 weeks ago',
+    source: 'google',
   },
   {
     name: 'Zainab Khan',
@@ -19,14 +30,16 @@ const testimonials = [
     text: "Got the Nikkah hamper for my cousin's wedding and she was in tears — the good kind! Every product was premium quality and the box looked like it came from a luxury store.",
     verified: true,
     date: '1 month ago',
+    source: 'whatsapp',
   },
   {
     name: 'Ayesha Siddiqui',
     location: 'Hyderabad',
-    rating: 5,
+    rating: 4,
     text: 'Fast delivery, beautiful presentation. Ordered on Wednesday, received Friday morning. The Quran set with personalised engraving was beyond my expectations. Will order again!',
     verified: true,
     date: '3 weeks ago',
+    source: 'google',
   },
   {
     name: 'Sameer Ansari',
@@ -35,6 +48,7 @@ const testimonials = [
     text: 'Sent a wedding hamper to my cousin in Mumbai. It arrived in perfect condition — the couple called me specifically to rave about how beautiful everything was. Truly blessed.',
     verified: true,
     date: '1 week ago',
+    source: 'instagram',
   },
   {
     name: 'Nadia Hussain',
@@ -43,21 +57,50 @@ const testimonials = [
     text: 'Ordered Tasbih cards for kids for an Eid event — 20 sets, each one packed exactly the same, on time, with personalised names. The children absolutely loved them. 10/10.',
     verified: true,
     date: '2 months ago',
+    source: 'whatsapp',
   },
   {
     name: 'Imran Sheikh',
     location: 'Ahmedabad',
-    rating: 5,
+    rating: 4,
     text: 'Needed Hajj return favours quickly. The support team helped me pick the right set and it was dispatched same day. Absolutely saved me and the quality was outstanding.',
     verified: true,
     date: '5 days ago',
+    source: 'google',
   },
 ];
 
-function Avatar({ name }: { name: string }) {
-  const initials = name.split(' ').map((n) => n[0]).join('').toUpperCase();
+const SOURCE_META: Record<Testimonial['source'], { label: string; colorClass: string }> = {
+  google:    { label: 'Google Review', colorClass: 'text-blue-600'  },
+  whatsapp:  { label: 'WhatsApp',      colorClass: 'text-green-600' },
+  instagram: { label: 'Instagram',     colorClass: 'text-pink-600'  },
+};
+
+function StarRating({ rating, max = 5 }: { rating: number; max?: number }) {
   return (
-    <div className="w-9 h-9 rounded-full bg-[var(--color-navy)] flex items-center justify-center text-[var(--color-gold)] text-xs font-bold shrink-0 border border-[rgba(207,169,106,0.3)]">
+    <div className="flex items-center gap-0.5" aria-label={`${rating} out of ${max} stars`} role="img">
+      {Array.from({ length: max }, (_, i) => i + 1).map((s) => (
+        <Star
+          key={s}
+          size={12}
+          className={s <= rating ? 'text-amber-400 fill-amber-400' : 'text-gray-200 fill-gray-200'}
+        />
+      ))}
+    </div>
+  );
+}
+
+function Avatar({ name }: { name: string }) {
+  const initials = name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase();
+  return (
+    <div
+      className="w-9 h-9 rounded-full bg-[var(--color-navy)] flex items-center justify-center text-[var(--color-gold)] text-xs font-bold shrink-0 border border-[rgba(207,169,106,0.3)]"
+      aria-hidden="true"
+    >
       {initials}
     </div>
   );
@@ -76,66 +119,85 @@ export default function Testimonials() {
             What Our Customers Say
           </h2>
           <div className="inline-flex items-center gap-2 bg-white border border-gray-100 rounded-full px-5 py-2 shadow-sm">
-            <div className="flex gap-0.5">
-              {[1,2,3,4,5].map((s) => (
+            <div className="flex gap-0.5" aria-hidden="true">
+              {[1, 2, 3, 4, 5].map((s) => (
                 <Star key={s} size={13} className="text-amber-400 fill-amber-400" />
               ))}
             </div>
             <span className="text-sm font-bold text-[var(--color-navy)]">4.9</span>
-            <span className="text-xs text-gray-400">based on 4,200+ orders</span>
+            <span className="text-xs text-gray-500">based on 4,200+ orders</span>
           </div>
         </div>
 
         {/* Cards grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {testimonials.map((t, i) => (
-            <motion.div
-              key={t.name}
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-60px' }}
-              transition={{ duration: 0.45, delay: (i % 3) * 0.1, ease: 'easeOut' }}
-              className="bg-white rounded-2xl p-5 border border-gray-100 hover:border-[rgba(207,169,106,0.35)] hover:shadow-[0_4px_20px_rgba(207,169,106,0.1)] transition-all duration-200 flex flex-col relative overflow-hidden"
-            >
-              {/* Decorative quote icon */}
-              <Quote
-                size={40}
-                strokeWidth={1}
-                className="absolute top-3 right-4 text-[var(--color-gold)] opacity-10 rotate-180"
-              />
+          {testimonials.map((t, i) => {
+            const src = SOURCE_META[t.source];
+            return (
+              <motion.article
+                key={t.name}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-60px' }}
+                transition={{ duration: 0.45, delay: (i % 3) * 0.1, ease: 'easeOut' }}
+                className="bg-white rounded-2xl p-5 border border-gray-100 hover:border-[rgba(207,169,106,0.35)] hover:shadow-[0_4px_20px_rgba(207,169,106,0.1)] transition-all duration-200 flex flex-col relative overflow-hidden"
+                aria-label={`Review by ${t.name} from ${t.location}`}
+              >
+                {/* Decorative quote mark */}
+                <Quote
+                  size={40}
+                  strokeWidth={1}
+                  className="absolute top-3 right-4 text-[var(--color-gold)] opacity-10 rotate-180"
+                  aria-hidden="true"
+                />
 
-              {/* Stars */}
-              <div className="flex items-center gap-0.5 mb-3">
-                {[1,2,3,4,5].map((s) => (
-                  <Star key={s} size={12} className={s <= t.rating ? 'text-amber-400 fill-amber-400' : 'text-gray-200 fill-gray-200'} />
-                ))}
-              </div>
+                {/* Stars + review source */}
+                <div className="flex items-center justify-between mb-3">
+                  <StarRating rating={t.rating} />
+                  <span className={`text-[10px] font-semibold ${src.colorClass}`}>
+                    via {src.label}
+                  </span>
+                </div>
 
-              {/* Review text */}
-              <p className="text-gray-600 text-sm leading-relaxed flex-1 mb-4 relative z-10">
-                &ldquo;{t.text}&rdquo;
-              </p>
+                {/* Review body */}
+                <p className="text-gray-600 text-sm leading-relaxed flex-1 mb-4 relative z-10">
+                  &ldquo;{t.text}&rdquo;
+                </p>
 
-              {/* Author row */}
-              <div className="flex items-center justify-between gap-3 pt-4 border-t border-gray-100">
-                <div className="flex items-center gap-2.5">
-                  <Avatar name={t.name} />
-                  <div>
-                    <p className="text-sm font-semibold text-[var(--color-navy)]">{t.name}</p>
-                    <p className="text-xs text-gray-400">{t.location}</p>
+                {/* Author row */}
+                <div className="flex items-center justify-between gap-3 pt-4 border-t border-gray-100">
+                  <div className="flex items-center gap-2.5">
+                    <Avatar name={t.name} />
+                    <div>
+                      <p className="text-sm font-semibold text-[var(--color-navy)]">{t.name}</p>
+                      <p className="text-xs text-gray-400">{t.location}</p>
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    {t.verified && (
+                      <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full block border border-emerald-100">
+                        ✓ Verified
+                      </span>
+                    )}
+                    <span className="text-[9px] text-gray-400 block mt-0.5">{t.date}</span>
                   </div>
                 </div>
-                <div className="text-right shrink-0">
-                  {t.verified && (
-                    <span className="text-[9px] font-semibold text-[var(--color-navy)] bg-[rgba(207,169,106,0.15)] px-2 py-0.5 rounded-full block border border-[rgba(207,169,106,0.3)]">
-                      Verified
-                    </span>
-                  )}
-                  <span className="text-[9px] text-gray-400 block mt-0.5">{t.date}</span>
-                </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.article>
+            );
+          })}
+        </div>
+
+        {/* Link to external reviews — creates credibility anchor */}
+        <div className="text-center mt-8">
+          <a
+            href="https://g.page/r/minaragifting/review"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--color-navy)] hover:text-[var(--color-gold-dark)] transition-colors"
+          >
+            Read all reviews on Google
+            <ExternalLink size={13} aria-hidden="true" />
+          </a>
         </div>
       </div>
     </section>
