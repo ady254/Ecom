@@ -97,15 +97,7 @@ export default function HeroBanner({ initialBanners = [] }: { initialBanners?: S
 
   return (
     <section
-      className="relative w-full overflow-hidden"
-      style={{
-        /* dvh accounts for mobile browser chrome; ~150px covers the
-           announcement bar + two-row header (logo/icons + search) so the
-           CTA and dots stay above the fold */
-        height: 'calc(100dvh - 150px)',
-        minHeight: '480px',
-        maxHeight: '900px',
-      }}
+      className="relative w-full overflow-hidden h-[65vh] sm:h-[60vh] md:h-[65vh] lg:h-[75vh] min-h-[420px] max-h-[700px]"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onTouchStart={onTouchStart}
