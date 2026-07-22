@@ -51,11 +51,12 @@ export default async function ReturnPolicyPage() {
 
           <section>
             <h2 className="font-heading text-2xl text-[var(--color-navy)] mb-3">How to Initiate a Return</h2>
+            <p className="mb-2">For any support related to returns or exchanges, please connect with us on WhatsApp for the fastest resolution.</p>
             <ol className="list-decimal pl-5 mt-2 space-y-2">
-              <li>Email us at <a href={`mailto:${storeEmail}`} className="text-[var(--color-gold-dark)] hover:underline">{storeEmail}</a> with your order number and reason for return</li>
-              <li>Attach photographs of the item and packaging (required for damaged/incorrect items)</li>
-              <li>Our team will respond within 24 hours with return instructions</li>
-              <li>Pack the item securely and hand it to our pickup partner</li>
+              <li>Message us on WhatsApp with your order number and reason for return.</li>
+              <li>Upload an <strong>unboxing video</strong> and clear photographs of the item and packaging (required for all returns/damaged items).</li>
+              <li>Our support team will assist you with further steps on WhatsApp within 24 hours.</li>
+              <li>Pack the item securely and hand it to our pickup partner.</li>
             </ol>
           </section>
 
@@ -71,7 +72,7 @@ export default async function ReturnPolicyPage() {
 
           <section>
             <h2 className="font-heading text-2xl text-[var(--color-navy)] mb-3">Damaged or Wrong Items</h2>
-            <p>If you receive a damaged, defective, or incorrect item, please contact us within <strong>48 hours</strong> of delivery with photos. We will arrange a free replacement or full refund at your preference.</p>
+            <p>If you receive a damaged, defective, or incorrect item, please connect with us on WhatsApp within <strong>48 hours</strong> of delivery. Share your unboxing video and photos for immediate support. We will arrange a free replacement or full refund at your preference.</p>
           </section>
 
           <section>
@@ -81,7 +82,7 @@ export default async function ReturnPolicyPage() {
 
           <section>
             <h2 className="font-heading text-2xl text-[var(--color-navy)] mb-3">Contact Us</h2>
-            <p>Have questions about a return? Reach us at <a href={`mailto:${storeEmail}`} className="text-[var(--color-gold-dark)] hover:underline">{storeEmail}</a> or WhatsApp us for faster support.</p>
+            <p>Have questions about a return? Connect with us on WhatsApp for support! You can also reach us at <a href={`mailto:${storeEmail}`} className="text-[var(--color-gold-dark)] hover:underline">{storeEmail}</a>.</p>
           </section>
         </div>
 

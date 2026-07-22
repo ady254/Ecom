@@ -175,17 +175,8 @@ export default async function Footer() {
               </h3>
               <span className="block w-6 h-px bg-[rgba(207,169,106,0.4)] mb-5" aria-hidden="true" />
                <p className="text-sm text-white/65 leading-relaxed mb-5">
-                Hajj return sets, Nikkah hampers & corporate gifting — we handle custom quantities with care.
+                Hajj return sets, Nikkah hampers & corporate gifting — we handle custom quantities with care. Connect with us on WhatsApp for bulk pricing.
               </p>
-              <a
-                href={`https://wa.me/${settings.whatsappNumber}?text=${WHATSAPP_BULK_MSG}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[rgba(207,169,106,0.45)] text-[var(--color-gold)] text-xs font-semibold tracking-wide hover:bg-[var(--color-gold)] hover:text-[var(--color-navy)] hover:border-[var(--color-gold)] hover:shadow-[0_6px_18px_rgba(207,169,106,0.3)] transition-all duration-300"
-              >
-                <MessageCircle size={14} strokeWidth={1.5} />
-                Enquire on WhatsApp
-              </a>
             </div>
           </div>
         </div>
