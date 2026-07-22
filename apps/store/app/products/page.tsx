@@ -80,12 +80,16 @@ export default async function ProductsPage({
 
         {/* Page header */}
         <div className="mb-8">
-          <h1 className="font-heading text-4xl md:text-5xl text-[var(--color-navy)]">
+          <h1 className="font-heading text-4xl md:text-5xl text-[var(--color-navy)] capitalize">
             {getString('category')
               ? categories.find((c) => c.slug === getString('category'))?.name ?? 'Products'
-              : getString('isFeatured') === 'true'
-                ? 'Featured Gifts'
-                : 'All Collections'}
+              : getString('tags')
+                ? `${getString('tags')} Gifts`
+                : getString('search')
+                  ? `Results for "${getString('search')}"`
+                  : getString('isFeatured') === 'true'
+                    ? 'Featured Gifts'
+                    : 'All Collections'}
           </h1>
           <p className="text-gray-400 text-sm mt-2">
             {result === null

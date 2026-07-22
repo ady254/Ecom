@@ -36,7 +36,7 @@ export default function OccasionSection() {
             return (
               <Link
                 key={occ.name}
-                href={occ.slug ? `/products?tags=${occ.slug}` : '/products?sort=-createdAt'}
+                href={occ.slug ? `/products?search=${occ.slug}` : '/products?sort=-createdAt'}
                 className="group flex flex-col items-center gap-2.5 min-w-[68px] sm:min-w-[76px]"
               >
                 <div className="
