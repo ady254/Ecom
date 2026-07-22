@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
 
-interface Slide {
+export interface Slide {
   _id: string;
   title: string;
   subtitle?: string;
@@ -16,6 +16,7 @@ interface Slide {
   buttonLink?: string;
   image?: string;
   bgColor?: string;
+  position?: string;
 }
 
 const FALLBACK: Slide[] = [
@@ -60,26 +61,11 @@ const FALLBACK: Slide[] = [
 const INTERVAL_MS = 5000;
 const SWIPE_THRESHOLD = 50;
 
-export default function HeroBanner() {
-  const [slides, setSlides] = useState<Slide[]>(FALLBACK);
+export default function HeroBanner({ initialBanners = [] }: { initialBanners?: Slide[] }) {
+  const [slides, setSlides] = useState<Slide[]>(initialBanners.length > 0 ? initialBanners : FALLBACK);
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
   const touchStartX = useRef<number | null>(null);
-
-  useEffect(() => {
-    fetch(`${API}/banners`)
-      .then((r) => r.json())
-      .then((j) => {
-        const hero: Slide[] = (j.data?.banners ?? []).filter(
-          (b: Slide & { position?: string }) => b.position === 'hero' || !b.position
-        );
-        if (hero.length > 0) {
-          setSlides(hero);
-          setCurrent(0);
-        }
-      })
-      .catch(() => {});
-  }, []);
 
   const total = slides.length;
   const safeIdx = total > 0 ? current % total : 0;

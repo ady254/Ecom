@@ -252,6 +252,20 @@ export default function PDPClient({ product, discount, soldCount, deliverySteps 
               </div>
             </div>
 
+            {/* Free Shipping Indicator */}
+            <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-3 mb-5 flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                <Truck size={14} className="text-emerald-600" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-emerald-800">
+                  {product.price >= 999 
+                    ? "This item qualifies for FREE Shipping!" 
+                    : "Free shipping on orders over ₹999!"}
+                </p>
+              </div>
+            </div>
+
             {/* CTA buttons */}
             <div ref={ctaRef} className="space-y-3 mb-6">
               <button

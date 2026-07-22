@@ -15,6 +15,14 @@
   --color-cream: #FAF7F2;
   --color-cream-dark: #F0EBE1;
 
+  /* Semantic Colors */
+  --color-success: #10B981;
+  --color-success-light: #D1FAE5;
+  --color-error: #EF4444;
+  --color-error-light: #FEE2E2;
+  --color-warning: #F59E0B;
+  --color-warning-light: #FEF3C7;
+
   /* Typography */
   --font-heading: 'Cormorant Garamond', Georgia, serif;
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -24,11 +32,17 @@
   /* Spacing */
   --spacing-section: 6rem;
 
-  /* Border radius */
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
   --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+
+  /* Component Radius Aliases */
+  --radius-button: var(--radius-full);
+  --radius-card: var(--radius-xl);
+  --radius-input: var(--radius-lg);
 
   /* Shadows */
   --shadow-soft: 0 4px 24px rgba(11, 35, 66, 0.08);
@@ -66,6 +80,7 @@ h1, h2, h3, h4, h5, h6 {
 /* ─── Custom Scrollbar ───────────────────────────────────────────────────────── */
 ::-webkit-scrollbar {
   width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: var(--color-cream);
@@ -73,6 +88,14 @@ h1, h2, h3, h4, h5, h6 {
 ::-webkit-scrollbar-thumb {
   background: var(--color-gold);
   border-radius: 3px;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
 }
 
 /* ─── Selection ──────────────────────────────────────────────────────────────── */

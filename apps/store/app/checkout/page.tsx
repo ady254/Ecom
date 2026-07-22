@@ -501,8 +501,13 @@ export default function CheckoutPage() {
                         <CreditCard size={18} className={paymentMethod === 'razorpay' ? 'text-[var(--color-navy)]' : 'text-gray-400'} />
                       </div>
                       <div>
-                        <p className="font-semibold text-sm text-[var(--color-navy)]">Pay Online</p>
-                        <p className="text-xs text-gray-400">UPI, Cards, Net Banking</p>
+                        <p className="font-semibold text-sm text-[var(--color-navy)] mb-1.5">Pay Online</p>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded border border-gray-200 bg-white text-gray-600">UPI</span>
+                          <span className="text-[10px] font-bold italic px-1.5 py-0.5 rounded border border-blue-200 bg-blue-50 text-blue-700">VISA</span>
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded border border-orange-200 bg-orange-50 text-orange-600">MC</span>
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded border border-gray-200 bg-white text-gray-600">RuPay</span>
+                        </div>
                       </div>
                       {paymentMethod === 'razorpay' && <CheckCircle size={16} className="text-[var(--color-gold-dark)] ml-auto" />}
                     </button>
