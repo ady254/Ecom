@@ -7,11 +7,11 @@ const WHATSAPP_BULK_MSG = encodeURIComponent('Assalamu Alaikum! I would like to 
 
 const shopLinks = [
   { label: 'All Products',      href: '/products' },
-  { label: 'Quran Sets',        href: '/products?tags=quran' },
-  { label: 'Wedding Gifts',     href: '/products?tags=wedding' },
-  { label: 'Gift Hampers',      href: '/products?tags=hamper' },
-  { label: 'Hajj Return Gifts', href: '/products?tags=hajj' },
-  { label: 'Home Decor',        href: '/products?tags=homedecor' },
+  { label: 'Quran Sets',        href: '/products?search=quran' },
+  { label: 'Wedding Gifts',     href: '/products?search=wedding' },
+  { label: 'Gift Hampers',      href: '/products?search=hamper' },
+  { label: 'Hajj Return Gifts', href: '/products?search=hajj' },
+  { label: 'Home Decor',        href: '/products?search=homedecor' },
 ];
 
 const helpLinks = [

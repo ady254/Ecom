@@ -16,12 +16,12 @@ const navLinks = [
     label: 'Collections',
     href: '/products',
     children: [
-      { label: 'Quran Sets', href: '/products?tags=quran' },
-      { label: 'Wedding Gifts', href: '/products?tags=wedding' },
-      { label: 'Gift Hampers', href: '/products?tags=hamper' },
-      { label: 'Hajj Return Gifts', href: '/products?tags=hajj' },
-      { label: 'Tasbih Cards for Kids', href: '/products?tags=tasbih' },
-      { label: 'Home Decor', href: '/products?tags=homedecor' },
+      { label: 'Quran Sets', href: '/products?search=quran' },
+      { label: 'Wedding Gifts', href: '/products?search=wedding' },
+      { label: 'Gift Hampers', href: '/products?search=hamper' },
+      { label: 'Hajj Return Gifts', href: '/products?search=hajj' },
+      { label: 'Tasbih Cards for Kids', href: '/products?search=tasbih' },
+      { label: 'Home Decor', href: '/products?search=homedecor' },
     ],
   },
 ];
