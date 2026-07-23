@@ -207,6 +207,7 @@ export interface AdminProduct {
   customFields?: Array<{ label: string; placeholder?: string; required?: boolean }>;
   images: { url: string; alt?: string }[];
   category?: { _id: string; name: string };
+  categories?: Array<{ _id: string; name: string; slug?: string }>;
   tags: string[];
   ratings?: { averageRating: number; reviewCount: number };
 }

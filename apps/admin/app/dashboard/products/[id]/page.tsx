@@ -55,7 +55,14 @@ export default function EditProductPage() {
         setStock(String(p.stock));
         setSku(p.sku ?? '');
         setWeight(p.weight ? String(p.weight) : '');
-        setCategoryIds(p.category?.map((c: any) => c._id) ?? []);
+        setCategoryIds(
+          (p.categories && p.categories.length > 0
+            ? p.categories
+            : p.category
+              ? [p.category]
+              : [])
+            .map((c) => c._id)
+        );
         setTags(p.tags ?? []);
         setIsFeatured(p.isFeatured);
         setIsActive(p.isActive);

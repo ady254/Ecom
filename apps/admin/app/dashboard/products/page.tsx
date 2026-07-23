@@ -118,7 +118,7 @@ export default function ProductsAdminPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="text-sm text-gray-500">{product.category?.name ?? '—'}</td>
+                      <td className="text-sm text-gray-500">{(product.categories && product.categories.length > 0 ? product.categories[0].name : product.category?.name) ?? '—'}</td>
                       <td className="font-semibold text-[var(--color-navy)]">{formatCurrency(product.price)}</td>
                       <td>
                         <span className={`text-sm font-medium ${
