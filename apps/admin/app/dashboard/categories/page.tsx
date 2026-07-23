@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Tag, Loader2, X } from 'lucide-react';
+import { Plus, Tag, Loader2, X, Edit, Trash2, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { categoriesAdminApi, type Category } from '@/lib/adminApi';
 
@@ -11,6 +11,7 @@ export default function CategoriesPage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   // Form state
   const [name, setName] = useState('');
@@ -31,25 +32,55 @@ export default function CategoriesPage() {
 
   useEffect(() => { load(); }, []);
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) { toast.error('Category name is required'); return; }
     setSaving(true);
     try {
-      const res = await categoriesAdminApi.create({
-        name: name.trim(),
-        description: description.trim() || undefined,
-        order: Number(order) || 0,
-      });
-      setCategories((prev) => [...prev, res.data.category]);
+      if (editingId) {
+        // Update existing
+        const res = await categoriesAdminApi.update(editingId, {
+          name: name.trim(),
+          description: description.trim() || undefined,
+          order: Number(order) || 0,
+        });
+        setCategories((prev) =>
+          prev.map((c) => (c._id === editingId ? res.data.category : c))
+        );
+        toast.success(`"${res.data.category.name}" updated`);
+        setEditingId(null);
+      } else {
+        // Create new
+        const res = await categoriesAdminApi.create({
+          name: name.trim(),
+          description: description.trim() || undefined,
+          order: Number(order) || 0,
+        });
+        setCategories((prev) => [...prev, res.data.category]);
+        toast.success(`"${res.data.category.name}" created`);
+        setShowForm(false);
+      }
       setName(''); setDescription(''); setOrder('0');
-      setShowForm(false);
-      toast.success(`"${res.data.category.name}" created`);
-    } catch {
-      toast.error('Failed to create category');
+    } catch (err) {
+      toast.error(editingId ? 'Failed to update category' : 'Failed to create category');
     } finally {
       setSaving(false);
     }
+  };
+
+  const startEdit = (cat: Category) => {
+    setEditingId(cat._id);
+    setName(cat.name);
+    setDescription(cat.description || '');
+    setOrder(String(cat.order));
+    setShowForm(false);
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setName('');
+    setDescription('');
+    setOrder('0');
   };
 
   return (
@@ -59,23 +90,27 @@ export default function CategoriesPage() {
           <h1 className="text-2xl font-bold text-[var(--color-navy)]">Categories</h1>
           {!loading && <p className="text-sm text-gray-500 mt-0.5">{categories.length} categories</p>}
         </div>
-        <button onClick={() => setShowForm(!showForm)} className="btn-admin-gold">
-          {showForm ? <X size={15} /> : <Plus size={15} />}
-          {showForm ? 'Cancel' : 'Add Category'}
-        </button>
+        {!editingId && (
+          <button onClick={() => setShowForm(!showForm)} className="btn-admin-gold">
+            {showForm ? <X size={15} /> : <Plus size={15} />}
+            {showForm ? 'Cancel' : 'Add Category'}
+          </button>
+        )}
       </div>
 
-      {/* Create form */}
+      {/* Create/Edit form */}
       <AnimatePresence>
-        {showForm && (
+        {(showForm || editingId) && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             className="admin-card border border-[rgba(207,169,106,0.3)]"
           >
-            <h2 className="font-semibold text-[var(--color-navy)] mb-5">New Category</h2>
-            <form onSubmit={handleCreate} className="space-y-4">
+            <h2 className="font-semibold text-[var(--color-navy)] mb-5">
+              {editingId ? 'Edit Category' : 'New Category'}
+            </h2>
+            <form onSubmit={handleSave} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
@@ -119,10 +154,15 @@ export default function CategoriesPage() {
               </div>
               <div className="flex gap-3 pt-1">
                 <button type="submit" disabled={saving} className="btn-admin-gold">
-                  {saving ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
-                  {saving ? 'Creating…' : 'Create Category'}
+                  {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                  {saving ? (editingId ? 'Updating…' : 'Creating…') : (editingId ? 'Update Category' : 'Create Category')}
                 </button>
-                <button type="button" onClick={() => setShowForm(false)} className="btn-admin-primary" style={{ background: '#6b7280' }}>
+                <button
+                  type="button"
+                  onClick={editingId ? cancelEdit : () => setShowForm(false)}
+                  className="btn-admin-primary"
+                  style={{ background: '#6b7280' }}
+                >
                   Cancel
                 </button>
               </div>
@@ -171,9 +211,18 @@ export default function CategoriesPage() {
                   <td className="text-sm text-gray-500 max-w-xs truncate">{cat.description || '—'}</td>
                   <td className="text-sm text-gray-500">{cat.order}</td>
                   <td className="pr-6">
-                    <span className={`status-badge ${cat.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                      {cat.isActive ? 'Active' : 'Inactive'}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className={`status-badge ${cat.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                        {cat.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                      <button
+                        onClick={() => startEdit(cat)}
+                        className="p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-[var(--color-gold)] transition-colors"
+                        title="Edit category"
+                      >
+                        <Edit size={16} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

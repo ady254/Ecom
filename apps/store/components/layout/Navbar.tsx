@@ -16,12 +16,12 @@ const navLinks = [
     label: 'Collections',
     href: '/products',
     children: [
-      { label: 'Quran Sets', href: '/products?search=quran' },
-      { label: 'Wedding Gifts', href: '/products?search=wedding' },
-      { label: 'Gift Hampers', href: '/products?search=hamper' },
-      { label: 'Hajj Return Favours', href: '/products?search=hajj' },
-      { label: 'Aqeeqah Favours', href: '/products?search=aqeeqah' },
-      { label: 'Personalised Gifts', href: '/products?search=personalised' },
+      { label: 'Quran Sets', href: '/products?category=quran-set' },
+      { label: 'Wedding Gifts', href: '/products?category=nikkah-signature-pad' },
+      { label: 'Gift Hampers', href: '/products?category=gift-hamper-for-loved-ones' },
+      { label: 'Hajj Return Favours', href: '/products?category=hajj-return-gift' },
+      { label: 'Aqeeqah Favours', href: '/products?category=aqeeqa-gifts' },
+      { label: 'Personalised Gifts', href: '/products?category=personalised-gifts' },
     ],
   },
 ];
