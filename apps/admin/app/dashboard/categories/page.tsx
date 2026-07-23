@@ -12,6 +12,7 @@ export default function CategoriesPage() {
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // Form state
   const [name, setName] = useState('');
@@ -81,6 +82,20 @@ export default function CategoriesPage() {
     setName('');
     setDescription('');
     setOrder('0');
+  };
+
+  const handleDelete = async (id: string, catName: string) => {
+    if (!confirm(`Delete category "${catName}"? This cannot be undone.`)) return;
+    setDeletingId(id);
+    try {
+      await categoriesAdminApi.delete(id);
+      setCategories((prev) => prev.filter((c) => c._id !== id));
+      toast.success(`"${catName}" deleted`);
+    } catch (err) {
+      toast.error('Failed to delete category');
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   return (
@@ -221,6 +236,14 @@ export default function CategoriesPage() {
                         title="Edit category"
                       >
                         <Edit size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(cat._id, cat.name)}
+                        disabled={deletingId === cat._id}
+                        className="p-1 rounded hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50"
+                        title="Delete category"
+                      >
+                        {deletingId === cat._id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
                       </button>
                     </div>
                   </td>

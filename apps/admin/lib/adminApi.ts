@@ -257,6 +257,8 @@ export const categoriesAdminApi = {
     adminPost<{ success: boolean; data: { category: Category } }>('/categories', data),
   update: (id: string, data: Partial<Category>) =>
     adminPatch<{ success: boolean; data: { category: Category } }>(`/categories/${id}`, data),
+  delete: (id: string) =>
+    adminDelete<{ success: boolean; message: string }>(`/categories/${id}`),
 };
 
 // ─── Customers ────────────────────────────────────────────────────────────────
