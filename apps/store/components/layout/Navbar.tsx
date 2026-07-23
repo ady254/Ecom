@@ -18,7 +18,7 @@ const navLinks = [
     children: [
       { label: 'Quran Sets', href: '/products?category=quran-set' },
       { label: 'Wedding Gifts', href: '/products?category=wedding-gifts' },
-      { label: 'Gift Hampers', href: '/products?category=gift-hampers' },
+      { label: 'Gift Hamper', href: '/products?category=gift-hamper' },
       { label: 'Hajj Return Favours', href: '/products?category=hajj-return-favours' },
       { label: 'Aqeeqah Favours', href: '/products?category=aqeeqah-favours' },
       { label: 'Personalised Gifts', href: '/products?category=personalised-gifts' },
