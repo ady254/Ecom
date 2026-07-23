@@ -22,7 +22,7 @@ interface Product {
   price: number; comparePrice?: number;
   images: ProductImage[];
   averageRating: number; reviewCount: number;
-  tags: string[]; category?: { name: string; slug: string }; stock: number;
+  tags: string[]; categories?: Array<{ name: string; slug: string }>; stock: number;
 }
 interface Category { _id: string; name: string; slug: string; }
 
@@ -169,9 +169,9 @@ export default async function ProductsPage({
                         </div>
 
                         <div className="p-4">
-                          {product.category && (
+                          {product.categories && product.categories.length > 0 && (
                             <div className="text-[10px] text-[var(--color-gold-dark)] uppercase tracking-wider mb-1">
-                              {product.category.name}
+                              {product.categories[0].name}
                             </div>
                           )}
                           <Link href={`/products/${product.slug}`}>

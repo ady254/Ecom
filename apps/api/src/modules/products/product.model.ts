@@ -8,7 +8,7 @@ export interface IProduct extends Document {
   price: number;
   comparePrice?: number;
   images: { url: string; alt?: string }[];
-  category?: mongoose.Types.ObjectId;
+  categories?: mongoose.Types.ObjectId[];
   tags: string[];
   stock: number;
   variants: Array<{
@@ -38,7 +38,7 @@ const productSchema = new Schema<IProduct>(
     price: { type: Number, required: true, min: 0 },
     comparePrice: { type: Number, min: 0 },
     images: [{ url: { type: String, required: true }, alt: String }],
-    category: { type: Schema.Types.ObjectId, ref: 'Category', index: true },
+    categories: [{ type: Schema.Types.ObjectId, ref: 'Category', index: true }],
     tags: [{ type: String, lowercase: true }],
     stock: { type: Number, required: true, min: 0, default: 0 },
     variants: [

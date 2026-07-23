@@ -26,11 +26,11 @@ export class ProductRepository {
       // Accept either a MongoDB ObjectId string or a category slug.
       // The sidebar sends slugs; admin might send _id directly.
       if (mongoose.Types.ObjectId.isValid(filter.category)) {
-        query.category = filter.category;
+        query.categories = { $in: [filter.category] };
       } else {
         const cat = await CategoryModel.findOne({ slug: filter.category }).select('_id').lean();
         if (cat) {
-          query.category = cat._id;
+          query.categories = { $in: [cat._id] };
         } else {
           // Unknown slug — return empty result set rather than a CastError
           return { products: [], total: 0 };
@@ -53,7 +53,7 @@ export class ProductRepository {
     const skip = (page - 1) * limit;
     const [products, total] = await Promise.all([
       ProductModel.find(query)
-        .populate('category', 'name slug')
+        .populate('categories', 'name slug')
         .sort(sort)
         .skip(skip)
         .limit(limit),
@@ -64,11 +64,11 @@ export class ProductRepository {
   }
 
   async findBySlug(slug: string): Promise<IProduct | null> {
-    return ProductModel.findOne({ slug, isActive: true }).populate('category', 'name slug');
+    return ProductModel.findOne({ slug, isActive: true }).populate('categories', 'name slug');
   }
 
   async findById(id: string): Promise<IProduct | null> {
-    return ProductModel.findById(id).populate('category', 'name slug');
+    return ProductModel.findById(id).populate('categories', 'name slug');
   }
 
   async create(data: Partial<IProduct>): Promise<IProduct> {

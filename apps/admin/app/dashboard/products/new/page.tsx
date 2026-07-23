@@ -23,7 +23,7 @@ export default function NewProductPage() {
   const [stock, setStock] = useState('');
   const [sku, setSku] = useState('');
   const [weight, setWeight] = useState('');
-  const [categoryId, setCategoryId] = useState('');
+  const [categoryIds, setCategoryIds] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [isFeatured, setIsFeatured] = useState(false);
@@ -65,7 +65,7 @@ export default function NewProductPage() {
         stock: Number(stock),
         sku: sku.trim() || undefined,
         weight: weight ? Number(weight) : undefined,
-        category: categoryId || undefined,
+        categories: categoryIds.length > 0 ? categoryIds : undefined,
         tags,
         isFeatured,
         isActive,
@@ -378,26 +378,37 @@ export default function NewProductPage() {
             </div>
           )}
 
-          {/* Category */}
+          {/* Categories */}
           <div className="admin-card space-y-3">
-            <h2 className="font-semibold text-[var(--color-navy)]">Category</h2>
-            <select
-              value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
-              className="admin-input"
-            >
-              <option value="">— No category —</option>
-              {categories.map((cat) => (
-                <option key={cat._id} value={cat._id}>{cat.name}</option>
-              ))}
-            </select>
-            {categories.length === 0 && (
+            <h2 className="font-semibold text-[var(--color-navy)]">Categories</h2>
+            <p className="text-xs text-gray-500 mb-2">Select one or more categories</p>
+            {categories.length === 0 ? (
               <p className="text-xs text-gray-400">
                 No categories yet.{' '}
                 <a href="/dashboard/categories" className="text-[var(--color-gold-dark)] hover:underline">
                   Create one first
                 </a>
               </p>
+            ) : (
+              <div className="space-y-2 max-h-48 overflow-y-auto">
+                {categories.map((cat) => (
+                  <label key={cat._id} className="flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-gray-50 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={categoryIds.includes(cat._id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setCategoryIds([...categoryIds, cat._id]);
+                        } else {
+                          setCategoryIds(categoryIds.filter((id) => id !== cat._id));
+                        }
+                      }}
+                      className="rounded"
+                    />
+                    <span className="text-sm text-gray-700">{cat.name}</span>
+                  </label>
+                ))}
+              </div>
             )}
           </div>
 

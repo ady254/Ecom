@@ -16,7 +16,7 @@ interface Product {
   price: number; comparePrice?: number;
   images: ProductImage[];
   averageRating: number; reviewCount: number;
-  tags: string[]; category?: { _id: string; name: string; slug: string };
+  tags: string[]; categories?: Array<{ _id: string; name: string; slug: string }>;
   stock: number; sku?: string; weight?: number;
   isCustomizable?: boolean;
   codAvailable?: boolean;
@@ -65,7 +65,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
   const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://minaragifting.com';
   const discount = calculateDiscount(product.price, product.comparePrice);
-  const related = product.category ? await fetchRelated(product.category._id, product._id) : [];
+  const related = product.categories && product.categories.length > 0 ? await fetchRelated(product.categories[0]._id, product._id) : [];
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -124,14 +124,14 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <Link href="/" className="hover:text-[var(--color-gold)] transition-colors">Home</Link>
           <ChevronRight size={11} />
           <Link href="/products" className="hover:text-[var(--color-gold)] transition-colors">Products</Link>
-          {product.category && (
+          {product.categories && product.categories.length > 0 && (
             <>
               <ChevronRight size={11} />
               <Link
-                href={`/products?category=${product.category.slug}`}
+                href={`/products?category=${product.categories[0].slug}`}
                 className="hover:text-[var(--color-gold)] transition-colors"
               >
-                {product.category.name}
+                {product.categories[0].name}
               </Link>
             </>
           )}
@@ -154,7 +154,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               averageRating: product.averageRating,
               reviewCount: product.reviewCount,
               tags: product.tags,
-              category: product.category,
+              categories: product.categories,
               stock: product.stock,
               sku: product.sku,
               shortDescription: product.shortDescription,
@@ -186,7 +186,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               <div className="space-y-2 text-sm text-gray-600">
                 {product.sku && <p><span className="font-medium text-gray-700">SKU:</span> {product.sku}</p>}
                 {product.weight && <p><span className="font-medium text-gray-700">Weight:</span> {product.weight}g</p>}
-                {product.category && <p><span className="font-medium text-gray-700">Category:</span> {product.category.name}</p>}
+                {product.categories && product.categories.length > 0 && <p><span className="font-medium text-gray-700">Categories:</span> {product.categories.map(c => c.name).join(', ')}</p>}
                 {product.tags.length > 0 && (
                   <div className="flex flex-wrap items-center gap-2 mt-1">
                     <span className="font-medium text-gray-700">Tags:</span>

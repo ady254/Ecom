@@ -22,7 +22,7 @@ interface PDPProduct {
   averageRating: number;
   reviewCount: number;
   tags: string[];
-  category?: { _id: string; name: string; slug: string };
+  categories?: Array<{ _id: string; name: string; slug: string }>;
   stock: number;
   sku?: string;
   shortDescription?: string;
@@ -128,10 +128,10 @@ export default function PDPClient({ product, discount, soldCount, deliverySteps 
           </div>
         )}
 
-        {/* Category */}
-        {product.category && (
+        {/* Categories */}
+        {product.categories && product.categories.length > 0 && (
           <p className="text-xs text-[var(--color-gold-dark)] uppercase tracking-widest mb-2">
-            {product.category.name}
+            {product.categories[0].name}
           </p>
         )}
 
