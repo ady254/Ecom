@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Minus, Plus, Trash2, ShoppingBag, ArrowRight, Gift, Sparkles, Lock, Banknote } from 'lucide-react';
 import Image from 'next/image';
@@ -10,8 +10,7 @@ import { useUIStore } from '@/store/uiStore';
 import { useCodEligibility } from '@/hooks/useCodEligibility';
 import { formatCurrency } from '@minara/utils';
 
-const FREE_SHIPPING_THRESHOLD = 999;
-const SHIPPING_CHARGE = 99;
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
 
 export default function CartDrawer() {
   const { cartOpen, closeCart } = useUIStore();
@@ -20,11 +19,28 @@ export default function CartDrawer() {
   // This drawer is mounted on every page, so only look COD up while it's open.
   const { codAllowed } = useCodEligibility(cartOpen ? items.map((i) => i.productId) : []);
 
+  const [shippingConfig, setShippingConfig] = useState({ freeThreshold: 999, charge: 99 });
+
+  useEffect(() => {
+    fetch(`${API_URL}/settings`)
+      .then(res => res.json())
+      .then(json => {
+        const s = json.data?.settings;
+        if (s) {
+          setShippingConfig({
+            freeThreshold: s.freeShippingThreshold ?? 999,
+            charge: s.standardShippingCharge ?? 99
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const sub = subtotal();
-  const freeShipping = sub >= FREE_SHIPPING_THRESHOLD;
-  const shipping = freeShipping ? 0 : (items.length > 0 ? SHIPPING_CHARGE : 0);
+  const freeShipping = sub >= shippingConfig.freeThreshold;
+  const shipping = freeShipping ? 0 : (items.length > 0 ? shippingConfig.charge : 0);
   const total = sub + shipping;
-  const progress = Math.min((sub / FREE_SHIPPING_THRESHOLD) * 100, 100);
+  const progress = Math.min((sub / shippingConfig.freeThreshold) * 100, 100);
   const drawerRef = useRef<HTMLDivElement>(null);
 
   // Focus trap effect
@@ -133,7 +149,7 @@ export default function CartDrawer() {
                   ) : (
                     <div>
                       <p className="text-xs text-gray-500 mb-1.5">
-                        Add <span className="font-semibold text-[var(--color-navy)]">{formatCurrency(FREE_SHIPPING_THRESHOLD - sub)}</span> more for free shipping
+                        Add <span className="font-semibold text-[var(--color-navy)]">{formatCurrency(shippingConfig.freeThreshold - sub)}</span> more for free shipping
                       </p>
                       <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
                         <motion.div

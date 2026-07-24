@@ -13,8 +13,6 @@ import { formatCurrency } from '@minara/utils';
 import { SERVICEABLE_STATES } from '@minara/config';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
-const FREE_SHIPPING = 999;
-const SHIPPING_CHARGE = 99;
 
 declare global {
   interface Window {
@@ -40,6 +38,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { items, subtotal, clearCart } = useCartStore();
   const [mounted, setMounted] = useState(false);
+  const [shippingConfig, setShippingConfig] = useState({ freeThreshold: 999, charge: 99 });
   const [paymentMethod, setPaymentMethod] = useState<'cod' | 'razorpay'>('cod');
   const [submitting, setSubmitting] = useState(false);
   const [giftMessage, setGiftMessage] = useState('');
@@ -55,7 +54,21 @@ export default function CheckoutPage() {
   const [pincodeStatus, setPincodeStatus] = useState<'idle' | 'checking' | 'serviceable' | 'unserviceable'>('idle');
   const { codBlockedBy, codAllowed } = useCodEligibility(items.map((i) => i.productId));
 
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    setMounted(true);
+    fetch(`${API_URL}/settings`)
+      .then(res => res.json())
+      .then(json => {
+        const s = json.data?.settings;
+        if (s) {
+          setShippingConfig({
+            freeThreshold: s.freeShippingThreshold ?? 999,
+            charge: s.standardShippingCharge ?? 99
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Never leave a disallowed method selected.
   useEffect(() => {
@@ -89,7 +102,7 @@ export default function CheckoutPage() {
   }, [form.pincode]);
 
   const sub = subtotal();
-  const shipping = sub >= FREE_SHIPPING ? 0 : SHIPPING_CHARGE;
+  const shipping = sub >= shippingConfig.freeThreshold ? 0 : shippingConfig.charge;
   const total = sub + shipping - couponDiscount;
 
   const set = (k: keyof FormData, v: string) => setForm((f) => ({ ...f, [k]: v }));
