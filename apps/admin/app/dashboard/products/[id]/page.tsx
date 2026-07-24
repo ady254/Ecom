@@ -52,6 +52,28 @@ export default function EditProductPage() {
     setQuranLangInput('');
   };
 
+  // Tasbeeh state
+  const [tasbeehEnabled, setTasbeehEnabled] = useState(false);
+  const [tasbeehTypes, setTasbeehTypes] = useState<string[]>([]);
+  const [tasbeehInput, setTasbeehInput] = useState('');
+  const TASBEEH_PRESETS = ['with Bismillah', 'with Name'];
+  const addTasbeehType = (t: string) => {
+    const v = t.trim();
+    if (v && !tasbeehTypes.includes(v)) setTasbeehTypes([...tasbeehTypes, v]);
+    setTasbeehInput('');
+  };
+
+  // Janamaz state
+  const [janamazEnabled, setJanamazEnabled] = useState(false);
+  const [janamazShapes, setJanamazShapes] = useState<string[]>([]);
+  const [janamazInput, setJanamazInput] = useState('');
+  const JANAMAZ_PRESETS = ['Rectangle', 'Dome'];
+  const addJanamazShape = (s: string) => {
+    const v = s.trim();
+    if (v && !janamazShapes.includes(v)) setJanamazShapes([...janamazShapes, v]);
+    setJanamazInput('');
+  };
+
   useEffect(() => {
     if (!id) return;
     async function load() {
@@ -90,6 +112,10 @@ export default function EditProductPage() {
         })));
         setQuranEnabled(p.quranOptions?.enabled ?? false);
         setQuranLanguages(p.quranOptions?.languages ?? []);
+        setTasbeehEnabled(p.tasbeehOptions?.enabled ?? false);
+        setTasbeehTypes(p.tasbeehOptions?.types ?? []);
+        setJanamazEnabled(p.janamazOptions?.enabled ?? false);
+        setJanamazShapes(p.janamazOptions?.shapes ?? []);
         setImages(p.images.map((img) => img.url));
       } catch {
         toast.error('Failed to load product');
@@ -132,6 +158,8 @@ export default function EditProductPage() {
         codAvailable,
         customFields: isCustomizable ? customFields : [],
         quranOptions: { enabled: quranEnabled, languages: quranLanguages },
+        tasbeehOptions: { enabled: tasbeehEnabled, types: tasbeehTypes },
+        janamazOptions: { enabled: janamazEnabled, shapes: janamazShapes },
         images: images.map((url, i) => ({ url, alt: `${name} ${i + 1}` })),
       });
       toast.success('Product updated');
@@ -443,6 +471,106 @@ export default function EditProductPage() {
                         <button type="button" onClick={() => setQuranLanguages(quranLanguages.filter((l) => l !== lang))} className="ml-0.5 text-gray-400 hover:text-red-500 transition-colors">
                           <X size={10} />
                         </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Tasbeeh Options */}
+          <div className="admin-card space-y-3">
+            <div className="flex items-center gap-2 justify-between">
+              <div className="flex items-center gap-2">
+                <span style={{ fontSize: '14px' }}>📿</span>
+                <h2 className="font-semibold text-[var(--color-navy)]">Tasbeeh Options</h2>
+              </div>
+              <div
+                onClick={() => setTasbeehEnabled(!tasbeehEnabled)}
+                className={`relative w-11 h-6 rounded-full transition-colors cursor-pointer ${
+                  tasbeehEnabled ? 'bg-[var(--color-gold)]' : 'bg-gray-200'
+                }`}
+              >
+                <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${tasbeehEnabled ? 'translate-x-5' : ''}`} />
+              </div>
+            </div>
+            {tasbeehEnabled && (
+              <>
+                <p className="text-xs text-gray-400">Add Tasbeeh type options customers can choose from.</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {TASBEEH_PRESETS.map((p) => (
+                    <button key={p} type="button" onClick={() => addTasbeehType(p)} disabled={tasbeehTypes.includes(p)}
+                      className="text-xs px-2.5 py-1 rounded-full border border-gray-200 text-gray-600 hover:border-[var(--color-gold-dark)] hover:text-[var(--color-navy)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                      + {p}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <input type="text" value={tasbeehInput} onChange={(e) => setTasbeehInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTasbeehType(tasbeehInput); } }}
+                    placeholder="Custom type label…" className="admin-input flex-1 py-2 text-sm" />
+                  <button type="button" onClick={() => addTasbeehType(tasbeehInput)} disabled={!tasbeehInput.trim()}
+                    className="flex items-center gap-1 px-3 py-1.5 bg-[var(--color-navy)] text-white text-xs font-semibold rounded-lg hover:bg-[var(--color-navy-light)] transition-colors disabled:opacity-40">
+                    <Plus size={11} /> Add
+                  </button>
+                </div>
+                {tasbeehTypes.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {tasbeehTypes.map((t) => (
+                      <span key={t} className="flex items-center gap-1 px-3 py-1 bg-[var(--color-cream)] border border-[rgba(207,169,106,0.4)] text-[var(--color-navy)] text-xs rounded-full font-medium">
+                        {t}
+                        <button type="button" onClick={() => setTasbeehTypes(tasbeehTypes.filter((x) => x !== t))} className="ml-0.5 text-gray-400 hover:text-red-500 transition-colors"><X size={10} /></button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Janamaz Options */}
+          <div className="admin-card space-y-3">
+            <div className="flex items-center gap-2 justify-between">
+              <div className="flex items-center gap-2">
+                <span style={{ fontSize: '14px' }}>🧹</span>
+                <h2 className="font-semibold text-[var(--color-navy)]">Janamaz (Prayer Mat) Options</h2>
+              </div>
+              <div
+                onClick={() => setJanamazEnabled(!janamazEnabled)}
+                className={`relative w-11 h-6 rounded-full transition-colors cursor-pointer ${
+                  janamazEnabled ? 'bg-[var(--color-gold)]' : 'bg-gray-200'
+                }`}
+              >
+                <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${janamazEnabled ? 'translate-x-5' : ''}`} />
+              </div>
+            </div>
+            {janamazEnabled && (
+              <>
+                <p className="text-xs text-gray-400">Add prayer mat shape options customers can choose from.</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {JANAMAZ_PRESETS.map((p) => (
+                    <button key={p} type="button" onClick={() => addJanamazShape(p)} disabled={janamazShapes.includes(p)}
+                      className="text-xs px-2.5 py-1 rounded-full border border-gray-200 text-gray-600 hover:border-[var(--color-gold-dark)] hover:text-[var(--color-navy)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                      + {p}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <input type="text" value={janamazInput} onChange={(e) => setJanamazInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addJanamazShape(janamazInput); } }}
+                    placeholder="Custom shape label…" className="admin-input flex-1 py-2 text-sm" />
+                  <button type="button" onClick={() => addJanamazShape(janamazInput)} disabled={!janamazInput.trim()}
+                    className="flex items-center gap-1 px-3 py-1.5 bg-[var(--color-navy)] text-white text-xs font-semibold rounded-lg hover:bg-[var(--color-navy-light)] transition-colors disabled:opacity-40">
+                    <Plus size={11} /> Add
+                  </button>
+                </div>
+                {janamazShapes.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {janamazShapes.map((s) => (
+                      <span key={s} className="flex items-center gap-1 px-3 py-1 bg-[var(--color-cream)] border border-[rgba(207,169,106,0.4)] text-[var(--color-navy)] text-xs rounded-full font-medium">
+                        {s}
+                        <button type="button" onClick={() => setJanamazShapes(janamazShapes.filter((x) => x !== s))} className="ml-0.5 text-gray-400 hover:text-red-500 transition-colors"><X size={10} /></button>
                       </span>
                     ))}
                   </div>

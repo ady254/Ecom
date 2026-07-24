@@ -30,6 +30,8 @@ interface PDPProduct {
   codAvailable?: boolean;
   customFields?: CustomField[];
   quranOptions?: { enabled: boolean; languages: string[] };
+  tasbeehOptions?: { enabled: boolean; types: string[] };
+  janamazOptions?: { enabled: boolean; shapes: string[] };
 }
 
 interface DeliveryStep { label: string; date: string; }
@@ -54,6 +56,8 @@ export default function PDPClient({ product, discount, soldCount, deliverySteps 
   const [showCustomize, setShowCustomize] = useState(false);
   const [showSticky, setShowSticky] = useState(false);
   const [selectedQuranLang, setSelectedQuranLang] = useState<string | null>(null);
+  const [selectedTasbeehType, setSelectedTasbeehType] = useState<string | null>(null);
+  const [selectedJanamazShape, setSelectedJanamazShape] = useState<string | null>(null);
   const ctaRef = useRef<HTMLDivElement>(null);
 
   const { addItem } = useCartStore();
@@ -84,13 +88,23 @@ export default function PDPClient({ product, discount, soldCount, deliverySteps 
   }, [showSticky, setStickyBarVisible]);
 
   const handleAddToCart = () => {
-    // Validate Quran language selection when the option is enabled
+    // Validate selections when options are enabled
     if (product.quranOptions?.enabled && product.quranOptions.languages.length > 0 && !selectedQuranLang) {
       toast.error('Please select a Quran language / translation');
       return;
     }
+    if (product.tasbeehOptions?.enabled && product.tasbeehOptions.types.length > 0 && !selectedTasbeehType) {
+      toast.error('Please select a Tasbeeh type');
+      return;
+    }
+    if (product.janamazOptions?.enabled && product.janamazOptions.shapes.length > 0 && !selectedJanamazShape) {
+      toast.error('Please select a Janamaz shape');
+      return;
+    }
     const variant: Record<string, string> = {};
     if (selectedQuranLang) variant['Quran Language'] = selectedQuranLang;
+    if (selectedTasbeehType) variant['Tasbeeh Type'] = selectedTasbeehType;
+    if (selectedJanamazShape) variant['Janamaz Shape'] = selectedJanamazShape;
     addItem({
       productId: product._id,
       name: product.name,
@@ -245,6 +259,68 @@ export default function PDPClient({ product, discount, soldCount, deliverySteps 
                     }`}
                   >
                     {lang}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Tasbeeh Type Selector */}
+        {product.tasbeehOptions?.enabled && product.tasbeehOptions.types.length > 0 && (
+          <div className="mb-6">
+            <p className="text-xs font-semibold text-gray-600 mb-3">
+              Tasbeeh Type:{' '}
+              <span className="text-[var(--color-navy)] font-bold">
+                {selectedTasbeehType ?? <span className="text-gray-400 font-normal italic">Select one</span>}
+              </span>
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {product.tasbeehOptions.types.map((type) => {
+                const isSelected = selectedTasbeehType === type;
+                return (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => setSelectedTasbeehType(type)}
+                    className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all duration-150 ${
+                      isSelected
+                        ? 'border-[var(--color-navy)] bg-[var(--color-navy)] text-white shadow-sm'
+                        : 'border-gray-300 bg-white text-gray-700 hover:border-[var(--color-navy)] hover:text-[var(--color-navy)]'
+                    }`}
+                  >
+                    {type}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Janamaz Shape Selector */}
+        {product.janamazOptions?.enabled && product.janamazOptions.shapes.length > 0 && (
+          <div className="mb-6">
+            <p className="text-xs font-semibold text-gray-600 mb-3">
+              Couple Janamaz Type:{' '}
+              <span className="text-[var(--color-navy)] font-bold">
+                {selectedJanamazShape ?? <span className="text-gray-400 font-normal italic">Select one</span>}
+              </span>
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {product.janamazOptions.shapes.map((shape) => {
+                const isSelected = selectedJanamazShape === shape;
+                return (
+                  <button
+                    key={shape}
+                    type="button"
+                    onClick={() => setSelectedJanamazShape(shape)}
+                    className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all duration-150 ${
+                      isSelected
+                        ? 'border-[var(--color-navy)] bg-[var(--color-navy)] text-white shadow-sm'
+                        : 'border-gray-300 bg-white text-gray-700 hover:border-[var(--color-navy)] hover:text-[var(--color-navy)]'
+                    }`}
+                  >
+                    {shape}
                   </button>
                 );
               })}

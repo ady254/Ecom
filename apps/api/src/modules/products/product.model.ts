@@ -26,6 +26,16 @@ export interface IProduct extends Document {
     enabled: boolean;
     languages: string[];
   };
+  /** Tasbeeh type options */
+  tasbeehOptions?: {
+    enabled: boolean;
+    types: string[];
+  };
+  /** Janamaz / prayer mat shape options */
+  janamazOptions?: {
+    enabled: boolean;
+    shapes: string[];
+  };
   weight?: number;
   sku?: string;
   metaTitle?: string;
@@ -66,6 +76,14 @@ const productSchema = new Schema<IProduct>(
     quranOptions: {
       enabled: { type: Boolean, default: false },
       languages: [{ type: String }],
+    },
+    tasbeehOptions: {
+      enabled: { type: Boolean, default: false },
+      types: [{ type: String }],
+    },
+    janamazOptions: {
+      enabled: { type: Boolean, default: false },
+      shapes: [{ type: String }],
     },
     weight: Number,
     sku: { type: String, sparse: true, index: true },

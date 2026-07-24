@@ -22,6 +22,8 @@ interface Product {
   codAvailable?: boolean;
   customFields?: CustomField[];
   quranOptions?: { enabled: boolean; languages: string[] };
+  tasbeehOptions?: { enabled: boolean; types: string[] };
+  janamazOptions?: { enabled: boolean; shapes: string[] };
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
@@ -163,6 +165,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               codAvailable: product.codAvailable,
               customFields: product.customFields,
               quranOptions: product.quranOptions,
+              tasbeehOptions: product.tasbeehOptions,
+              janamazOptions: product.janamazOptions,
             }}
             discount={discount}
             soldCount={soldCount}
