@@ -36,6 +36,21 @@ export default function EditProductPage() {
   const [codAvailable, setCodAvailable] = useState(true);
   const [customFields, setCustomFields] = useState<Array<{ label: string; placeholder: string; required: boolean }>>([]);
   const [newField, setNewField] = useState({ label: '', placeholder: '', required: false });
+  const [quranEnabled, setQuranEnabled] = useState(false);
+  const [quranLanguages, setQuranLanguages] = useState<string[]>([]);
+  const [quranLangInput, setQuranLangInput] = useState('');
+
+  const QURAN_PRESETS = [
+    'Arabic', 'Arabic Color Coded', 'Premium Arabic Kaaba',
+    'Urdu Roman English Translation', 'Urdu Translation',
+    'English Translation', 'Hindi Translation', 'Gujarati Translation',
+  ];
+
+  const addQuranLanguage = (lang: string) => {
+    const v = lang.trim();
+    if (v && !quranLanguages.includes(v)) setQuranLanguages([...quranLanguages, v]);
+    setQuranLangInput('');
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -73,6 +88,8 @@ export default function EditProductPage() {
           placeholder: f.placeholder ?? '',
           required: f.required ?? false,
         })));
+        setQuranEnabled(p.quranOptions?.enabled ?? false);
+        setQuranLanguages(p.quranOptions?.languages ?? []);
         setImages(p.images.map((img) => img.url));
       } catch {
         toast.error('Failed to load product');
@@ -114,6 +131,7 @@ export default function EditProductPage() {
         isCustomizable,
         codAvailable,
         customFields: isCustomizable ? customFields : [],
+        quranOptions: { enabled: quranEnabled, languages: quranLanguages },
         images: images.map((url, i) => ({ url, alt: `${name} ${i + 1}` })),
       });
       toast.success('Product updated');
@@ -356,6 +374,82 @@ export default function EditProductPage() {
               </div>
             </div>
           )}
+
+          {/* Quran Options */}
+          <div className="admin-card space-y-3">
+            <div className="flex items-center gap-2 justify-between">
+              <div className="flex items-center gap-2">
+                <span style={{ fontSize: '14px' }}>📖</span>
+                <h2 className="font-semibold text-[var(--color-navy)]">Quran Options</h2>
+              </div>
+              <div
+                onClick={() => setQuranEnabled(!quranEnabled)}
+                className={`relative w-11 h-6 rounded-full transition-colors cursor-pointer ${
+                  quranEnabled ? 'bg-[var(--color-gold)]' : 'bg-gray-200'
+                }`}
+              >
+                <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${quranEnabled ? 'translate-x-5' : ''}`} />
+              </div>
+            </div>
+
+            {quranEnabled && (
+              <>
+                <p className="text-xs text-gray-400">Add language / translation options customers can pick from.</p>
+
+                {/* Presets */}
+                <div>
+                  <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-2">Quick Presets</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {QURAN_PRESETS.map((preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => addQuranLanguage(preset)}
+                        disabled={quranLanguages.includes(preset)}
+                        className="text-xs px-2.5 py-1 rounded-full border border-gray-200 text-gray-600 hover:border-[var(--color-gold-dark)] hover:text-[var(--color-navy)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                      >
+                        + {preset}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Custom input */}
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={quranLangInput}
+                    onChange={(e) => setQuranLangInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addQuranLanguage(quranLangInput); } }}
+                    placeholder="Custom option label…"
+                    className="admin-input flex-1 py-2 text-sm"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => addQuranLanguage(quranLangInput)}
+                    disabled={!quranLangInput.trim()}
+                    className="flex items-center gap-1 px-3 py-1.5 bg-[var(--color-navy)] text-white text-xs font-semibold rounded-lg hover:bg-[var(--color-navy-light)] transition-colors disabled:opacity-40"
+                  >
+                    <Plus size={11} /> Add
+                  </button>
+                </div>
+
+                {/* Existing options */}
+                {quranLanguages.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {quranLanguages.map((lang) => (
+                      <span key={lang} className="flex items-center gap-1 px-3 py-1 bg-[var(--color-cream)] border border-[rgba(207,169,106,0.4)] text-[var(--color-navy)] text-xs rounded-full font-medium">
+                        {lang}
+                        <button type="button" onClick={() => setQuranLanguages(quranLanguages.filter((l) => l !== lang))} className="ml-0.5 text-gray-400 hover:text-red-500 transition-colors">
+                          <X size={10} />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
 
           <div className="admin-card space-y-3">
             <h2 className="font-semibold text-[var(--color-navy)]">Categories</h2>

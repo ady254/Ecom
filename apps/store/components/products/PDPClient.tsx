@@ -29,6 +29,7 @@ interface PDPProduct {
   isCustomizable?: boolean;
   codAvailable?: boolean;
   customFields?: CustomField[];
+  quranOptions?: { enabled: boolean; languages: string[] };
 }
 
 interface DeliveryStep { label: string; date: string; }
@@ -52,6 +53,7 @@ export default function PDPClient({ product, discount, soldCount, deliverySteps 
   const [qty, setQty] = useState(1);
   const [showCustomize, setShowCustomize] = useState(false);
   const [showSticky, setShowSticky] = useState(false);
+  const [selectedQuranLang, setSelectedQuranLang] = useState<string | null>(null);
   const ctaRef = useRef<HTMLDivElement>(null);
 
   const { addItem } = useCartStore();
@@ -82,6 +84,13 @@ export default function PDPClient({ product, discount, soldCount, deliverySteps 
   }, [showSticky, setStickyBarVisible]);
 
   const handleAddToCart = () => {
+    // Validate Quran language selection when the option is enabled
+    if (product.quranOptions?.enabled && product.quranOptions.languages.length > 0 && !selectedQuranLang) {
+      toast.error('Please select a Quran language / translation');
+      return;
+    }
+    const variant: Record<string, string> = {};
+    if (selectedQuranLang) variant['Quran Language'] = selectedQuranLang;
     addItem({
       productId: product._id,
       name: product.name,
@@ -89,6 +98,7 @@ export default function PDPClient({ product, discount, soldCount, deliverySteps 
       price: product.price,
       quantity: qty,
       slug: product.slug,
+      ...(Object.keys(variant).length > 0 ? { variant } : {}),
     });
     toast.success('Added to cart!');
     openCart();
@@ -209,6 +219,37 @@ export default function PDPClient({ product, discount, soldCount, deliverySteps 
         {/* Short description */}
         {product.shortDescription && (
           <p className="text-gray-600 leading-relaxed mb-5 text-sm">{product.shortDescription}</p>
+        )}
+
+        {/* Quran Language / Translation Selector */}
+        {product.quranOptions?.enabled && product.quranOptions.languages.length > 0 && (
+          <div className="mb-6">
+            <p className="text-xs font-semibold text-gray-600 mb-3">
+              Quran Type:{' '}
+              <span className="text-[var(--color-navy)] font-bold">
+                {selectedQuranLang ?? <span className="text-gray-400 font-normal italic">Select one</span>}
+              </span>
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {product.quranOptions.languages.map((lang) => {
+                const isSelected = selectedQuranLang === lang;
+                return (
+                  <button
+                    key={lang}
+                    type="button"
+                    onClick={() => setSelectedQuranLang(lang)}
+                    className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all duration-150 ${
+                      isSelected
+                        ? 'border-[var(--color-navy)] bg-[var(--color-navy)] text-white shadow-sm'
+                        : 'border-gray-300 bg-white text-gray-700 hover:border-[var(--color-navy)] hover:text-[var(--color-navy)]'
+                    }`}
+                  >
+                    {lang}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         )}
 
         {/* Stock */}

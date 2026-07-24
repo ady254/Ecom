@@ -21,6 +21,11 @@ export interface IProduct extends Document {
   /** When false, this product can only be bought with an online (prepaid) payment. */
   codAvailable: boolean;
   customFields: Array<{ label: string; placeholder?: string; required?: boolean }>;
+  /** Quran language / translation options shown as pill selectors on the PDP */
+  quranOptions?: {
+    enabled: boolean;
+    languages: string[];
+  };
   weight?: number;
   sku?: string;
   metaTitle?: string;
@@ -58,6 +63,10 @@ const productSchema = new Schema<IProduct>(
     isCustomizable: { type: Boolean, default: false },
     codAvailable: { type: Boolean, default: true },
     customFields: [{ label: String, placeholder: String, required: Boolean }],
+    quranOptions: {
+      enabled: { type: Boolean, default: false },
+      languages: [{ type: String }],
+    },
     weight: Number,
     sku: { type: String, sparse: true, index: true },
     metaTitle: String,

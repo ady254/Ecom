@@ -21,6 +21,7 @@ interface Product {
   isCustomizable?: boolean;
   codAvailable?: boolean;
   customFields?: CustomField[];
+  quranOptions?: { enabled: boolean; languages: string[] };
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
@@ -161,6 +162,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               isCustomizable: product.isCustomizable,
               codAvailable: product.codAvailable,
               customFields: product.customFields,
+              quranOptions: product.quranOptions,
             }}
             discount={discount}
             soldCount={soldCount}

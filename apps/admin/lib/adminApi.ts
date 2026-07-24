@@ -205,6 +205,8 @@ export interface AdminProduct {
   isCustomizable?: boolean;
   codAvailable?: boolean;
   customFields?: Array<{ label: string; placeholder?: string; required?: boolean }>;
+  quranOptions?: { enabled: boolean; languages: string[] };
+
   images: { url: string; alt?: string }[];
   category?: { _id: string; name: string };
   categories?: Array<{ _id: string; name: string; slug?: string }>;
