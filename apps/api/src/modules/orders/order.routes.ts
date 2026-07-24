@@ -2,6 +2,7 @@ import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import { z } from 'zod';
 import { OrderModel, IOrder } from './order.model.js';
+import { SettingsModel } from '../settings/settings.model.js';
 import { authenticate, optionalAuth, AuthRequest } from '../../middlewares/auth.middleware.js';
 import { requireAdmin } from '../../middlewares/admin.middleware.js';
 import { validate } from '../../middlewares/validate.middleware.js';
@@ -34,7 +35,7 @@ import {
 } from './order.lifecycle.js';
 import { sendMail, orderShippedTemplate, orderDeliveredTemplate } from '../../config/email.js';
 
-const router = Router();
+const router: Router = Router();
 
 const orderLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
@@ -80,7 +81,11 @@ router.post(
 
     // 1. Authoritative pricing from the database — client prices are never trusted
     const { pricedItems, subtotal, codIneligible } = await priceOrderItems(body.items);
-    const shippingCharge = computeShipping(subtotal);
+    
+    const settings = await SettingsModel.findOne().lean();
+    const freeThreshold = settings?.freeShippingThreshold ?? SHIPPING.freeShippingThreshold;
+    const standardCharge = settings?.standardShippingCharge ?? SHIPPING.standardShippingCharge;
+    const shippingCharge = subtotal >= freeThreshold ? 0 : standardCharge;
 
     // COD is a per-product setting the admin controls. Enforce it here as well as
     // in the UI — nothing has been claimed yet, so there is nothing to roll back.
