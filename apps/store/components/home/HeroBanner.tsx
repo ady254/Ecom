@@ -119,7 +119,7 @@ export default function HeroBanner({ initialBanners = [] }: { initialBanners?: S
               alt={slide.title || 'Banner'}
               fill
               sizes="100vw"
-              className="object-contain sm:object-cover object-center"
+              className="object-cover object-center"
               priority
             />
           ) : (
