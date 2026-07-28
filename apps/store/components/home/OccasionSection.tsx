@@ -36,7 +36,7 @@ export default function OccasionSection() {
             return (
               <Link
                 key={occ.name}
-                href={occ.slug ? `/products?search=${occ.slug}` : '/products?sort=-createdAt'}
+                href={occ.slug ? `/products?category=${occ.slug}` : '/products?sort=-createdAt'}
                 className="group flex flex-col items-center gap-2.5 w-full sm:min-w-[76px]"
               >
                 <div className="
@@ -45,19 +45,19 @@ export default function OccasionSection() {
                   bg-[var(--color-cream)]
                   border-2 border-[rgba(207,169,106,0.25)]
                   flex items-center justify-center
-                  transition-all duration-200 ease-out
+                  transition-all duration-300 ease-out
                   group-hover:border-[var(--color-gold)]
                   group-hover:bg-white
-                  group-hover:shadow-[0_4px_18px_rgba(207,169,106,0.22)]
-                  group-hover:-translate-y-1
+                  group-hover:shadow-[0_8px_24px_rgba(207,169,106,0.35)]
+                  group-hover:-translate-y-2
                 ">
                   <Icon
                     size={22}
                     strokeWidth={1.5}
-                    className="text-[var(--color-gold-dark)] transition-colors duration-200 group-hover:text-[var(--color-gold)]"
+                    className="text-[var(--color-gold-dark)] transition-transform duration-300 ease-out group-hover:scale-110 group-hover:text-[var(--color-gold)] group-hover:-rotate-6"
                   />
                 </div>
-                <span className="text-[11px] font-medium text-gray-500 group-hover:text-[var(--color-navy)] text-center transition-colors duration-200 leading-tight whitespace-nowrap">
+                <span className="text-[11px] font-medium text-gray-500 group-hover:text-[var(--color-navy)] group-hover:font-semibold text-center transition-all duration-300 leading-tight whitespace-nowrap">
                   {occ.name}
                 </span>
               </Link>
