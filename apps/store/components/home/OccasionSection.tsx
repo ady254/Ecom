@@ -30,17 +30,17 @@ export default function OccasionSection() {
           Shop By Collection
         </p>
 
-        <div className="grid grid-cols-4 sm:flex sm:flex-wrap sm:justify-center gap-y-4 gap-x-2 sm:gap-5 pb-2 px-2 sm:px-0">
+        <div className="flex flex-wrap justify-center gap-y-5 gap-x-3 sm:gap-y-6 sm:gap-x-6 md:gap-x-10 lg:gap-x-12 pb-2 px-1 sm:px-0 max-w-6xl mx-auto">
           {occasions.map((occ) => {
             const Icon = occ.icon;
             return (
               <Link
                 key={occ.name}
                 href={occ.slug ? `/products?category=${occ.slug}` : '/products?sort=-createdAt'}
-                className="group flex flex-col items-center gap-2.5 w-full sm:min-w-[76px]"
+                className="group flex flex-col items-center gap-2 sm:gap-3 w-[72px] sm:w-[84px] md:w-[100px]"
               >
                 <div className="
-                  w-[52px] h-[52px] sm:w-[68px] sm:h-[68px]
+                  w-[56px] h-[56px] sm:w-[72px] sm:h-[72px] md:w-[84px] md:h-[84px]
                   rounded-full
                   bg-[var(--color-cream)]
                   border-2 border-[rgba(207,169,106,0.25)]
@@ -52,12 +52,11 @@ export default function OccasionSection() {
                   group-hover:-translate-y-2
                 ">
                   <Icon
-                    size={22}
                     strokeWidth={1.5}
-                    className="text-[var(--color-gold-dark)] transition-transform duration-300 ease-out group-hover:scale-110 group-hover:text-[var(--color-gold)] group-hover:-rotate-6"
+                    className="w-[22px] h-[22px] md:w-[26px] md:h-[26px] text-[var(--color-gold-dark)] transition-transform duration-300 ease-out group-hover:scale-110 group-hover:text-[var(--color-gold)] group-hover:-rotate-6"
                   />
                 </div>
-                <span className="text-[11px] font-medium text-gray-500 group-hover:text-[var(--color-navy)] group-hover:font-semibold text-center transition-all duration-300 leading-tight whitespace-nowrap">
+                <span className="text-[10px] sm:text-[11px] md:text-xs font-medium text-gray-500 group-hover:text-[var(--color-navy)] group-hover:font-semibold text-center transition-all duration-300 leading-tight whitespace-nowrap">
                   {occ.name}
                 </span>
               </Link>
