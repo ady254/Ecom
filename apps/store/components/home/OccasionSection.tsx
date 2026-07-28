@@ -30,17 +30,17 @@ export default function OccasionSection() {
           Shop By Collection
         </p>
 
-        <div className="flex items-start gap-3 sm:gap-5 overflow-x-auto pb-2 scrollbar-hide justify-start sm:justify-center flex-nowrap sm:flex-wrap px-2 sm:px-0">
+        <div className="grid grid-cols-4 sm:flex sm:flex-wrap sm:justify-center gap-y-4 gap-x-2 sm:gap-5 pb-2 px-2 sm:px-0">
           {occasions.map((occ) => {
             const Icon = occ.icon;
             return (
               <Link
                 key={occ.name}
                 href={occ.slug ? `/products?search=${occ.slug}` : '/products?sort=-createdAt'}
-                className="group flex flex-col items-center gap-2.5 min-w-[68px] sm:min-w-[76px]"
+                className="group flex flex-col items-center gap-2.5 w-full sm:min-w-[76px]"
               >
                 <div className="
-                  w-[60px] h-[60px] sm:w-[68px] sm:h-[68px]
+                  w-[52px] h-[52px] sm:w-[68px] sm:h-[68px]
                   rounded-full
                   bg-[var(--color-cream)]
                   border-2 border-[rgba(207,169,106,0.25)]
