@@ -97,7 +97,7 @@ export default function HeroBanner({ initialBanners = [] }: { initialBanners?: S
 
   return (
     <section
-      className="relative w-full overflow-hidden h-[50vh] sm:h-[60vh] md:h-[65vh] lg:h-[75vh] min-h-[320px] max-h-[700px]"
+      className="relative w-full overflow-hidden h-[40vh] sm:h-[60vh] md:h-[65vh] lg:h-[75vh] min-h-[280px] max-h-[700px]"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onTouchStart={onTouchStart}
