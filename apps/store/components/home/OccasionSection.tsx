@@ -12,14 +12,14 @@ import {
 import type { LucideIcon } from 'lucide-react';
 
 const occasions: { name: string; slug: string; icon: LucideIcon }[] = [
-  { name: 'Quran Sets',    slug: 'quran',        icon: BookOpen   },
-  { name: 'Wedding Gifts', slug: 'wedding',      icon: Gem        },
-  { name: 'Gift Hampers',  slug: 'hamper',       icon: Gift       },
-  { name: 'Hajj Favours',  slug: 'hajj',         icon: Moon       },
-  { name: 'Tasbih Cards',  slug: 'tasbih',       icon: ScrollText },
-  { name: 'Home Decor',    slug: 'homedecor',    icon: Home       },
-  { name: 'Personalised',  slug: 'personalised', icon: PenLine    },
-  { name: 'New Arrivals',  slug: '',             icon: Sparkles   },
+  { name: 'Quran Sets', slug: 'quran', icon: BookOpen },
+  { name: 'Wedding Gifts', slug: 'wedding', icon: Gem },
+  { name: 'Gift Hampers', slug: 'hamper', icon: Gift },
+  { name: 'Hajj Favours', slug: 'hajj', icon: Moon },
+  { name: 'Tasbih Cards', slug: 'tasbih', icon: ScrollText },
+  // { name: 'Home Decor',    slug: 'homedecor',    icon: Home       },
+  { name: 'Personalised', slug: 'personalised', icon: PenLine },
+  { name: 'New Arrivals', slug: '', icon: Sparkles },
 ];
 
 export default function OccasionSection() {
