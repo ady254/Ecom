@@ -24,7 +24,7 @@ interface Props {
 }
 
 const DEFAULT_FIELDS: CustomField[] = [
-  { label: 'Your Name', placeholder: 'e.g. Adnan', required: true },
+  { label: 'Your Name', placeholder: 'e.g. minara', required: false },
 ];
 
 export default function CustomizeModal({ product, quantity, onClose, onAdd }: Props) {
@@ -149,11 +149,10 @@ export default function CustomizeModal({ product, quantity, onClose, onAdd }: Pr
           </p>
           <button
             onClick={handleAdd}
-            className={`w-full py-4 rounded-full font-bold text-sm tracking-widest uppercase transition-all duration-300 flex items-center justify-center gap-2 ${
-              added
+            className={`w-full py-4 rounded-full font-bold text-sm tracking-widest uppercase transition-all duration-300 flex items-center justify-center gap-2 ${added
                 ? 'bg-emerald-600 text-white'
                 : 'bg-[var(--color-gold)] text-[var(--color-navy)] hover:bg-[var(--color-gold-dark)]'
-            }`}
+              }`}
           >
             {added ? (
               <>
