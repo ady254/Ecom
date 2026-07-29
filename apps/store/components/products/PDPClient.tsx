@@ -385,13 +385,15 @@ export default function PDPClient({ product, discount, soldCount, deliverySteps 
 
             {/* CTA buttons */}
             <div ref={ctaRef} className="space-y-3 mb-6">
-              <button
-                onClick={() => setShowCustomize(true)}
-                className="w-full py-4 rounded-full font-bold text-sm tracking-widest uppercase bg-[var(--color-gold)] text-[var(--color-navy)] hover:bg-[var(--color-gold-dark)] transition-colors flex items-center justify-center gap-2"
-              >
-                <Sparkles size={15} />
-                Customize & Personalize
-              </button>
+              {product.isCustomizable && (
+                <button
+                  onClick={() => setShowCustomize(true)}
+                  className="w-full py-4 rounded-full font-bold text-sm tracking-widest uppercase bg-[var(--color-gold)] text-[var(--color-navy)] hover:bg-[var(--color-gold-dark)] transition-colors flex items-center justify-center gap-2"
+                >
+                  <Sparkles size={15} />
+                  Customize & Personalize
+                </button>
+              )}
 
               <div className="flex gap-3">
                 <button
