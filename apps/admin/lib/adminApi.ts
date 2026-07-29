@@ -205,6 +205,10 @@ export interface AdminProduct {
   isCustomizable?: boolean;
   codAvailable?: boolean;
   customFields?: Array<{ label: string; placeholder?: string; required?: boolean }>;
+  variants?: Array<{
+    name: string;
+    options: Array<{ label: string; price?: number; stock?: number }>;
+  }>;
   quranOptions?: { enabled: boolean; languages: string[] };
   tasbeehOptions?: { enabled: boolean; types: string[] };
   janamazOptions?: { enabled: boolean; shapes: string[] };

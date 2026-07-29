@@ -18,11 +18,7 @@ interface ResultProduct {
   images: { url: string; alt?: string }[];
 }
 
-/**
- * Hadiyah-style search bar: gold-bordered pill with a left magnifier icon and
- * live predictive results. Rendered full-width on mobile (16px font stops
- * Safari's focus zoom) and as a flexible center column on desktop.
- */
+
 export default function SearchBar({ mobile = false }: { mobile?: boolean }) {
   const router = useRouter();
   const [query, setQuery] = useState('');
@@ -50,7 +46,7 @@ export default function SearchBar({ mobile = false }: { mobile?: boolean }) {
           setResults(j.data?.products ?? []);
           setOpen(true);
         })
-        .catch(() => {})
+        .catch(() => { })
         .finally(() => setLoading(false));
     }, 300);
     return () => {
@@ -94,9 +90,8 @@ export default function SearchBar({ mobile = false }: { mobile?: boolean }) {
             placeholder="Search For Gifts..."
             autoComplete="off"
             aria-label="Search for gifts"
-            className={`w-full rounded-full border-[1.5px] border-[var(--color-gold)] bg-white outline-none placeholder:text-gray-400 text-[var(--color-navy)] focus:border-[var(--color-gold-dark)] focus:shadow-[0_0_0_3px_rgba(207,169,106,0.15)] transition-all [&::-webkit-search-cancel-button]:appearance-none ${
-              mobile ? 'py-2.5 pl-11 pr-4 text-base' : 'py-2.5 pl-11 pr-4 text-sm'
-            }`}
+            className={`w-full rounded-full border-[1.5px] border-[var(--color-gold)] bg-white outline-none placeholder:text-gray-400 text-[var(--color-navy)] focus:border-[var(--color-gold-dark)] focus:shadow-[0_0_0_3px_rgba(207,169,106,0.15)] transition-all [&::-webkit-search-cancel-button]:appearance-none ${mobile ? 'py-2.5 pl-11 pr-4 text-base' : 'py-2.5 pl-11 pr-4 text-sm'
+              }`}
           />
           {loading && (
             <Loader2

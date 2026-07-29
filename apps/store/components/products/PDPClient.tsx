@@ -32,6 +32,10 @@ interface PDPProduct {
   quranOptions?: { enabled: boolean; languages: string[] };
   tasbeehOptions?: { enabled: boolean; types: string[] };
   janamazOptions?: { enabled: boolean; shapes: string[] };
+  variants?: Array<{
+    name: string;
+    options: Array<{ label: string; price?: number; stock?: number }>;
+  }>;
 }
 
 interface DeliveryStep { label: string; date: string; }
@@ -58,6 +62,7 @@ export default function PDPClient({ product, discount, soldCount, deliverySteps 
   const [selectedQuranLang, setSelectedQuranLang] = useState<string | null>(null);
   const [selectedTasbeehType, setSelectedTasbeehType] = useState<string | null>(null);
   const [selectedJanamazShape, setSelectedJanamazShape] = useState<string | null>(null);
+  const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
   const ctaRef = useRef<HTMLDivElement>(null);
 
   const { addItem } = useCartStore();
@@ -101,7 +106,17 @@ export default function PDPClient({ product, discount, soldCount, deliverySteps 
       toast.error('Please select a Janamaz shape');
       return;
     }
-    const variant: Record<string, string> = {};
+    
+    if (product.variants?.length) {
+      for (const v of product.variants) {
+        if (!selectedVariants[v.name]) {
+          toast.error(`Please select a ${v.name}`);
+          return;
+        }
+      }
+    }
+
+    const variant: Record<string, string> = { ...selectedVariants };
     if (selectedQuranLang) variant['Quran Language'] = selectedQuranLang;
     if (selectedTasbeehType) variant['Tasbeeh Type'] = selectedTasbeehType;
     if (selectedJanamazShape) variant['Janamaz Shape'] = selectedJanamazShape;
@@ -327,6 +342,37 @@ export default function PDPClient({ product, discount, soldCount, deliverySteps 
             </div>
           </div>
         )}
+
+        {/* Dynamic Variants */}
+        {product.variants?.map((v) => (
+          <div key={v.name} className="mb-6">
+            <p className="text-xs font-semibold text-gray-600 mb-3">
+              {v.name}:{' '}
+              <span className="text-[var(--color-navy)] font-bold">
+                {selectedVariants[v.name] ?? <span className="text-gray-400 font-normal italic">Select one</span>}
+              </span>
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {v.options.map((opt) => {
+                const isSelected = selectedVariants[v.name] === opt.label;
+                return (
+                  <button
+                    key={opt.label}
+                    type="button"
+                    onClick={() => setSelectedVariants({ ...selectedVariants, [v.name]: opt.label })}
+                    className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all duration-150 ${
+                      isSelected
+                        ? 'border-emerald-400 bg-emerald-50 text-emerald-700 shadow-sm'
+                        : 'border-gray-300 bg-gray-50 text-gray-700 hover:border-emerald-300 hover:bg-emerald-50/30'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
 
         {/* Stock */}
         <div className="flex items-center gap-2 mb-6">

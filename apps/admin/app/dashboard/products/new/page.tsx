@@ -70,6 +70,41 @@ export default function NewProductPage() {
     setJanamazInput('');
   };
 
+  // Dynamic Variants state
+  const [variants, setVariants] = useState<Array<{ name: string; options: Array<{ label: string; price?: number; stock?: number }> }>>([]);
+  const [newVariantName, setNewVariantName] = useState('');
+  const [newVariantOptionInput, setNewVariantOptionInput] = useState<{ [key: number]: string }>({});
+
+  const addVariantGroup = () => {
+    const v = newVariantName.trim();
+    if (v && !variants.find(x => x.name.toLowerCase() === v.toLowerCase())) {
+      setVariants([...variants, { name: v, options: [] }]);
+    }
+    setNewVariantName('');
+  };
+
+  const addVariantOption = (index: number) => {
+    const opt = (newVariantOptionInput[index] || '').trim();
+    if (opt && !variants[index].options.find(x => x.label === opt)) {
+      const newVariants = [...variants];
+      newVariants[index].options.push({ label: opt });
+      setVariants(newVariants);
+    }
+    setNewVariantOptionInput({ ...newVariantOptionInput, [index]: '' });
+  };
+  
+  const removeVariantOption = (groupIndex: number, optionLabel: string) => {
+    const newVariants = [...variants];
+    newVariants[groupIndex].options = newVariants[groupIndex].options.filter(x => x.label !== optionLabel);
+    setVariants(newVariants);
+  };
+  
+  const removeVariantGroup = (groupIndex: number) => {
+    const newVariants = [...variants];
+    newVariants.splice(groupIndex, 1);
+    setVariants(newVariants);
+  };
+
   useEffect(() => {
     categoriesAdminApi.getAll()
       .then((res) => setCategories(res.data.categories))
@@ -112,6 +147,7 @@ export default function NewProductPage() {
         quranOptions: { enabled: quranEnabled, languages: quranLanguages },
         tasbeehOptions: { enabled: tasbeehEnabled, types: tasbeehTypes },
         janamazOptions: { enabled: janamazEnabled, shapes: janamazShapes },
+        variants: variants.filter(v => v.options.length > 0),
         images: images.map((url, i) => ({ url, alt: `${name} ${i + 1}` })),
       });
       toast.success('Product created successfully!');
@@ -592,6 +628,57 @@ export default function NewProductPage() {
                 )}
               </>
             )}
+          </div>
+
+          {/* Dynamic Variants Options */}
+          <div className="admin-card space-y-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Sparkles size={16} className="text-[var(--color-navy)]" />
+              <h2 className="font-semibold text-[var(--color-navy)]">Dynamic Options (Variants)</h2>
+            </div>
+            <p className="text-xs text-gray-400">Add custom options like "Design", "Color", or "Quantity" for customers to choose.</p>
+            
+            {variants.map((v, i) => (
+              <div key={i} className="mb-4 p-3 border border-gray-100 bg-gray-50/50 rounded-xl space-y-3 relative">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-[var(--color-navy)]">{v.name}</h3>
+                  <button type="button" onClick={() => removeVariantGroup(i)} className="text-gray-400 hover:text-red-500">
+                    <X size={14} />
+                  </button>
+                </div>
+                
+                <div className="flex gap-2">
+                  <input type="text" value={newVariantOptionInput[i] || ''} onChange={(e) => setNewVariantOptionInput({ ...newVariantOptionInput, [i]: e.target.value })}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addVariantOption(i); } }}
+                    placeholder={`Add option for ${v.name} (e.g. Red, 50)...`} className="admin-input flex-1 py-1.5 text-xs" />
+                  <button type="button" onClick={() => addVariantOption(i)} disabled={!(newVariantOptionInput[i] || '').trim()}
+                    className="flex items-center gap-1 px-3 py-1 bg-[var(--color-navy)] text-white text-xs font-semibold rounded-lg hover:bg-[var(--color-navy-light)] transition-colors disabled:opacity-40">
+                    <Plus size={11} /> Add
+                  </button>
+                </div>
+
+                {v.options.length > 0 && (
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {v.options.map((opt) => (
+                      <span key={opt.label} className="flex items-center gap-1 px-2.5 py-1 bg-white border border-[rgba(207,169,106,0.3)] shadow-sm text-[var(--color-navy)] text-xs rounded-full font-medium">
+                        {opt.label}
+                        <button type="button" onClick={() => removeVariantOption(i, opt.label)} className="ml-0.5 text-gray-400 hover:text-red-500 transition-colors"><X size={10} /></button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+
+            <div className="flex gap-2 pt-1">
+              <input type="text" value={newVariantName} onChange={(e) => setNewVariantName(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addVariantGroup(); } }}
+                placeholder="New option group (e.g. Design)..." className="admin-input flex-1 py-2 text-sm" />
+              <button type="button" onClick={addVariantGroup} disabled={!newVariantName.trim()}
+                className="flex items-center gap-1 px-3 py-1.5 border-2 border-[var(--color-navy)] text-[var(--color-navy)] text-xs font-bold rounded-lg hover:bg-[var(--color-navy)] hover:text-white transition-colors disabled:opacity-40">
+                <Plus size={12} /> Add Group
+              </button>
+            </div>
           </div>
 
           {/* Categories */}
