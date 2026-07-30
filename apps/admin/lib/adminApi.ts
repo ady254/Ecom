@@ -207,7 +207,7 @@ export interface AdminProduct {
   customFields?: Array<{ label: string; placeholder?: string; required?: boolean }>;
   variants?: Array<{
     name: string;
-    options: Array<{ label: string; price?: number; stock?: number }>;
+    options: Array<{ label: string }>;
   }>;
   quranOptions?: { enabled: boolean; languages: string[] };
   tasbeehOptions?: { enabled: boolean; types: string[] };

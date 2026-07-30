@@ -71,7 +71,7 @@ export default function NewProductPage() {
   };
 
   // Dynamic Variants state
-  const [variants, setVariants] = useState<Array<{ name: string; options: Array<{ label: string; price?: number; stock?: number }> }>>([]);
+  const [variants, setVariants] = useState<Array<{ name: string; options: Array<{ label: string }> }>>([]);
   const [newVariantName, setNewVariantName] = useState('');
   const [newVariantOptionInput, setNewVariantOptionInput] = useState<{ [key: number]: string }>({});
 

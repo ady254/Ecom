@@ -34,7 +34,7 @@ interface PDPProduct {
   janamazOptions?: { enabled: boolean; shapes: string[] };
   variants?: Array<{
     name: string;
-    options: Array<{ label: string; price?: number; stock?: number }>;
+    options: Array<{ label: string }>;
   }>;
 }
 

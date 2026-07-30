@@ -13,7 +13,7 @@ export interface IProduct extends Document {
   stock: number;
   variants: Array<{
     name: string;
-    options: Array<{ label: string; price?: number; stock?: number }>;
+    options: Array<{ label: string }>;
   }>;
   isFeatured: boolean;
   isActive: boolean;
@@ -62,8 +62,6 @@ const productSchema = new Schema<IProduct>(
         options: [
           {
             label: String,
-            price: Number,
-            stock: Number,
           },
         ],
       },
