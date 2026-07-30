@@ -24,6 +24,10 @@ interface Product {
   quranOptions?: { enabled: boolean; languages: string[] };
   tasbeehOptions?: { enabled: boolean; types: string[] };
   janamazOptions?: { enabled: boolean; shapes: string[] };
+  variants?: Array<{
+    name: string;
+    options: Array<{ label: string; price?: number; stock?: number }>;
+  }>;
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
