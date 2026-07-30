@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
@@ -69,6 +70,8 @@ const categoryGroups: CategoryGroup[] = [
 ];
 
 export default function OccasionSection() {
+  const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
+
   return (
     <section className="bg-[#FAF8F5] py-12 md:py-16 border-b border-gray-100/60 overflow-hidden">
       <div className="section-container max-w-6xl mx-auto px-4 sm:px-6">
@@ -85,39 +88,58 @@ export default function OccasionSection() {
 
             {/* Circle Category Items */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8 md:gap-10 justify-items-center">
-              {group.items.map((item, idx) => (
-                <motion.div
-                  key={item.name}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: '-40px' }}
-                  transition={{ duration: 0.4, delay: idx * 0.08 }}
-                  className="w-full"
-                >
-                  <Link
-                    href={`/products?category=${item.slug}`}
-                    className="group flex flex-col items-center cursor-pointer text-center"
-                  >
-                    {/* Circle Background & Image Container */}
-                    <div className="relative w-32 h-32 sm:w-36 sm:h-36 md:w-44 md:h-44 rounded-full bg-[#EFE5D3] p-2 sm:p-2.5 md:p-3 transition-all duration-300 ease-out border border-[#E2D2B8] shadow-sm group-hover:shadow-[0_12px_28px_rgba(207,169,106,0.35)] group-hover:-translate-y-2 group-hover:border-[var(--color-gold)] overflow-hidden flex items-center justify-center">
-                      <div className="relative w-full h-full rounded-full overflow-hidden flex items-center justify-center bg-[#FAF6EE]">
-                        <Image
-                          src={item.image}
-                          alt={item.name}
-                          fill
-                          sizes="(max-width: 640px) 128px, (max-width: 768px) 144px, 176px"
-                          className="object-cover transition-transform duration-500 ease-out group-hover:scale-110"
-                        />
-                      </div>
-                    </div>
+              {group.items.map((item, idx) => {
+                const isFailed = failedImages[item.slug];
+                const isSvg = item.image.endsWith('.svg');
 
-                    {/* Category Title */}
-                    <span className="mt-3 sm:mt-4 font-serif text-base sm:text-lg md:text-xl text-[#2D3830] group-hover:text-[var(--color-gold-dark)] transition-colors duration-300 font-normal leading-snug">
-                      {item.name}
-                    </span>
-                  </Link>
-                </motion.div>
-              ))}
+                return (
+                  <motion.div
+                    key={item.name}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: '-40px' }}
+                    transition={{ duration: 0.4, delay: idx * 0.08 }}
+                    className="w-full"
+                  >
+                    <Link
+                      href={`/products?category=${item.slug}`}
+                      className="group flex flex-col items-center cursor-pointer text-center"
+                    >
+                      {/* Circle Background & Image Container */}
+                      <div className="relative w-32 h-32 sm:w-36 sm:h-36 md:w-44 md:h-44 rounded-full bg-[#EFE5D3] p-2 sm:p-2.5 md:p-3 transition-all duration-300 ease-out border border-[#E2D2B8] shadow-sm group-hover:shadow-[0_12px_28px_rgba(207,169,106,0.35)] group-hover:-translate-y-2 group-hover:border-[var(--color-gold)] overflow-hidden flex items-center justify-center">
+                        <div className="relative w-full h-full rounded-full overflow-hidden flex items-center justify-center bg-[#FAF6EE]">
+                          {!isFailed ? (
+                            <Image
+                              src={item.image}
+                              alt={item.name}
+                              fill
+                              unoptimized={isSvg}
+                              sizes="(max-width: 640px) 128px, (max-width: 768px) 144px, 176px"
+                              className="object-cover transition-transform duration-500 ease-out group-hover:scale-110"
+                              onError={() => {
+                                setFailedImages((prev) => ({ ...prev, [item.slug]: true }));
+                              }}
+                            />
+                          ) : (
+                            <Image
+                              src={`/categories/${item.slug}.svg`}
+                              alt={item.name}
+                              fill
+                              unoptimized
+                              className="object-cover transition-transform duration-500 ease-out group-hover:scale-110"
+                            />
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Category Title */}
+                      <span className="mt-3 sm:mt-4 font-serif text-base sm:text-lg md:text-xl text-[#2D3830] group-hover:text-[var(--color-gold-dark)] transition-colors duration-300 font-normal leading-snug">
+                        {item.name}
+                      </span>
+                    </Link>
+                  </motion.div>
+                );
+              })}
             </div>
           </div>
         ))}
