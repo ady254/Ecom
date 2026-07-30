@@ -30,15 +30,9 @@ export default async function HomePage() {
   
   return (
     <>
-      <div className="flex flex-col sm:block">
-        <div className="order-2 sm:order-1 w-full">
-          <HeroBanner initialBanners={initialBanners} />
-        </div>
-        <div className="order-1 sm:order-2 w-full">
-          <OccasionSection />
-        </div>
-      </div>
+      <HeroBanner initialBanners={initialBanners} />
       <TrustBadges />
+      <OccasionSection />
       <FeaturedProducts />
       <Testimonials />
       <GiftingHadith />

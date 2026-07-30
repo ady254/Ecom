@@ -32,8 +32,13 @@ export class ProductRepository {
         if (cat) {
           query.categories = { $in: [cat._id] };
         } else {
-          // Unknown slug — return empty result set rather than a CastError
-          return { products: [], total: 0 };
+          const searchRegex = new RegExp(filter.category.replace(/-/g, ' '), 'i');
+          const slugTag = filter.category.toLowerCase();
+          query.$or = [
+            { name: searchRegex },
+            { tags: { $in: [slugTag, filter.category] } },
+            { slug: searchRegex }
+          ];
         }
       }
     }

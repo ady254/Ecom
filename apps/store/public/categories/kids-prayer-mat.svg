@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fdfbf7"/>
+      <stop offset="100%" stop-color="#f3eadc"/>
+    </radialGradient>
+    <linearGradient id="matGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2d6a4f"/>
+      <stop offset="100%" stop-color="#1b4332"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#dfb15b"/>
+      <stop offset="100%" stop-color="#b8860b"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#000" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <!-- Background Circle -->
+  <circle cx="200" cy="200" r="190" fill="url(#bgGrad)"/>
+  <circle cx="200" cy="200" r="185" fill="none" stroke="#e8dcc4" stroke-width="2"/>
+
+  <!-- Kids Prayer Mat Illustration -->
+  <g transform="translate(100, 60)" filter="url(#shadow)">
+    <!-- Mat Base -->
+    <rect x="25" y="30" width="150" height="240" rx="12" fill="url(#matGrad)"/>
+    <!-- Top Mihrab Arch -->
+    <path d="M 25 90 Q 25 30 100 30 Q 175 30 175 90 Z" fill="url(#matGrad)"/>
+    <!-- Gold Border -->
+    <path d="M 35 95 Q 35 42 100 42 Q 165 42 165 95 L 165 258 L 35 258 Z" fill="none" stroke="url(#goldGrad)" stroke-width="3" stroke-dasharray="6,3"/>
+    <!-- Cute Crescent Moon & Stars for Kids -->
+    <path d="M 100 70 A 18 18 0 1 0 118 88 A 14 14 0 1 1 100 70 Z" fill="url(#goldGrad)"/>
+    <polygon points="125,65 128,73 136,73 130,78 132,86 125,81 118,86 120,78 114,73 122,73" fill="url(#goldGrad)"/>
+    <polygon points="75,80 77,85 82,85 78,88 80,93 75,90 70,93 72,88 68,85 73,85" fill="url(#goldGrad)"/>
+    <!-- Fringes Bottom -->
+    <line x1="30" y1="270" x2="30" y2="282" stroke="url(#goldGrad)" stroke-width="2"/>
+    <line x1="45" y1="270" x2="45" y2="282" stroke="url(#goldGrad)" stroke-width="2"/>
+    <line x1="60" y1="270" x2="60" y2="282" stroke="url(#goldGrad)" stroke-width="2"/>
+    <line x1="75" y1="270" x2="75" y2="282" stroke="url(#goldGrad)" stroke-width="2"/>
+    <line x1="90" y1="270" x2="90" y2="282" stroke="url(#goldGrad)" stroke-width="2"/>
+    <line x1="105" y1="270" x2="105" y2="282" stroke="url(#goldGrad)" stroke-width="2"/>
+    <line x1="120" y1="270" x2="120" y2="282" stroke="url(#goldGrad)" stroke-width="2"/>
+    <line x1="135" y1="270" x2="135" y2="282" stroke="url(#goldGrad)" stroke-width="2"/>
+    <line x1="150" y1="270" x2="150" y2="282" stroke="url(#goldGrad)" stroke-width="2"/>
+    <line x1="165" y1="270" x2="165" y2="282" stroke="url(#goldGrad)" stroke-width="2"/>
+  </g>
+</svg>
