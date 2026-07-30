@@ -62,7 +62,7 @@ const categoryGroups: CategoryGroup[] = [
       {
         name: 'Kids prayer mat',
         slug: 'kids-prayer-mat',
-        image: '/categories/kids-prayer-mat.svg',
+        image: '/categories/kids-prayer-mat.webp',
       },
     ],
   },
