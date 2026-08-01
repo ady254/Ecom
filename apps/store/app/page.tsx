@@ -1,4 +1,5 @@
 import HeroBanner, { Slide } from '@/components/home/HeroBanner';
+import ShopByCollection from '@/components/home/ShopByCollection';
 import GiftingHadith from '@/components/home/GiftingHadith';
 import OccasionSection from '@/components/home/OccasionSection';
 import TrustBadges from '@/components/home/TrustBadges';
@@ -31,6 +32,7 @@ export default async function HomePage() {
   return (
     <>
       <HeroBanner initialBanners={initialBanners} />
+      <ShopByCollection />
       <TrustBadges />
       <FeaturedProducts />
       <OccasionSection />
