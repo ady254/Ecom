@@ -27,13 +27,13 @@ async function getBanners(): Promise<Slide[]> {
 export default async function HomePage() {
   const settings = await getStoreSettings();
   const initialBanners = await getBanners();
-  
+
   return (
     <>
       <HeroBanner initialBanners={initialBanners} />
       <TrustBadges />
-      <OccasionSection />
       <FeaturedProducts />
+      <OccasionSection />
       <Testimonials />
       <GiftingHadith />
       <HowItWorks />
