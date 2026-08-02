@@ -46,12 +46,12 @@ const categoryGroups: CategoryGroup[] = [
     title: 'Unique Gifts',
     items: [
       {
-        name: 'Keychains',
+        name: 'Nameplates',
         slug: 'keychains',
         image: '/categories/keychains.png',
       },
       {
-        name: 'Fridge magnets',
+        name: 'Wall Arts',
         slug: 'fridge-magnets',
         image: '/categories/fridge-magnets.png',
       },
