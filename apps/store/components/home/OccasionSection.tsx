@@ -46,7 +46,7 @@ const categoryGroups: CategoryGroup[] = [
     title: 'Unique Gifts',
     items: [
       {
-        name: 'Nameplates',
+        name: 'Name Plates',
         slug: 'keychains',
         image: '/categories/keychains.png',
       },
