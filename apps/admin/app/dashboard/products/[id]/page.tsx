@@ -3,10 +3,34 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronLeft, Save, Loader2, X, Trash2, Plus, Sparkles } from 'lucide-react';
+import { ChevronLeft, Save, Loader2, X, Trash2, Plus, Sparkles, Tag } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { productsAdminApi, categoriesAdminApi, type Category } from '@/lib/adminApi';
 import ImageUploader from '@/components/products/ImageUploader';
+
+type VariantOption = { label: string; price?: number };
+type VariantGroup = { name: string; options: VariantOption[] };
+
+const OPTION_PRESETS: Record<string, { label: string }[]> = {
+  'Quran Type': [
+    { label: 'Arabic' },
+    { label: 'Arabic Color Coded' },
+    { label: 'Premium Arabic Kaaba' },
+    { label: 'Urdu Roman English Translation' },
+    { label: 'Urdu Translation' },
+    { label: 'English Translation' },
+    { label: 'Hindi Translation' },
+    { label: 'Gujarati Translation' },
+  ],
+  'Tasbeeh Type': [
+    { label: 'with Bismillah' },
+    { label: 'with Name' },
+  ],
+  'Janamaz Shape': [
+    { label: 'Rectangle' },
+    { label: 'Dome' },
+  ],
+};
 
 export default function EditProductPage() {
   const router = useRouter();
@@ -36,77 +60,54 @@ export default function EditProductPage() {
   const [codAvailable, setCodAvailable] = useState(true);
   const [customFields, setCustomFields] = useState<Array<{ label: string; placeholder: string; required: boolean }>>([]);
   const [newField, setNewField] = useState({ label: '', placeholder: '', required: false });
-  const [quranEnabled, setQuranEnabled] = useState(false);
-  const [quranLanguages, setQuranLanguages] = useState<string[]>([]);
-  const [quranLangInput, setQuranLangInput] = useState('');
 
-  const QURAN_PRESETS = [
-    'Arabic', 'Arabic Color Coded', 'Premium Arabic Kaaba',
-    'Urdu Roman English Translation', 'Urdu Translation',
-    'English Translation', 'Hindi Translation', 'Gujarati Translation',
-  ];
-
-  const addQuranLanguage = (lang: string) => {
-    const v = lang.trim();
-    if (v && !quranLanguages.includes(v)) setQuranLanguages([...quranLanguages, v]);
-    setQuranLangInput('');
-  };
-
-  // Tasbeeh state
-  const [tasbeehEnabled, setTasbeehEnabled] = useState(false);
-  const [tasbeehTypes, setTasbeehTypes] = useState<string[]>([]);
-  const [tasbeehInput, setTasbeehInput] = useState('');
-  const TASBEEH_PRESETS = ['with Bismillah', 'with Name'];
-  const addTasbeehType = (t: string) => {
-    const v = t.trim();
-    if (v && !tasbeehTypes.includes(v)) setTasbeehTypes([...tasbeehTypes, v]);
-    setTasbeehInput('');
-  };
-
-  // Janamaz state
-  const [janamazEnabled, setJanamazEnabled] = useState(false);
-  const [janamazShapes, setJanamazShapes] = useState<string[]>([]);
-  const [janamazInput, setJanamazInput] = useState('');
-  const JANAMAZ_PRESETS = ['Rectangle', 'Dome'];
-  const addJanamazShape = (s: string) => {
-    const v = s.trim();
-    if (v && !janamazShapes.includes(v)) setJanamazShapes([...janamazShapes, v]);
-    setJanamazInput('');
-  };
-
-  // Dynamic Variants state
-  const [variants, setVariants] = useState<Array<{ name: string; options: Array<{ label: string }> }>>([]);
+  // Unified variants
+  const [variants, setVariants] = useState<VariantGroup[]>([]);
   const [newVariantName, setNewVariantName] = useState('');
-  const [newVariantOptionInput, setNewVariantOptionInput] = useState<{ [key: number]: string }>({});
+  const [newOptInput, setNewOptInput] = useState<{ [key: number]: { label: string; price: string } }>({});
 
-  const addVariantGroup = () => {
-    const v = newVariantName.trim();
+  const addVariantGroup = (groupName?: string) => {
+    const v = (groupName ?? newVariantName).trim();
     if (v && !variants.find(x => x.name.toLowerCase() === v.toLowerCase())) {
-      setVariants([...variants, { name: v, options: [] }]);
+      setVariants(prev => [...prev, { name: v, options: [] }]);
     }
     setNewVariantName('');
   };
 
-  const addVariantOption = (index: number) => {
-    const opt = (newVariantOptionInput[index] || '').trim();
-    if (opt && !variants[index].options.find(x => x.label === opt)) {
-      const newVariants = [...variants];
-      newVariants[index].options.push({ label: opt });
-      setVariants(newVariants);
+  const addVariantOption = (index: number, preset?: { label: string }) => {
+    const label = preset ? preset.label : (newOptInput[index]?.label ?? '').trim();
+    const priceRaw = preset ? '' : (newOptInput[index]?.price ?? '');
+    const priceVal = priceRaw ? Number(priceRaw) : undefined;
+
+    if (!label) return;
+    if (variants[index].options.find(x => x.label === label)) return;
+
+    setVariants(prev => {
+      const next = [...prev];
+      next[index] = {
+        ...next[index],
+        options: [...next[index].options, { label, ...(priceVal !== undefined ? { price: priceVal } : {}) }],
+      };
+      return next;
+    });
+    if (!preset) {
+      setNewOptInput(prev => ({ ...prev, [index]: { label: '', price: '' } }));
     }
-    setNewVariantOptionInput({ ...newVariantOptionInput, [index]: '' });
   };
-  
+
   const removeVariantOption = (groupIndex: number, optionLabel: string) => {
-    const newVariants = [...variants];
-    newVariants[groupIndex].options = newVariants[groupIndex].options.filter(x => x.label !== optionLabel);
-    setVariants(newVariants);
+    setVariants(prev => {
+      const next = [...prev];
+      next[groupIndex] = {
+        ...next[groupIndex],
+        options: next[groupIndex].options.filter(x => x.label !== optionLabel),
+      };
+      return next;
+    });
   };
-  
+
   const removeVariantGroup = (groupIndex: number) => {
-    const newVariants = [...variants];
-    newVariants.splice(groupIndex, 1);
-    setVariants(newVariants);
+    setVariants(prev => prev.filter((_, i) => i !== groupIndex));
   };
 
   useEffect(() => {
@@ -145,14 +146,32 @@ export default function EditProductPage() {
           placeholder: f.placeholder ?? '',
           required: f.required ?? false,
         })));
-        setQuranEnabled(p.quranOptions?.enabled ?? false);
-        setQuranLanguages(p.quranOptions?.languages ?? []);
-        setTasbeehEnabled(p.tasbeehOptions?.enabled ?? false);
-        setTasbeehTypes(p.tasbeehOptions?.types ?? []);
-        setJanamazEnabled(p.janamazOptions?.enabled ?? false);
-        setJanamazShapes(p.janamazOptions?.shapes ?? []);
-        setVariants(p.variants ?? []);
-        setImages(p.images.map((img) => img.url));
+
+        // Build unified variants from the new variants[] array first,
+        // then migrate any legacy quranOptions / tasbeehOptions / janamazOptions
+        // so editing old products automatically converts them.
+        const mergedVariants: VariantGroup[] = (p.variants ?? []).map((v: VariantGroup) => ({
+          name: v.name,
+          options: v.options.map((o: VariantOption) => ({ label: o.label, ...(o.price !== undefined ? { price: o.price } : {}) })),
+        }));
+
+        const alreadyHasQuran = mergedVariants.some(v => v.name === 'Quran Type');
+        if (!alreadyHasQuran && p.quranOptions?.enabled && (p.quranOptions.languages ?? []).length > 0) {
+          mergedVariants.push({ name: 'Quran Type', options: p.quranOptions.languages.map((l: string) => ({ label: l })) });
+        }
+
+        const alreadyHasTasbeeh = mergedVariants.some(v => v.name === 'Tasbeeh Type');
+        if (!alreadyHasTasbeeh && p.tasbeehOptions?.enabled && (p.tasbeehOptions.types ?? []).length > 0) {
+          mergedVariants.push({ name: 'Tasbeeh Type', options: p.tasbeehOptions.types.map((t: string) => ({ label: t })) });
+        }
+
+        const alreadyHasJanamaz = mergedVariants.some(v => v.name === 'Janamaz Shape');
+        if (!alreadyHasJanamaz && p.janamazOptions?.enabled && (p.janamazOptions.shapes ?? []).length > 0) {
+          mergedVariants.push({ name: 'Janamaz Shape', options: p.janamazOptions.shapes.map((s: string) => ({ label: s })) });
+        }
+
+        setVariants(mergedVariants);
+        setImages(p.images.map((img: { url: string }) => img.url));
       } catch {
         toast.error('Failed to load product');
         router.push('/dashboard/products');
@@ -193,9 +212,6 @@ export default function EditProductPage() {
         isCustomizable,
         codAvailable,
         customFields: isCustomizable ? customFields : [],
-        quranOptions: { enabled: quranEnabled, languages: quranLanguages },
-        tasbeehOptions: { enabled: tasbeehEnabled, types: tasbeehTypes },
-        janamazOptions: { enabled: janamazEnabled, shapes: janamazShapes },
         variants: variants.filter(v => v.options.length > 0),
         images: images.map((url, i) => ({ url, alt: `${name} ${i + 1}` })),
       });
@@ -297,11 +313,14 @@ export default function EditProductPage() {
           </div>
 
           <div className="admin-card space-y-5">
-            <h2 className="font-semibold text-[var(--color-navy)]">Pricing & Inventory</h2>
+            <h2 className="font-semibold text-[var(--color-navy)]">Pricing &amp; Inventory</h2>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Price (₹) <span className="text-red-400">*</span></label>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                  Base Price (₹) <span className="text-red-400">*</span>
+                </label>
                 <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} min="0" step="1" className="admin-input" required />
+                <p className="text-xs text-gray-400 mt-1">Shown before a customer selects an option</p>
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Compare Price (₹)</label>
@@ -440,228 +459,145 @@ export default function EditProductPage() {
             </div>
           )}
 
-          {/* Quran Options */}
-          <div className="admin-card space-y-3">
-            <div className="flex items-center gap-2 justify-between">
-              <div className="flex items-center gap-2">
-                <span style={{ fontSize: '14px' }}>📖</span>
-                <h2 className="font-semibold text-[var(--color-navy)]">Quran Options</h2>
-              </div>
-              <div
-                onClick={() => setQuranEnabled(!quranEnabled)}
-                className={`relative w-11 h-6 rounded-full transition-colors cursor-pointer ${
-                  quranEnabled ? 'bg-[var(--color-gold)]' : 'bg-gray-200'
-                }`}
-              >
-                <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${quranEnabled ? 'translate-x-5' : ''}`} />
-              </div>
+          {/* ── Unified Product Options ── */}
+          <div className="admin-card space-y-4">
+            <div className="flex items-center gap-2">
+              <Tag size={15} className="text-[var(--color-navy)]" />
+              <h2 className="font-semibold text-[var(--color-navy)]">Product Options &amp; Pricing</h2>
             </div>
+            <p className="text-xs text-gray-400">
+              Add option groups (e.g. &quot;Quran Type&quot;, &quot;Color&quot;). Each option can have its
+              own price — the store will update the displayed price when the customer selects it.
+            </p>
 
-            {quranEnabled && (
-              <>
-                <p className="text-xs text-gray-400">Add language / translation options customers can pick from.</p>
-
-                {/* Presets */}
-                <div>
-                  <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-2">Quick Presets</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {QURAN_PRESETS.map((preset) => (
-                      <button
-                        key={preset}
-                        type="button"
-                        onClick={() => addQuranLanguage(preset)}
-                        disabled={quranLanguages.includes(preset)}
-                        className="text-xs px-2.5 py-1 rounded-full border border-gray-200 text-gray-600 hover:border-[var(--color-gold-dark)] hover:text-[var(--color-navy)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                      >
-                        + {preset}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Custom input */}
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={quranLangInput}
-                    onChange={(e) => setQuranLangInput(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addQuranLanguage(quranLangInput); } }}
-                    placeholder="Custom option label…"
-                    className="admin-input flex-1 py-2 text-sm"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => addQuranLanguage(quranLangInput)}
-                    disabled={!quranLangInput.trim()}
-                    className="flex items-center gap-1 px-3 py-1.5 bg-[var(--color-navy)] text-white text-xs font-semibold rounded-lg hover:bg-[var(--color-navy-light)] transition-colors disabled:opacity-40"
-                  >
-                    <Plus size={11} /> Add
-                  </button>
-                </div>
-
-                {/* Existing options */}
-                {quranLanguages.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {quranLanguages.map((lang) => (
-                      <span key={lang} className="flex items-center gap-1 px-3 py-1 bg-[var(--color-cream)] border border-[rgba(207,169,106,0.4)] text-[var(--color-navy)] text-xs rounded-full font-medium">
-                        {lang}
-                        <button type="button" onClick={() => setQuranLanguages(quranLanguages.filter((l) => l !== lang))} className="ml-0.5 text-gray-400 hover:text-red-500 transition-colors">
-                          <X size={10} />
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-
-          {/* Tasbeeh Options */}
-          <div className="admin-card space-y-3">
-            <div className="flex items-center gap-2 justify-between">
-              <div className="flex items-center gap-2">
-                <span style={{ fontSize: '14px' }}>📿</span>
-                <h2 className="font-semibold text-[var(--color-navy)]">Tasbeeh Options</h2>
-              </div>
-              <div
-                onClick={() => setTasbeehEnabled(!tasbeehEnabled)}
-                className={`relative w-11 h-6 rounded-full transition-colors cursor-pointer ${
-                  tasbeehEnabled ? 'bg-[var(--color-gold)]' : 'bg-gray-200'
-                }`}
-              >
-                <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${tasbeehEnabled ? 'translate-x-5' : ''}`} />
-              </div>
-            </div>
-            {tasbeehEnabled && (
-              <>
-                <p className="text-xs text-gray-400">Add Tasbeeh type options customers can choose from.</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {TASBEEH_PRESETS.map((p) => (
-                    <button key={p} type="button" onClick={() => addTasbeehType(p)} disabled={tasbeehTypes.includes(p)}
-                      className="text-xs px-2.5 py-1 rounded-full border border-gray-200 text-gray-600 hover:border-[var(--color-gold-dark)] hover:text-[var(--color-navy)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
-                      + {p}
+            {/* Quick-start presets */}
+            <div>
+              <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-2">Quick Start</p>
+              <div className="flex flex-wrap gap-1.5">
+                {Object.keys(OPTION_PRESETS).map((groupName) => {
+                  const alreadyAdded = variants.some(v => v.name === groupName);
+                  return (
+                    <button
+                      key={groupName}
+                      type="button"
+                      disabled={alreadyAdded}
+                      onClick={() => addVariantGroup(groupName)}
+                      className="text-xs px-2.5 py-1 rounded-full border border-gray-200 text-gray-600 hover:border-[var(--color-gold-dark)] hover:text-[var(--color-navy)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                      + {groupName}
                     </button>
-                  ))}
-                </div>
-                <div className="flex gap-2">
-                  <input type="text" value={tasbeehInput} onChange={(e) => setTasbeehInput(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTasbeehType(tasbeehInput); } }}
-                    placeholder="Custom type label…" className="admin-input flex-1 py-2 text-sm" />
-                  <button type="button" onClick={() => addTasbeehType(tasbeehInput)} disabled={!tasbeehInput.trim()}
-                    className="flex items-center gap-1 px-3 py-1.5 bg-[var(--color-navy)] text-white text-xs font-semibold rounded-lg hover:bg-[var(--color-navy-light)] transition-colors disabled:opacity-40">
-                    <Plus size={11} /> Add
-                  </button>
-                </div>
-                {tasbeehTypes.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {tasbeehTypes.map((t) => (
-                      <span key={t} className="flex items-center gap-1 px-3 py-1 bg-[var(--color-cream)] border border-[rgba(207,169,106,0.4)] text-[var(--color-navy)] text-xs rounded-full font-medium">
-                        {t}
-                        <button type="button" onClick={() => setTasbeehTypes(tasbeehTypes.filter((x) => x !== t))} className="ml-0.5 text-gray-400 hover:text-red-500 transition-colors"><X size={10} /></button>
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-
-          {/* Janamaz Options */}
-          <div className="admin-card space-y-3">
-            <div className="flex items-center gap-2 justify-between">
-              <div className="flex items-center gap-2">
-                <span style={{ fontSize: '14px' }}>🧹</span>
-                <h2 className="font-semibold text-[var(--color-navy)]">Janamaz (Prayer Mat) Options</h2>
-              </div>
-              <div
-                onClick={() => setJanamazEnabled(!janamazEnabled)}
-                className={`relative w-11 h-6 rounded-full transition-colors cursor-pointer ${
-                  janamazEnabled ? 'bg-[var(--color-gold)]' : 'bg-gray-200'
-                }`}
-              >
-                <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${janamazEnabled ? 'translate-x-5' : ''}`} />
+                  );
+                })}
               </div>
             </div>
-            {janamazEnabled && (
-              <>
-                <p className="text-xs text-gray-400">Add prayer mat shape options customers can choose from.</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {JANAMAZ_PRESETS.map((p) => (
-                    <button key={p} type="button" onClick={() => addJanamazShape(p)} disabled={janamazShapes.includes(p)}
-                      className="text-xs px-2.5 py-1 rounded-full border border-gray-200 text-gray-600 hover:border-[var(--color-gold-dark)] hover:text-[var(--color-navy)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
-                      + {p}
+
+            {/* Existing groups */}
+            {variants.map((v, i) => {
+              const presets = OPTION_PRESETS[v.name] ?? [];
+              const inp = newOptInput[i] ?? { label: '', price: '' };
+              return (
+                <div key={i} className="border border-gray-100 bg-gray-50/60 rounded-xl p-3 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-[var(--color-navy)]">{v.name}</h3>
+                    <button type="button" onClick={() => removeVariantGroup(i)} className="text-gray-400 hover:text-red-500 transition-colors">
+                      <X size={14} />
                     </button>
-                  ))}
-                </div>
-                <div className="flex gap-2">
-                  <input type="text" value={janamazInput} onChange={(e) => setJanamazInput(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addJanamazShape(janamazInput); } }}
-                    placeholder="Custom shape label…" className="admin-input flex-1 py-2 text-sm" />
-                  <button type="button" onClick={() => addJanamazShape(janamazInput)} disabled={!janamazInput.trim()}
-                    className="flex items-center gap-1 px-3 py-1.5 bg-[var(--color-navy)] text-white text-xs font-semibold rounded-lg hover:bg-[var(--color-navy-light)] transition-colors disabled:opacity-40">
-                    <Plus size={11} /> Add
-                  </button>
-                </div>
-                {janamazShapes.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {janamazShapes.map((s) => (
-                      <span key={s} className="flex items-center gap-1 px-3 py-1 bg-[var(--color-cream)] border border-[rgba(207,169,106,0.4)] text-[var(--color-navy)] text-xs rounded-full font-medium">
-                        {s}
-                        <button type="button" onClick={() => setJanamazShapes(janamazShapes.filter((x) => x !== s))} className="ml-0.5 text-gray-400 hover:text-red-500 transition-colors"><X size={10} /></button>
-                      </span>
-                    ))}
                   </div>
-                )}
-              </>
-            )}
-          </div>
 
-          {/* Dynamic Variants Options */}
-          <div className="admin-card space-y-3">
-            <div className="flex items-center gap-2 mb-2">
-              <Sparkles size={16} className="text-[var(--color-navy)]" />
-              <h2 className="font-semibold text-[var(--color-navy)]">Dynamic Options (Variants)</h2>
-            </div>
-            <p className="text-xs text-gray-400">Add custom options like "Design", "Color", or "Quantity" for customers to choose.</p>
-            
-            {variants.map((v, i) => (
-              <div key={i} className="mb-4 p-3 border border-gray-100 bg-gray-50/50 rounded-xl space-y-3 relative">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-[var(--color-navy)]">{v.name}</h3>
-                  <button type="button" onClick={() => removeVariantGroup(i)} className="text-gray-400 hover:text-red-500">
-                    <X size={14} />
-                  </button>
-                </div>
-                
-                <div className="flex gap-2">
-                  <input type="text" value={newVariantOptionInput[i] || ''} onChange={(e) => setNewVariantOptionInput({ ...newVariantOptionInput, [i]: e.target.value })}
-                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addVariantOption(i); } }}
-                    placeholder={`Add option for ${v.name} (e.g. Red, 50)...`} className="admin-input flex-1 py-1.5 text-xs" />
-                  <button type="button" onClick={() => addVariantOption(i)} disabled={!(newVariantOptionInput[i] || '').trim()}
-                    className="flex items-center gap-1 px-3 py-1 bg-[var(--color-navy)] text-white text-xs font-semibold rounded-lg hover:bg-[var(--color-navy-light)] transition-colors disabled:opacity-40">
-                    <Plus size={11} /> Add
-                  </button>
-                </div>
+                  {presets.length > 0 && (
+                    <div>
+                      <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Presets</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {presets.map((p) => {
+                          const used = v.options.some(o => o.label === p.label);
+                          return (
+                            <button
+                              key={p.label}
+                              type="button"
+                              disabled={used}
+                              onClick={() => addVariantOption(i, p)}
+                              className="text-xs px-2.5 py-1 rounded-full border border-dashed border-gray-300 text-gray-500 hover:border-[var(--color-gold-dark)] hover:text-[var(--color-navy)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                            >
+                              + {p.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
 
-                {v.options.length > 0 && (
-                  <div className="flex flex-wrap gap-2 pt-1">
-                    {v.options.map((opt) => (
-                      <span key={opt.label} className="flex items-center gap-1 px-2.5 py-1 bg-white border border-[rgba(207,169,106,0.3)] shadow-sm text-[var(--color-navy)] text-xs rounded-full font-medium">
-                        {opt.label}
-                        <button type="button" onClick={() => removeVariantOption(i, opt.label)} className="ml-0.5 text-gray-400 hover:text-red-500 transition-colors"><X size={10} /></button>
-                      </span>
-                    ))}
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={inp.label}
+                      onChange={(e) => setNewOptInput(prev => ({ ...prev, [i]: { ...inp, label: e.target.value } }))}
+                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addVariantOption(i); } }}
+                      placeholder="Option label…"
+                      className="admin-input flex-1 py-1.5 text-xs"
+                    />
+                    <div className="relative">
+                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none">₹</span>
+                      <input
+                        type="number"
+                        value={inp.price}
+                        onChange={(e) => setNewOptInput(prev => ({ ...prev, [i]: { ...inp, price: e.target.value } }))}
+                        placeholder="Price"
+                        min="0"
+                        className="admin-input py-1.5 text-xs pl-6 w-24"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => addVariantOption(i)}
+                      disabled={!inp.label.trim()}
+                      className="flex items-center gap-1 px-3 py-1 bg-[var(--color-navy)] text-white text-xs font-semibold rounded-lg hover:bg-[var(--color-navy-light)] transition-colors disabled:opacity-40"
+                    >
+                      <Plus size={11} /> Add
+                    </button>
                   </div>
-                )}
-              </div>
-            ))}
 
+                  {v.options.length > 0 && (
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {v.options.map((opt) => (
+                        <span
+                          key={opt.label}
+                          className="flex items-center gap-1.5 px-3 py-1 bg-white border border-[rgba(207,169,106,0.4)] shadow-sm text-[var(--color-navy)] text-xs rounded-full font-medium"
+                        >
+                          {opt.label}
+                          {opt.price !== undefined && (
+                            <span className="text-[var(--color-gold-dark)] font-bold">· ₹{opt.price}</span>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => removeVariantOption(i, opt.label)}
+                            className="ml-0.5 text-gray-400 hover:text-red-500 transition-colors"
+                          >
+                            <X size={10} />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+            {/* Add new group */}
             <div className="flex gap-2 pt-1">
-              <input type="text" value={newVariantName} onChange={(e) => setNewVariantName(e.target.value)}
+              <input
+                type="text"
+                value={newVariantName}
+                onChange={(e) => setNewVariantName(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addVariantGroup(); } }}
-                placeholder="New option group (e.g. Design)..." className="admin-input flex-1 py-2 text-sm" />
-              <button type="button" onClick={addVariantGroup} disabled={!newVariantName.trim()}
-                className="flex items-center gap-1 px-3 py-1.5 border-2 border-[var(--color-navy)] text-[var(--color-navy)] text-xs font-bold rounded-lg hover:bg-[var(--color-navy)] hover:text-white transition-colors disabled:opacity-40">
+                placeholder="New option group (e.g. Cover Type, Color)…"
+                className="admin-input flex-1 py-2 text-sm"
+              />
+              <button
+                type="button"
+                onClick={() => addVariantGroup()}
+                disabled={!newVariantName.trim()}
+                className="flex items-center gap-1 px-3 py-1.5 border-2 border-[var(--color-navy)] text-[var(--color-navy)] text-xs font-bold rounded-lg hover:bg-[var(--color-navy)] hover:text-white transition-colors disabled:opacity-40"
+              >
                 <Plus size={12} /> Add Group
               </button>
             </div>
@@ -708,7 +644,7 @@ export default function EditProductPage() {
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } }}
-                placeholder="Add tag & press Enter"
+                placeholder="Add tag &amp; press Enter"
                 className="admin-input flex-1"
               />
               <button type="button" onClick={addTag} className="px-3 py-2 bg-[var(--color-navy)] text-white text-sm rounded-lg hover:bg-[var(--color-navy-dark)] transition-colors">

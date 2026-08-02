@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { Star, Heart, Minus, Plus, Flame, Sparkles, Truck, RotateCcw, Gift, Lock, CheckCircle2, ShoppingBag, CreditCard } from 'lucide-react';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { Star, Heart, Minus, Plus, Flame, Sparkles, Truck, RotateCcw, Gift, Lock, CheckCircle2, ShoppingBag, CreditCard, Tag } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { formatCurrency } from '@minara/utils';
 import { useCartStore } from '@/store/cartStore';
@@ -11,6 +11,12 @@ import CustomizeModal from './CustomizeModal';
 
 interface CustomField { label: string; placeholder?: string; required?: boolean; }
 interface ProductImage { url: string; alt?: string; }
+
+interface VariantOption {
+  label: string;
+  /** Optional per-option price for dynamic pricing (Amazon-style). */
+  price?: number;
+}
 
 interface PDPProduct {
   _id: string;
@@ -29,13 +35,17 @@ interface PDPProduct {
   isCustomizable?: boolean;
   codAvailable?: boolean;
   customFields?: CustomField[];
+  variants?: Array<{
+    name: string;
+    options: VariantOption[];
+  }>;
+  /**
+   * @deprecated Legacy fields — kept for products not yet re-saved after the
+   * model migration. The PDP reads these as fallback if variants[] is empty.
+   */
   quranOptions?: { enabled: boolean; languages: string[] };
   tasbeehOptions?: { enabled: boolean; types: string[] };
   janamazOptions?: { enabled: boolean; shapes: string[] };
-  variants?: Array<{
-    name: string;
-    options: Array<{ label: string }>;
-  }>;
 }
 
 interface DeliveryStep { label: string; date: string; }
@@ -59,20 +69,83 @@ export default function PDPClient({ product, discount, soldCount, deliverySteps 
   const [qty, setQty] = useState(1);
   const [showCustomize, setShowCustomize] = useState(false);
   const [showSticky, setShowSticky] = useState(false);
-  const [selectedQuranLang, setSelectedQuranLang] = useState<string | null>(null);
-  const [selectedTasbeehType, setSelectedTasbeehType] = useState<string | null>(null);
-  const [selectedJanamazShape, setSelectedJanamazShape] = useState<string | null>(null);
+  /** key = variant group name, value = selected option label */
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
+  /** Animate price change */
+  const [priceAnimating, setPriceAnimating] = useState(false);
   const ctaRef = useRef<HTMLDivElement>(null);
 
   const { addItem } = useCartStore();
   const { openCart, setStickyBarVisible } = useUIStore();
   const { toggle, isInWishlist } = useWishlistStore();
   const wishlisted = isInWishlist(product._id);
-
   const mainImage = product.images?.[0]?.url ?? '';
 
-  // Show the sticky mobile buy bar once the main CTA scrolls out of view above
+  /**
+   * Resolve the effective variant groups.
+   * If the product has the new variants[], use that.
+   * Otherwise fall back to the legacy hardcoded option fields.
+   */
+  const variantGroups = useMemo(() => {
+    const groups: Array<{ name: string; options: VariantOption[] }> = [];
+
+    if (product.variants && product.variants.length > 0) {
+      return product.variants.filter(v => v.options.length > 0);
+    }
+
+    // Legacy fallback
+    if (product.quranOptions?.enabled && (product.quranOptions.languages ?? []).length > 0) {
+      groups.push({ name: 'Quran Type', options: product.quranOptions.languages.map(l => ({ label: l })) });
+    }
+    if (product.tasbeehOptions?.enabled && (product.tasbeehOptions.types ?? []).length > 0) {
+      groups.push({ name: 'Tasbeeh Type', options: product.tasbeehOptions.types.map(t => ({ label: t })) });
+    }
+    if (product.janamazOptions?.enabled && (product.janamazOptions.shapes ?? []).length > 0) {
+      groups.push({ name: 'Janamaz Shape', options: product.janamazOptions.shapes.map(s => ({ label: s })) });
+    }
+    return groups;
+  }, [product]);
+
+  /**
+   * Dynamic price: scan all selected options and return the price of the
+   * first selected option that has an explicit price override.
+   * Falls back to the product's base price.
+   */
+  const displayPrice = useMemo(() => {
+    for (const group of variantGroups) {
+      const selectedLabel = selectedVariants[group.name];
+      if (!selectedLabel) continue;
+      const opt = group.options.find(o => o.label === selectedLabel);
+      if (opt?.price !== undefined) return opt.price;
+    }
+    return product.price;
+  }, [selectedVariants, variantGroups, product.price]);
+
+  /**
+   * The option that is currently driving the price (if any).
+   * Used to show a small "Includes translation" style badge.
+   */
+  const pricingOption = useMemo(() => {
+    for (const group of variantGroups) {
+      const selectedLabel = selectedVariants[group.name];
+      if (!selectedLabel) continue;
+      const opt = group.options.find(o => o.label === selectedLabel);
+      if (opt?.price !== undefined) return { group: group.name, label: opt.label };
+    }
+    return null;
+  }, [selectedVariants, variantGroups]);
+
+  const prevDisplayPrice = useRef(displayPrice);
+  useEffect(() => {
+    if (prevDisplayPrice.current !== displayPrice) {
+      setPriceAnimating(true);
+      const t = setTimeout(() => setPriceAnimating(false), 400);
+      prevDisplayPrice.current = displayPrice;
+      return () => clearTimeout(t);
+    }
+  }, [displayPrice]);
+
+  // Show sticky buy bar once the main CTA scrolls out of view above
   useEffect(() => {
     const el = ctaRef.current;
     if (!el || product.stock <= 0) return;
@@ -86,48 +159,32 @@ export default function PDPClient({ product, discount, soldCount, deliverySteps 
     return () => observer.disconnect();
   }, [product.stock]);
 
-  // Let floating widgets (WhatsApp) lift themselves above the bar
   useEffect(() => {
     setStickyBarVisible(showSticky);
     return () => setStickyBarVisible(false);
   }, [showSticky, setStickyBarVisible]);
 
+  const handleSelectVariant = (groupName: string, optionLabel: string) => {
+    setSelectedVariants(prev => ({ ...prev, [groupName]: optionLabel }));
+  };
+
   const handleAddToCart = () => {
-    // Validate selections when options are enabled
-    if (product.quranOptions?.enabled && product.quranOptions.languages.length > 0 && !selectedQuranLang) {
-      toast.error('Please select a Quran language / translation');
-      return;
-    }
-    if (product.tasbeehOptions?.enabled && product.tasbeehOptions.types.length > 0 && !selectedTasbeehType) {
-      toast.error('Please select a Tasbeeh type');
-      return;
-    }
-    if (product.janamazOptions?.enabled && product.janamazOptions.shapes.length > 0 && !selectedJanamazShape) {
-      toast.error('Please select a Janamaz shape');
-      return;
-    }
-    
-    if (product.variants?.length) {
-      for (const v of product.variants) {
-        if (!selectedVariants[v.name]) {
-          toast.error(`Please select a ${v.name}`);
-          return;
-        }
+    // Validate that all option groups have a selection
+    for (const group of variantGroups) {
+      if (!selectedVariants[group.name]) {
+        toast.error(`Please select a ${group.name}`);
+        return;
       }
     }
 
-    const variant: Record<string, string> = { ...selectedVariants };
-    if (selectedQuranLang) variant['Quran Language'] = selectedQuranLang;
-    if (selectedTasbeehType) variant['Tasbeeh Type'] = selectedTasbeehType;
-    if (selectedJanamazShape) variant['Janamaz Shape'] = selectedJanamazShape;
     addItem({
       productId: product._id,
       name: product.name,
       image: mainImage,
-      price: product.price,
+      price: displayPrice,
       quantity: qty,
       slug: product.slug,
-      ...(Object.keys(variant).length > 0 ? { variant } : {}),
+      ...(Object.keys(selectedVariants).length > 0 ? { variant: { ...selectedVariants } } : {}),
     });
     toast.success('Added to cart!');
     openCart();
@@ -138,7 +195,7 @@ export default function PDPClient({ product, discount, soldCount, deliverySteps 
       productId: product._id,
       name: product.name,
       image: mainImage,
-      price: product.price,
+      price: displayPrice,
       quantity: qty,
       slug: product.slug,
       variant: customization,
@@ -157,7 +214,7 @@ export default function PDPClient({ product, discount, soldCount, deliverySteps 
   return (
     <>
       <div className="flex flex-col">
-        {/* Urgency badge — real sales only; hidden when nothing sold recently */}
+        {/* Urgency badge */}
         {soldCount > 0 && (
           <div className="flex items-center gap-1.5 mb-4">
             <span className="flex items-center gap-1.5 text-xs font-semibold text-orange-600 bg-orange-50 border border-orange-100 px-3 py-1.5 rounded-full">
@@ -222,22 +279,42 @@ export default function PDPClient({ product, discount, soldCount, deliverySteps 
           </a>
         )}
 
-        {/* Price */}
-        <div className="flex items-baseline gap-4 mb-4">
-          <span
-            className="text-3xl text-[var(--color-navy)] font-bold"
-            style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
-          >
-            {formatCurrency(product.price)}
-          </span>
-          {product.comparePrice && (
-            <span className="text-lg text-gray-400 line-through">{formatCurrency(product.comparePrice)}</span>
-          )}
-          {discount > 0 && (
-            <span className="text-sm font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full">
-              {discount}% off
+        {/* ── Dynamic Price Block ── */}
+        <div className="mb-4">
+          <div className="flex items-baseline gap-4">
+            <span
+              className={`text-3xl text-[var(--color-navy)] font-bold transition-all duration-300 ${
+                priceAnimating ? 'scale-110 text-[var(--color-gold-dark)]' : 'scale-100'
+              }`}
+              style={{
+                fontFamily: "'Cormorant Garamond', Georgia, serif",
+                display: 'inline-block',
+                transformOrigin: 'left center',
+              }}
+            >
+              {formatCurrency(displayPrice)}
             </span>
-          )}
+            {product.comparePrice && (
+              <span className="text-lg text-gray-400 line-through">{formatCurrency(product.comparePrice)}</span>
+            )}
+            {discount > 0 && (
+              <span className="text-sm font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full">
+                {discount}% off
+              </span>
+            )}
+          </div>
+
+          {/* Price context badge — shown when an option is driving the price */}
+          {pricingOption ? (
+            <div className="flex items-center gap-1.5 mt-1.5">
+              <Tag size={11} className="text-[var(--color-gold-dark)]" />
+              <span className="text-xs text-[var(--color-gold-dark)] font-medium">
+                Price for: {pricingOption.label}
+              </span>
+            </div>
+          ) : variantGroups.some(g => g.options.some(o => o.price !== undefined)) ? (
+            <p className="text-xs text-gray-400 mt-1">Select an option to see its price</p>
+          ) : null}
         </div>
 
         {/* SKU */}
@@ -250,123 +327,42 @@ export default function PDPClient({ product, discount, soldCount, deliverySteps 
           <p className="text-gray-600 leading-relaxed mb-5 text-sm">{product.shortDescription}</p>
         )}
 
-        {/* Quran Language / Translation Selector */}
-        {product.quranOptions?.enabled && product.quranOptions.languages.length > 0 && (
-          <div className="mb-6">
+        {/* ── Unified Variant Selectors (all option groups in one loop) ── */}
+        {variantGroups.map((group) => (
+          <div key={group.name} className="mb-6">
             <p className="text-xs font-semibold text-gray-600 mb-3">
-              Quran Type:{' '}
+              {group.name}:{' '}
               <span className="text-[var(--color-navy)] font-bold">
-                {selectedQuranLang ?? <span className="text-gray-400 font-normal italic">Select one</span>}
+                {selectedVariants[group.name] ?? (
+                  <span className="text-gray-400 font-normal italic">Select one</span>
+                )}
               </span>
             </p>
             <div className="flex flex-wrap gap-2">
-              {product.quranOptions.languages.map((lang) => {
-                const isSelected = selectedQuranLang === lang;
-                return (
-                  <button
-                    key={lang}
-                    type="button"
-                    onClick={() => setSelectedQuranLang(lang)}
-                    className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all duration-150 ${
-                      isSelected
-                        ? 'border-[var(--color-navy)] bg-[var(--color-navy)] text-white shadow-sm'
-                        : 'border-gray-300 bg-white text-gray-700 hover:border-[var(--color-navy)] hover:text-[var(--color-navy)]'
-                    }`}
-                  >
-                    {lang}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Tasbeeh Type Selector */}
-        {product.tasbeehOptions?.enabled && product.tasbeehOptions.types.length > 0 && (
-          <div className="mb-6">
-            <p className="text-xs font-semibold text-gray-600 mb-3">
-              Tasbeeh Type:{' '}
-              <span className="text-[var(--color-navy)] font-bold">
-                {selectedTasbeehType ?? <span className="text-gray-400 font-normal italic">Select one</span>}
-              </span>
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {product.tasbeehOptions.types.map((type) => {
-                const isSelected = selectedTasbeehType === type;
-                return (
-                  <button
-                    key={type}
-                    type="button"
-                    onClick={() => setSelectedTasbeehType(type)}
-                    className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all duration-150 ${
-                      isSelected
-                        ? 'border-[var(--color-navy)] bg-[var(--color-navy)] text-white shadow-sm'
-                        : 'border-gray-300 bg-white text-gray-700 hover:border-[var(--color-navy)] hover:text-[var(--color-navy)]'
-                    }`}
-                  >
-                    {type}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Janamaz Shape Selector */}
-        {product.janamazOptions?.enabled && product.janamazOptions.shapes.length > 0 && (
-          <div className="mb-6">
-            <p className="text-xs font-semibold text-gray-600 mb-3">
-              Couple Janamaz Type:{' '}
-              <span className="text-[var(--color-navy)] font-bold">
-                {selectedJanamazShape ?? <span className="text-gray-400 font-normal italic">Select one</span>}
-              </span>
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {product.janamazOptions.shapes.map((shape) => {
-                const isSelected = selectedJanamazShape === shape;
-                return (
-                  <button
-                    key={shape}
-                    type="button"
-                    onClick={() => setSelectedJanamazShape(shape)}
-                    className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all duration-150 ${
-                      isSelected
-                        ? 'border-[var(--color-navy)] bg-[var(--color-navy)] text-white shadow-sm'
-                        : 'border-gray-300 bg-white text-gray-700 hover:border-[var(--color-navy)] hover:text-[var(--color-navy)]'
-                    }`}
-                  >
-                    {shape}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Dynamic Variants */}
-        {product.variants?.map((v) => (
-          <div key={v.name} className="mb-6">
-            <p className="text-xs font-semibold text-gray-600 mb-3">
-              {v.name}:{' '}
-              <span className="text-[var(--color-navy)] font-bold">
-                {selectedVariants[v.name] ?? <span className="text-gray-400 font-normal italic">Select one</span>}
-              </span>
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {v.options.map((opt) => {
-                const isSelected = selectedVariants[v.name] === opt.label;
+              {group.options.map((opt) => {
+                const isSelected = selectedVariants[group.name] === opt.label;
+                const hasPriceOverride = opt.price !== undefined;
                 return (
                   <button
                     key={opt.label}
                     type="button"
-                    onClick={() => setSelectedVariants({ ...selectedVariants, [v.name]: opt.label })}
+                    onClick={() => handleSelectVariant(group.name, opt.label)}
                     className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all duration-150 ${
                       isSelected
-                        ? 'border-emerald-400 bg-emerald-50 text-emerald-700 shadow-sm'
-                        : 'border-gray-300 bg-gray-50 text-gray-700 hover:border-emerald-300 hover:bg-emerald-50/30'
+                        ? 'border-[var(--color-navy)] bg-[var(--color-navy)] text-white shadow-sm'
+                        : 'border-gray-300 bg-white text-gray-700 hover:border-[var(--color-navy)] hover:text-[var(--color-navy)]'
                     }`}
                   >
-                    {opt.label}
+                    <span>{opt.label}</span>
+                    {hasPriceOverride && (
+                      <span
+                        className={`ml-2 text-xs font-semibold ${
+                          isSelected ? 'text-[var(--color-gold)]' : 'text-[var(--color-gold-dark)]'
+                        }`}
+                      >
+                        {formatCurrency(opt.price!)}
+                      </span>
+                    )}
                   </button>
                 );
               })}
@@ -422,9 +418,9 @@ export default function PDPClient({ product, discount, soldCount, deliverySteps 
               </div>
               <div>
                 <p className="text-xs font-semibold text-emerald-800">
-                  {product.price >= 999 
-                    ? "This item qualifies for FREE Shipping!" 
-                    : "Free shipping on orders over ₹999!"}
+                  {displayPrice >= 999
+                    ? 'This item qualifies for FREE Shipping!'
+                    : 'Free shipping on orders over ₹999!'}
                 </p>
               </div>
             </div>
@@ -437,7 +433,7 @@ export default function PDPClient({ product, discount, soldCount, deliverySteps 
                   className="w-full py-4 rounded-full font-bold text-sm tracking-widest uppercase bg-[var(--color-gold)] text-[var(--color-navy)] hover:bg-[var(--color-gold-dark)] transition-colors flex items-center justify-center gap-2"
                 >
                   <Sparkles size={15} />
-                  Customize & Personalize
+                  Customize &amp; Personalize
                 </button>
               )}
 
@@ -491,9 +487,6 @@ export default function PDPClient({ product, discount, soldCount, deliverySteps 
           </div>
         </div>
 
-        {/* Set the payment expectation here rather than letting checkout be the
-            first place they hear "no COD". Only an explicit false restricts —
-            products saved before this setting existed still allow COD. */}
         {product.codAvailable === false && (
           <div className="mb-6 flex items-start gap-2.5 p-3 bg-amber-50 border border-amber-200 rounded-xl">
             <CreditCard size={15} className="text-amber-600 shrink-0 mt-0.5" />
@@ -506,7 +499,7 @@ export default function PDPClient({ product, discount, soldCount, deliverySteps 
           </div>
         )}
 
-        {/* Trust icons strip — 3-up on small phones so labels stay readable */}
+        {/* Trust icons */}
         <div className="grid grid-cols-3 sm:grid-cols-5 gap-x-2 gap-y-4 py-4 border-t border-b border-gray-100">
           {TRUST_ICONS.map((t) => (
             <div key={t.label} className="flex flex-col items-center gap-1 text-center">
@@ -517,7 +510,7 @@ export default function PDPClient({ product, discount, soldCount, deliverySteps 
         </div>
       </div>
 
-      {/* Sticky mobile buy bar — appears once the main CTA scrolls away */}
+      {/* Sticky mobile buy bar */}
       {product.stock > 0 && (
         <div
           className={`fixed bottom-0 inset-x-0 z-40 lg:hidden bg-white border-t border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] transition-transform duration-300 ${
@@ -530,7 +523,7 @@ export default function PDPClient({ product, discount, soldCount, deliverySteps 
               <p className="text-xs text-gray-400 truncate max-w-[120px]">{product.name}</p>
               <div className="flex items-baseline gap-1.5">
                 <span className="text-lg font-bold text-[var(--color-navy)]">
-                  {formatCurrency(product.price)}
+                  {formatCurrency(displayPrice)}
                 </span>
                 {product.comparePrice && (
                   <span className="text-xs text-gray-400 line-through">
@@ -556,7 +549,7 @@ export default function PDPClient({ product, discount, soldCount, deliverySteps 
           product={{
             _id: product._id,
             name: product.name,
-            price: product.price,
+            price: displayPrice,
             images: product.images,
             customFields: product.customFields,
           }}

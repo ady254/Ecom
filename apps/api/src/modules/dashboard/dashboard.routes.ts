@@ -6,7 +6,7 @@ import { authenticate } from '../../middlewares/auth.middleware.js';
 import { requireAdmin } from '../../middlewares/admin.middleware.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
 
-const router = Router();
+const router: Router = Router();
 
 router.use(authenticate, requireAdmin);
 

@@ -11,9 +11,15 @@ export interface IProduct extends Document {
   categories?: mongoose.Types.ObjectId[];
   tags: string[];
   stock: number;
+  /**
+   * Unified option groups. Each group has a name and a list of options.
+   * Options can optionally carry their own price to enable dynamic pricing
+   * (Amazon-style: selecting an option updates the displayed price).
+   * This replaces the old hardcoded quranOptions / tasbeehOptions / janamazOptions fields.
+   */
   variants: Array<{
     name: string;
-    options: Array<{ label: string }>;
+    options: Array<{ label: string; price?: number }>;
   }>;
   isFeatured: boolean;
   isActive: boolean;
@@ -21,21 +27,15 @@ export interface IProduct extends Document {
   /** When false, this product can only be bought with an online (prepaid) payment. */
   codAvailable: boolean;
   customFields: Array<{ label: string; placeholder?: string; required?: boolean }>;
-  /** Quran language / translation options shown as pill selectors on the PDP */
-  quranOptions?: {
-    enabled: boolean;
-    languages: string[];
-  };
-  /** Tasbeeh type options */
-  tasbeehOptions?: {
-    enabled: boolean;
-    types: string[];
-  };
-  /** Janamaz / prayer mat shape options */
-  janamazOptions?: {
-    enabled: boolean;
-    shapes: string[];
-  };
+  /**
+   * @deprecated Use variants[] instead. Kept for backward-compat with
+   * existing DB documents. Will be ignored by new code paths.
+   */
+  quranOptions?: { enabled: boolean; languages: string[] };
+  /** @deprecated Use variants[] instead. */
+  tasbeehOptions?: { enabled: boolean; types: string[] };
+  /** @deprecated Use variants[] instead. */
+  janamazOptions?: { enabled: boolean; shapes: string[] };
   weight?: number;
   sku?: string;
   metaTitle?: string;
@@ -62,6 +62,8 @@ const productSchema = new Schema<IProduct>(
         options: [
           {
             label: String,
+            /** Optional price override for this specific option (enables dynamic pricing). */
+            price: { type: Number, min: 0 },
           },
         ],
       },
@@ -71,6 +73,7 @@ const productSchema = new Schema<IProduct>(
     isCustomizable: { type: Boolean, default: false },
     codAvailable: { type: Boolean, default: true },
     customFields: [{ label: String, placeholder: String, required: Boolean }],
+    // --- Deprecated fields kept for backward-compat ---
     quranOptions: {
       enabled: { type: Boolean, default: false },
       languages: [{ type: String }],
@@ -83,6 +86,7 @@ const productSchema = new Schema<IProduct>(
       enabled: { type: Boolean, default: false },
       shapes: [{ type: String }],
     },
+    // --------------------------------------------------
     weight: Number,
     sku: { type: String, sparse: true, index: true },
     metaTitle: String,
