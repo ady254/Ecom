@@ -107,33 +107,40 @@ export default function PDPClient({ product, discount, soldCount, deliverySteps 
   }, [product]);
 
   /**
-   * Dynamic price: scan all selected options and return the price of the
-   * first selected option that has an explicit price override.
-   * Falls back to the product's base price.
+   * Dynamic price: base price + sum of all selected addon prices.
+   * Each variant option's `price` field is treated as an ADD-ON amount
+   * on top of the product's base price, not a replacement.
    */
   const displayPrice = useMemo(() => {
+    let total = product.price;
     for (const group of variantGroups) {
       const selectedLabel = selectedVariants[group.name];
       if (!selectedLabel) continue;
       const opt = group.options.find(o => o.label === selectedLabel);
-      if (opt?.price !== undefined) return opt.price;
+      if (opt?.price !== undefined) total += opt.price;
     }
-    return product.price;
+    return total;
   }, [selectedVariants, variantGroups, product.price]);
 
   /**
-   * The option that is currently driving the price (if any).
-   * Used to show a small "Includes translation" style badge.
+   * Total addon amount currently applied (sum of all selected option prices).
+   * Used to show a badge like "+₹499 addon included".
    */
-  const pricingOption = useMemo(() => {
+  const totalAddon = useMemo(() => {
+    let addon = 0;
     for (const group of variantGroups) {
       const selectedLabel = selectedVariants[group.name];
       if (!selectedLabel) continue;
       const opt = group.options.find(o => o.label === selectedLabel);
-      if (opt?.price !== undefined) return { group: group.name, label: opt.label };
+      if (opt?.price !== undefined) addon += opt.price;
     }
-    return null;
+    return addon;
   }, [selectedVariants, variantGroups]);
+
+  /**
+   * Whether any selected option carries an addon price.
+   */
+  const hasAddon = totalAddon > 0;
 
   const prevDisplayPrice = useRef(displayPrice);
   useEffect(() => {
@@ -304,16 +311,16 @@ export default function PDPClient({ product, discount, soldCount, deliverySteps 
             )}
           </div>
 
-          {/* Price context badge — shown when an option is driving the price */}
-          {pricingOption ? (
+          {/* Addon badge — shown when selected options add to the base price */}
+          {hasAddon ? (
             <div className="flex items-center gap-1.5 mt-1.5">
               <Tag size={11} className="text-[var(--color-gold-dark)]" />
               <span className="text-xs text-[var(--color-gold-dark)] font-medium">
-                Price for: {pricingOption.label}
+                Includes +{formatCurrency(totalAddon)} addon
               </span>
             </div>
           ) : variantGroups.some(g => g.options.some(o => o.price !== undefined)) ? (
-            <p className="text-xs text-gray-400 mt-1">Select an option to see its price</p>
+            <p className="text-xs text-gray-400 mt-1">Base price · select an option to add extras</p>
           ) : null}
         </div>
 
@@ -360,7 +367,7 @@ export default function PDPClient({ product, discount, soldCount, deliverySteps 
                           isSelected ? 'text-[var(--color-gold)]' : 'text-[var(--color-gold-dark)]'
                         }`}
                       >
-                        {formatCurrency(opt.price!)}
+                        +{formatCurrency(opt.price!)}
                       </span>
                     )}
                   </button>
