@@ -6,22 +6,25 @@ const WHATSAPP_MSG = encodeURIComponent('Assalamu Alaikum! I have a query about 
 const WHATSAPP_BULK_MSG = encodeURIComponent('Assalamu Alaikum! I would like to place a bulk order for Hajj return gifts / wedding hampers. Please assist.');
 
 const shopLinks = [
-  { label: 'All Products',      href: '/products' },
-  { label: 'Quran Sets',        href: '/products?search=quran' },
-  { label: 'Wedding Gifts',     href: '/products?search=wedding' },
-  { label: 'Gift Hampers',      href: '/products?search=hamper' },
-  { label: 'Hajj Return Gifts', href: '/products?search=hajj' },
-  { label: 'Home Decor',        href: '/products?search=homedecor' },
+  { label: 'All Products', href: '/products' },
+  { label: 'Quran Sets', href: '/products?category=quran-set' },
+  { label: 'Wedding Gifts', href: '/products?category=wedding-gifts' },
+  { label: 'Gift Hamper', href: '/products?category=gift-hamper' },
+  { label: 'Hajj Return Favours', href: '/products?category=hajj-return-favours' },
+  { label: 'Aqeeqah Favours', href: '/products?category=aqeeqah-favours' },
+  { label: 'Personalised Gifts', href: '/products?category=personalised-gifts' },
+
+
 ];
 
 const helpLinks = [
-  { label: 'Track My Order',    href: '/track-order' },
+  { label: 'Track My Order', href: '/track-order' },
   { label: 'Returns & Refunds', href: '/return-policy' },
-  { label: 'Shipping Policy',   href: '/shipping-policy' },
-  { label: 'Contact Us',        href: '/contact' },
-  { label: 'About Us',          href: '/about' },
-  { label: 'Privacy Policy',    href: '/privacy' },
-  { label: 'Terms of Service',  href: '/terms' },
+  { label: 'Shipping Policy', href: '/shipping-policy' },
+  { label: 'Contact Us', href: '/contact' },
+  { label: 'About Us', href: '/about' },
+  { label: 'Privacy Policy', href: '/privacy' },
+  { label: 'Terms of Service', href: '/terms' },
 ];
 
 
@@ -161,7 +164,7 @@ export default async function Footer() {
                   <Phone size={14} strokeWidth={1.5} className="text-[var(--color-gold)] shrink-0" />
                   {settings.storePhone}
                 </a>
-                 <p className="flex items-start gap-2.5 text-sm text-white/65">
+                <p className="flex items-start gap-2.5 text-sm text-white/65">
                   <MapPin size={14} strokeWidth={1.5} className="text-[var(--color-gold)] shrink-0 mt-0.5" />
                   {settings.storeAddress}
                 </p>
@@ -174,7 +177,7 @@ export default async function Footer() {
                 Bulk & Corporate
               </h3>
               <span className="block w-6 h-px bg-[rgba(207,169,106,0.4)] mb-5" aria-hidden="true" />
-               <p className="text-sm text-white/65 leading-relaxed mb-5">
+              <p className="text-sm text-white/65 leading-relaxed mb-5">
                 Hajj return sets, Nikkah hampers & corporate gifting — we handle custom quantities with care. Connect with us on WhatsApp for bulk pricing.
               </p>
             </div>
@@ -184,7 +187,7 @@ export default async function Footer() {
         {/* ── Bottom bar ──────────────────────────────────────────────────── */}
         <div className="border-t border-[rgba(207,169,106,0.12)]">
           <div className="section-container py-5">
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/60">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/60">
               <p>© {year} MINARA. All rights reserved.</p>
               <p className="text-white/60">Made with love in India 🇮🇳</p>
               <div className="flex items-center gap-1.5">
