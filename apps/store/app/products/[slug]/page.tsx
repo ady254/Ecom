@@ -26,7 +26,7 @@ interface Product {
   janamazOptions?: { enabled: boolean; shapes: string[] };
   variants?: Array<{
     name: string;
-    options: Array<{ label: string }>;
+    options: Array<{ label: string; price?: number }>;
   }>;
 }
 
@@ -168,6 +168,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               isCustomizable: product.isCustomizable,
               codAvailable: product.codAvailable,
               customFields: product.customFields,
+              variants: product.variants,
               quranOptions: product.quranOptions,
               tasbeehOptions: product.tasbeehOptions,
               janamazOptions: product.janamazOptions,
