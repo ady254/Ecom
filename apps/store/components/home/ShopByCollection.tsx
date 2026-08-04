@@ -40,7 +40,7 @@ const collections: CollectionItem[] = [
     icon: Gift,
   },
   {
-    name: 'Hajj Favours',
+    name: 'Return Gifts',
     slug: 'hajj-favours',
     href: '/products?category=hajj-favours',
     icon: Moon,
