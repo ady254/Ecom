@@ -6,8 +6,6 @@ import Link from 'next/link';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
-
 export interface Slide {
   _id: string;
   title: string;
@@ -15,6 +13,8 @@ export interface Slide {
   buttonText?: string;
   buttonLink?: string;
   image?: string;
+  mobileImage?: string;
+  hideTextOverlay?: boolean;
   bgColor?: string;
   position?: string;
 }
@@ -97,128 +97,163 @@ export default function HeroBanner({ initialBanners = [] }: { initialBanners?: S
 
   return (
     <section
-      className="relative w-full overflow-hidden h-[40vh] sm:h-[60vh] md:h-[65vh] lg:h-[75vh] min-h-[280px] max-h-[700px]"
+      className="relative w-full overflow-hidden bg-[#071830] aspect-[16/9] sm:aspect-auto sm:h-[60vh] md:h-[65vh] lg:h-[75vh] sm:min-h-[380px] max-h-[750px]"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
-      {/* ── Background ─────────────────────────────────────────────────────── */}
+      {/* ── Background & Banner Image ───────────────────────────────────────── */}
       <AnimatePresence initial={false}>
         <motion.div
           key={slide._id}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.9, ease: 'easeInOut' }}
+          transition={{ duration: 0.8, ease: 'easeInOut' }}
           className="absolute inset-0"
         >
-          {slide.image ? (
-            <Image
-              src={slide.image}
-              alt={slide.title || 'Banner'}
-              fill
-              sizes="100vw"
-              className="object-cover object-center"
-              priority
-            />
-          ) : (
-            <div
-              className="absolute inset-0"
-              style={{
-                background: `linear-gradient(135deg, ${slide.bgColor || '#0B2342'} 0%, ${slide.bgColor || '#0B2342'}bb 100%)`,
-              }}
-            />
-          )}
+          <Link
+            href={slide.buttonLink || '/products'}
+            className="block relative w-full h-full cursor-pointer"
+          >
+            {slide.image ? (
+              <>
+                {/* Mobile Image (if uploaded specifically for phone screens) */}
+                {slide.mobileImage ? (
+                  <Image
+                    src={slide.mobileImage}
+                    alt={slide.title || 'Banner'}
+                    fill
+                    sizes="100vw"
+                    className="object-cover object-center sm:hidden"
+                    priority
+                  />
+                ) : (
+                  /* Fallback to responsive contain/cover on mobile so graphic photos don't cut text */
+                  <Image
+                    src={slide.image}
+                    alt={slide.title || 'Banner'}
+                    fill
+                    sizes="100vw"
+                    className="object-cover object-top sm:object-center sm:hidden"
+                    priority
+                  />
+                )}
+                {/* Desktop Image */}
+                <Image
+                  src={slide.image}
+                  alt={slide.title || 'Banner'}
+                  fill
+                  sizes="100vw"
+                  className="hidden sm:block object-cover object-center"
+                  priority
+                />
+              </>
+            ) : (
+              <div
+                className="absolute inset-0"
+                style={{
+                  background: `linear-gradient(135deg, ${slide.bgColor || '#0B2342'} 0%, ${slide.bgColor || '#0B2342'}bb 100%)`,
+                }}
+              />
+            )}
 
-          {/* Left-to-right gradient — stronger on mobile so text is always readable */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/10 sm:from-black/75 sm:via-black/40 sm:to-black/10" />
-          {/* Bottom-up gradient for depth */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/10" />
+            {/* Gradient overlays — shown when text overlay is enabled */}
+            {!slide.hideTextOverlay && (
+              <>
+                <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent sm:from-black/75 sm:via-black/35 sm:to-black/10 pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/10 pointer-events-none" />
+              </>
+            )}
+          </Link>
         </motion.div>
       </AnimatePresence>
 
-      {/* ── Content ────────────────────────────────────────────────────────── */}
-      <div className="relative z-10 h-full flex items-center">
-        <div className="section-container w-full">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={`text-${slide._id}`}
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -18 }}
-              transition={{ duration: 0.45, ease: 'easeOut' }}
-              /* keep content away from arrows (sm+) and dots at bottom */
-              className="max-w-xs sm:max-w-lg md:max-w-xl lg:max-w-2xl pb-16 sm:pb-0"
-            >
-              {/* Slide counter */}
-              <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-6">
-                <span className="w-6 sm:w-10 h-[1.5px] bg-[var(--color-gold)]" />
-                <span className="text-[var(--color-gold)] text-[9px] sm:text-[11px] font-semibold tracking-[3px] sm:tracking-[4px] uppercase">
-                  {String(safeIdx + 1).padStart(2, '0')} &nbsp;/&nbsp; {String(total).padStart(2, '0')}
-                </span>
-              </div>
-
-              {/* Heading — scales from 28px on phone to 72px on xl */}
-              <h1
-                className="text-[1.75rem] leading-[1.1] sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white mb-3 sm:mb-5"
-                style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 600 }}
+      {/* ── Content / Text Overlay ─────────────────────────────────────────── */}
+      {!slide.hideTextOverlay && (
+        <div className="relative z-10 h-full flex items-center pointer-events-none">
+          <div className="section-container w-full">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={`text-${slide._id}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.4, ease: 'easeOut' }}
+                className="max-w-[16rem] sm:max-w-lg md:max-w-xl lg:max-w-2xl pb-10 sm:pb-0 pointer-events-auto"
               >
-                {slide.title}
-              </h1>
+                {/* Slide counter */}
+                <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-6">
+                  <span className="w-5 sm:w-10 h-[1.5px] bg-[#CFA96A]" />
+                  <span className="text-[#CFA96A] text-[9px] sm:text-[11px] font-semibold tracking-[3px] sm:tracking-[4px] uppercase">
+                    {String(safeIdx + 1).padStart(2, '0')} &nbsp;/&nbsp; {String(total).padStart(2, '0')}
+                  </span>
+                </div>
 
-              {/* Subtitle — hidden on small phones to avoid overflow */}
-              {slide.subtitle && (
-                <p className="text-white/75 text-[11px] leading-relaxed sm:text-sm md:text-base lg:text-lg mb-5 sm:mb-9 max-w-[15rem] sm:max-w-sm lg:max-w-md">
-                  {slide.subtitle}
+                {/* Heading */}
+                {slide.title && (
+                  <h1
+                    className="text-xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white mb-2 sm:mb-5 leading-[1.15]"
+                    style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 600 }}
+                  >
+                    {slide.title}
+                  </h1>
+                )}
+
+                {/* Subtitle */}
+                {slide.subtitle && (
+                  <p className="text-white/80 text-[11px] sm:text-sm md:text-base lg:text-lg mb-4 sm:mb-8 line-clamp-2 sm:line-clamp-none max-w-[14rem] sm:max-w-sm lg:max-w-md leading-relaxed">
+                    {slide.subtitle}
+                  </p>
+                )}
+
+                {/* CTAs */}
+                <div className="flex flex-wrap items-center gap-2.5 sm:gap-4 mt-1 sm:mt-0">
+                  <Link
+                    href={slide.buttonLink || '/products'}
+                    className="inline-flex items-center gap-1.5 sm:gap-2 px-4 sm:px-8 py-2.5 sm:py-4 bg-[#CFA96A] text-[#0B2342] text-[11px] sm:text-sm font-bold tracking-wider uppercase rounded-full hover:bg-[#B8904A] hover:shadow-[0_8px_30px_rgba(207,169,106,0.45)] transition-all duration-300"
+                  >
+                    {slide.buttonText || 'Shop All Gifts'}
+                    <ArrowRight size={14} className="sm:w-[15px] sm:h-[15px]" />
+                  </Link>
+                  <Link
+                    href="/products"
+                    className="hidden sm:inline-flex items-center gap-2 px-8 py-4 border border-white/40 text-white text-sm font-semibold tracking-widest uppercase rounded-full hover:bg-white/10 hover:border-white/70 transition-all duration-300 backdrop-blur-sm"
+                  >
+                    Explore Collections
+                  </Link>
+                </div>
+
+                {/* Social proof line */}
+                <p className="hidden sm:flex items-center gap-2 text-white/60 text-[11px] sm:text-xs mt-4 sm:mt-6">
+                  <span className="text-[#CFA96A]">★★★★★</span>
+                  Trusted by 4,200+ customers across India
                 </p>
-              )}
-
-              {/* CTAs — the primary action for every slide */}
-              <div className="flex flex-wrap items-center gap-3 sm:gap-4 mt-2 sm:mt-0">
-                <Link
-                  href={slide.buttonLink || '/products'}
-                  className="inline-flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-[var(--color-gold)] text-[var(--color-navy)] text-xs sm:text-sm font-bold tracking-widest uppercase rounded-full hover:bg-[var(--color-gold-dark)] hover:shadow-[0_8px_30px_rgba(207,169,106,0.45)] transition-all duration-300"
-                >
-                  {slide.buttonText || 'Shop All Gifts'}
-                  <ArrowRight size={15} />
-                </Link>
-                <Link
-                  href="/products"
-                  className="hidden sm:inline-flex items-center gap-2 px-8 py-4 border border-white/40 text-white text-sm font-semibold tracking-widest uppercase rounded-full hover:bg-white/10 hover:border-white/70 transition-all duration-300 backdrop-blur-sm"
-                >
-                  Explore Collections
-                </Link>
-              </div>
-
-              {/* Social proof line under CTAs */}
-              <p className="flex items-center gap-2 text-white/60 text-[11px] sm:text-xs mt-4 sm:mt-6">
-                <span className="text-[var(--color-gold)]">★★★★★</span>
-                Trusted by 4,200+ customers across India
-              </p>
-            </motion.div>
-          </AnimatePresence>
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* ── Arrows — hidden on phone (swipe handles it), visible sm+ ──────── */}
+      {/* ── Desktop Navigation Arrows ───────────────────────────────────────── */}
       <button
         onClick={prev}
         aria-label="Previous slide"
-        className="hidden sm:flex absolute left-4 md:left-6 lg:left-10 top-1/2 -translate-y-1/2 z-20 w-10 h-10 md:w-11 md:h-11 rounded-full bg-white/10 hover:bg-white/25 border border-white/20 hover:border-white/50 items-center justify-center text-white transition-all duration-200 backdrop-blur-sm"
+        className="hidden sm:flex absolute left-4 md:left-6 lg:left-10 top-1/2 -translate-y-1/2 z-20 w-10 h-10 md:w-11 md:h-11 rounded-full bg-black/20 hover:bg-black/40 border border-white/20 hover:border-white/50 items-center justify-center text-white transition-all duration-200 backdrop-blur-sm"
       >
         <ChevronLeft size={18} />
       </button>
       <button
         onClick={next}
         aria-label="Next slide"
-        className="hidden sm:flex absolute right-4 md:right-6 lg:right-10 top-1/2 -translate-y-1/2 z-20 w-10 h-10 md:w-11 md:h-11 rounded-full bg-white/10 hover:bg-white/25 border border-white/20 hover:border-white/50 items-center justify-center text-white transition-all duration-200 backdrop-blur-sm"
+        className="hidden sm:flex absolute right-4 md:right-6 lg:right-10 top-1/2 -translate-y-1/2 z-20 w-10 h-10 md:w-11 md:h-11 rounded-full bg-black/20 hover:bg-black/40 border border-white/20 hover:border-white/50 items-center justify-center text-white transition-all duration-200 backdrop-blur-sm"
       >
         <ChevronRight size={18} />
       </button>
 
-      {/* ── Dots ───────────────────────────────────────────────────────────── */}
-      <div className="absolute bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 sm:gap-2">
+      {/* ── Slide Navigation Dots ──────────────────────────────────────────── */}
+      <div className="absolute bottom-3 sm:bottom-8 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 sm:gap-2">
         {slides.map((_, i) => (
           <button
             key={i}
@@ -226,7 +261,7 @@ export default function HeroBanner({ initialBanners = [] }: { initialBanners?: S
             aria-label={`Go to slide ${i + 1}`}
             className={`rounded-full transition-all duration-300 ${
               i === safeIdx
-                ? 'w-5 sm:w-8 h-1.5 sm:h-2 bg-[var(--color-gold)]'
+                ? 'w-5 sm:w-8 h-1.5 sm:h-2 bg-[#CFA96A]'
                 : 'w-1.5 sm:w-2 h-1.5 sm:h-2 bg-white/40 hover:bg-white/70'
             }`}
           />
@@ -238,7 +273,7 @@ export default function HeroBanner({ initialBanners = [] }: { initialBanners?: S
         {!paused && (
           <motion.div
             key={`prog-${current}`}
-            className="h-full bg-[var(--color-gold)]"
+            className="h-full bg-[#CFA96A]"
             initial={{ width: '0%' }}
             animate={{ width: '100%' }}
             transition={{ duration: INTERVAL_MS / 1000, ease: 'linear' }}
@@ -248,3 +283,4 @@ export default function HeroBanner({ initialBanners = [] }: { initialBanners?: S
     </section>
   );
 }
+

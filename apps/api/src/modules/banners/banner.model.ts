@@ -6,6 +6,8 @@ export interface IBanner extends Document {
   buttonText?: string;
   buttonLink?: string;
   image?: string;
+  mobileImage?: string;
+  hideTextOverlay?: boolean;
   bgColor?: string;
   position: 'hero' | 'mid' | 'bottom';
   isActive: boolean;
@@ -34,6 +36,11 @@ const bannerSchema = new Schema<IBanner>(
       trim: true,
     },
     image: String,
+    mobileImage: String,
+    hideTextOverlay: {
+      type: Boolean,
+      default: false,
+    },
     bgColor: {
       type: String,
       trim: true,
