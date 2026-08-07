@@ -20,7 +20,7 @@ function playCrystalTingSound(volumeMultiplier = 1.0) {
 
       // Master Gain
       const master = ctx.createGain();
-      master.gain.setValueAtTime(0.6 * volumeMultiplier, now);
+      master.gain.setValueAtTime(0.7 * volumeMultiplier, now);
 
       // Primary High Crystal Note (C7 - 2093Hz)
       const osc1 = ctx.createOscillator();
@@ -87,38 +87,28 @@ export default function SplashScreen() {
   const [isVisible, setIsVisible] = useState(false);
   const [typedText, setTypedText] = useState('');
   const [isTypingDone, setIsTypingDone] = useState(false);
-  const [soundPlayed, setSoundPlayed] = useState(false);
   const typingIndexRef = useRef(0);
-
-  // Sound trigger function (ensures sound plays once audio context unlocks)
-  const triggerSound = () => {
-    if (!soundPlayed) {
-      setSoundPlayed(true);
-      playCrystalTingSound(1.0);
-    }
-  };
 
   useEffect(() => {
     // Show splash screen on first visit (or per session)
-    const hasSeen = sessionStorage.getItem('minara_splash_seen_v2');
+    const hasSeen = sessionStorage.getItem('minara_splash_seen_v3');
     
     if (!hasSeen) {
       setIsVisible(true);
-      sessionStorage.setItem('minara_splash_seen_v2', 'true');
+      sessionStorage.setItem('minara_splash_seen_v3', 'true');
 
-      // Global event listeners to bypass browser autoplay restrictions instantly
+      // Global listeners to unlock Web Audio context on any subtle user interaction
       const unlockAudioEvents = ['pointerdown', 'touchstart', 'mousemove', 'keydown', 'scroll'];
-      const handleUserInteraction = () => {
-        triggerSound();
-        unlockAudioEvents.forEach((evt) => window.removeEventListener(evt, handleUserInteraction));
+      const preWarmAudio = () => {
+        try {
+          const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+          if (AudioCtx) {
+            const tempCtx = new AudioCtx();
+            if (tempCtx.state === 'suspended') tempCtx.resume();
+          }
+        } catch {}
       };
-
-      unlockAudioEvents.forEach((evt) => window.addEventListener(evt, handleUserInteraction, { once: true }));
-
-      // Attempt immediate sound play
-      const initialSoundTimer = setTimeout(() => {
-        triggerSound();
-      }, 300);
+      unlockAudioEvents.forEach((evt) => window.addEventListener(evt, preWarmAudio, { once: true }));
 
       // Typing Effect Logic
       const typingInterval = setInterval(() => {
@@ -128,19 +118,23 @@ export default function SplashScreen() {
         } else {
           setIsTypingDone(true);
           clearInterval(typingInterval);
+
+          // AUTOMATIC CHIME SOUND: Automatically plays right when the typing finishes & splash screen reveals!
+          setTimeout(() => {
+            playCrystalTingSound(1.2);
+          }, 200);
         }
       }, 45); // 45ms per character for silky smooth typing speed
 
-      // Auto-dismiss splash screen after full presentation (~3.6s total)
+      // Auto-dismiss splash screen after presentation completes (~3.2s total)
       const dismissTimer = setTimeout(() => {
         setIsVisible(false);
-      }, 3600);
+      }, 3200);
 
       return () => {
-        clearTimeout(initialSoundTimer);
         clearTimeout(dismissTimer);
         clearInterval(typingInterval);
-        unlockAudioEvents.forEach((evt) => window.removeEventListener(evt, handleUserInteraction));
+        unlockAudioEvents.forEach((evt) => window.removeEventListener(evt, preWarmAudio));
       };
     }
   }, []);
@@ -154,8 +148,7 @@ export default function SplashScreen() {
           initial={{ opacity: 1 }}
           exit={{ opacity: 0, scale: 1.04, filter: 'blur(12px)' }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-[#07162c] text-white overflow-hidden select-none"
-          onClick={triggerSound}
+          className="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-[#07162c] text-white overflow-hidden select-none pointer-events-none"
         >
           {/* Ambient Lighting Layers */}
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#1a3a5c]/40 via-[#07162c]/90 to-[#030a14]" />
@@ -220,27 +213,12 @@ export default function SplashScreen() {
             Gifts rooted in faith, made with love — delivered across India.
           </motion.p>
 
-          {/* Sound & Skip Indicator */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="absolute bottom-10 flex items-center gap-3 text-xs text-white/50 bg-white/5 backdrop-blur-md border border-white/10 px-4 py-2 rounded-full cursor-pointer hover:bg-white/10 transition-colors"
-            onClick={(e) => {
-              e.stopPropagation();
-              playCrystalTingSound(1.2);
-            }}
-          >
-            <span className="text-[#CFA96A]">🔔</span>
-            <span>Tap anywhere to play chime sound</span>
-          </motion.div>
-
           {/* Top Progress Line */}
           <div className="absolute top-0 left-0 right-0 h-[2px] bg-white/5">
             <motion.div
               initial={{ width: '0%' }}
               animate={{ width: '100%' }}
-              transition={{ duration: 3.5, ease: 'linear' }}
+              transition={{ duration: 3.2, ease: 'linear' }}
               className="h-full bg-gradient-to-r from-transparent via-[#CFA96A] to-transparent"
             />
           </div>
