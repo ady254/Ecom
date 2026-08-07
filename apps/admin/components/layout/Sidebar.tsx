@@ -49,14 +49,14 @@ export default function Sidebar() {
       <div className="flex items-center justify-between px-4 py-4 border-b border-[rgba(207,169,106,0.1)]">
         {!collapsed ? (
           <div className="flex items-center gap-2">
-            <img src="/logo.jpg" alt="MINARA Logo" className="h-9 w-auto rounded object-contain" />
+            <img src="/logo.jpeg" alt="MINARA Logo" className="h-9 w-auto rounded object-contain" />
             <div>
               <div className="font-heading text-lg text-[var(--color-gold)] tracking-[2px] leading-none">MINARA</div>
               <div className="text-[9px] text-white/40 tracking-wider uppercase">Admin</div>
             </div>
           </div>
         ) : (
-          <img src="/logo.jpg" alt="MINARA Logo" className="h-8 w-auto rounded object-contain mx-auto" />
+          <img src="/logo.jpeg" alt="MINARA Logo" className="h-8 w-auto rounded object-contain mx-auto" />
         )}
         <button
           onClick={() => setCollapsed(!collapsed)}

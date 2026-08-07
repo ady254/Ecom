@@ -51,7 +51,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 group shrink-0">
             <Image
-              src="/logo.jpg"
+              src="/logo.jpeg"
               alt="MINARA"
               width={40}
               height={40}

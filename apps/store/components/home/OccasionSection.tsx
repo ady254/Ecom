@@ -47,12 +47,12 @@ const categoryGroups: CategoryGroup[] = [
     items: [
       {
         name: 'Name Plates',
-        slug: 'keychains',
-        image: '/categories/keychains.png',
+        slug: 'name-plates',
+        image: '/categories/name-plates.png',
       },
       {
         name: 'Wall Arts',
-        slug: 'fridge-magnets',
+        slug: 'wall-arts',
         image: '/categories/fridge-magnets.png',
       },
       {
