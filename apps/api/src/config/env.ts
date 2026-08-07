@@ -26,7 +26,7 @@ const envSchema = z.object({
   EMAIL_PASS: z.string().optional(),
   // Gmail only sends as the authenticated account (or a verified alias), so this
   // must stay the real mailbox — a noreply@ sender would be rewritten or refused.
-  EMAIL_FROM: z.string().default('MINARA <minaragifting01@gmail.com>'),
+  EMAIL_FROM: z.string().default('MINARA <minaragifting@gmail.com>'),
   FRONTEND_URL: z.string().default('http://localhost:3000'),
   ADMIN_URL: z.string().default('http://localhost:3001'),
   // 'lax' works when the API and storefront share a registrable domain

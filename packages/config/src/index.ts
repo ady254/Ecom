@@ -3,8 +3,8 @@
 export const BRAND = {
   name: 'MINARA',
   tagline: 'Luxury Gifting, Reimagined',
-  email: 'minaragifting01@gmail.com',
-  supportEmail: 'minaragifting01@gmail.com',
+  email: 'minaragifting@gmail.com',
+  supportEmail: 'minaragifting@gmail.com',
   phone: '+91 88733 55385',
   whatsapp: '918873355385',
   address: {

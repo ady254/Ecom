@@ -131,7 +131,7 @@ export default function SettingsPage() {
                 </div>
                 <div>
                   <label className="settings-label">Store Email</label>
-                  <input type="email" value={settings.storeEmail} onChange={(e) => set('storeEmail', e.target.value)} className="admin-input" placeholder="minaragifting01@gmail.com" />
+                  <input type="email" value={settings.storeEmail} onChange={(e) => set('storeEmail', e.target.value)} className="admin-input" placeholder="minaragifting@gmail.com" />
                 </div>
                 <div>
                   <label className="settings-label">Store Phone</label>
