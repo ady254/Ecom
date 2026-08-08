@@ -180,14 +180,6 @@ export default function HeroBanner({ initialBanners = [] }: { initialBanners?: S
                 transition={{ duration: 0.4, ease: 'easeOut' }}
                 className="max-w-[16rem] sm:max-w-lg md:max-w-xl lg:max-w-2xl pb-10 sm:pb-0 pointer-events-auto"
               >
-                {/* Slide counter */}
-                <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-6">
-                  <span className="w-5 sm:w-10 h-[1.5px] bg-[#CFA96A]" />
-                  <span className="text-[#CFA96A] text-[9px] sm:text-[11px] font-semibold tracking-[3px] sm:tracking-[4px] uppercase">
-                    {String(safeIdx + 1).padStart(2, '0')} &nbsp;/&nbsp; {String(total).padStart(2, '0')}
-                  </span>
-                </div>
-
                 {/* Heading */}
                 {slide.title && (
                   <h1
