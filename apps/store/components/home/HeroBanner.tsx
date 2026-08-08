@@ -113,10 +113,7 @@ export default function HeroBanner({ initialBanners = [] }: { initialBanners?: S
           transition={{ duration: 0.8, ease: 'easeInOut' }}
           className="absolute inset-0"
         >
-          <Link
-            href={slide.buttonLink || '/products'}
-            className="block relative w-full h-full cursor-pointer"
-          >
+          <div className="block relative w-full h-full">
             {slide.image ? (
               <>
                 {/* Mobile Image (if uploaded specifically for phone screens) */}
@@ -166,7 +163,7 @@ export default function HeroBanner({ initialBanners = [] }: { initialBanners?: S
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/10 pointer-events-none" />
               </>
             )}
-          </Link>
+          </div>
         </motion.div>
       </AnimatePresence>
 
@@ -207,23 +204,6 @@ export default function HeroBanner({ initialBanners = [] }: { initialBanners?: S
                     {slide.subtitle}
                   </p>
                 )}
-
-                {/* CTAs */}
-                <div className="flex flex-wrap items-center gap-2.5 sm:gap-4 mt-1 sm:mt-0">
-                  <Link
-                    href={slide.buttonLink || '/products'}
-                    className="inline-flex items-center gap-1.5 sm:gap-2 px-4 sm:px-8 py-2.5 sm:py-4 bg-[#CFA96A] text-[#0B2342] text-[11px] sm:text-sm font-bold tracking-wider uppercase rounded-full hover:bg-[#B8904A] hover:shadow-[0_8px_30px_rgba(207,169,106,0.45)] transition-all duration-300"
-                  >
-                    {slide.buttonText || 'Shop All Gifts'}
-                    <ArrowRight size={14} className="sm:w-[15px] sm:h-[15px]" />
-                  </Link>
-                  <Link
-                    href="/products"
-                    className="hidden sm:inline-flex items-center gap-2 px-8 py-4 border border-white/40 text-white text-sm font-semibold tracking-widest uppercase rounded-full hover:bg-white/10 hover:border-white/70 transition-all duration-300 backdrop-blur-sm"
-                  >
-                    Explore Collections
-                  </Link>
-                </div>
 
                 {/* Social proof line */}
                 <p className="hidden sm:flex items-center gap-2 text-white/60 text-[11px] sm:text-xs mt-4 sm:mt-6">
