@@ -23,39 +23,31 @@ const FALLBACK: Slide[] = [
   {
     _id: 'f1',
     title: 'Gifts That Carry Meaning',
-    subtitle: 'Handcrafted Islamic gifts — Quran sets, wedding hampers, Hajj favours & more, beautifully wrapped and delivered across India.',
+    //subtitle: 'Handcrafted Islamic gifts — Quran sets, wedding hampers, Hajj favours & more, beautifully wrapped and delivered across India.',
     buttonText: 'Shop All Gifts',
     buttonLink: '/products',
-    image: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=2000&auto=format&fit=crop',
+    image: '/banner1.webp',
     bgColor: '#0B2342',
   },
   {
     _id: 'f2',
     title: 'Wedding Gifts That Touch Hearts',
-    subtitle: 'Exquisite Nikkah hampers, Quran sets, and keepsakes for the most blessed celebrations.',
+    //subtitle: 'Exquisite Nikkah hampers, Quran sets, and keepsakes for the most blessed celebrations.',
     buttonText: 'Shop Wedding Gifts',
     buttonLink: '/products?search=wedding',
-    image: 'https://images.unsplash.com/photo-1623517409249-18f4a1cc3779?q=80&w=2000&auto=format&fit=crop',
+    image: '/banner2.webp',
     bgColor: '#1a0f2e',
   },
   {
     _id: 'f3',
     title: 'Hajj Return Gifts',
-    subtitle: 'Thoughtful return favours for your loved ones — Zamzam sets, prayer gifts, and blessed keepsakes.',
+    //subtitle: 'Thoughtful return favours for your loved ones — Zamzam sets, prayer gifts, and blessed keepsakes.',
     buttonText: 'Explore Hajj Gifts',
     buttonLink: '/products?search=hajj',
-    image: 'https://images.unsplash.com/photo-1598285520973-2b22ec7e0c40?q=80&w=2000&auto=format&fit=crop',
+    image: '/banner3.webp',
     bgColor: '#0d2010',
   },
-  {
-    _id: 'f4',
-    title: 'Quran Sets & Islamic Gifts',
-    subtitle: 'Premium Quran collections, Tasbih cards, and home decor — crafted with love for every occasion.',
-    buttonText: 'Browse Collections',
-    buttonLink: '/products?search=quran',
-    image: 'https://images.unsplash.com/photo-1608889476561-6242cfdbf622?q=80&w=2000&auto=format&fit=crop',
-    bgColor: '#1a1007',
-  },
+  
 ];
 
 const INTERVAL_MS = 5000;
@@ -116,24 +108,23 @@ export default function HeroBanner({ initialBanners = [] }: { initialBanners?: S
           <Link href={slide.buttonLink || '/products'} className="block relative w-full h-full cursor-pointer">
             {slide.image ? (
               <>
-                {/* Mobile Image (if uploaded specifically for phone screens) */}
+                {/* Mobile Image (use a mobile-specific crop if available; otherwise fallback to contain to avoid cutting text) */}
                 {slide.mobileImage ? (
                   <Image
                     src={slide.mobileImage}
                     alt={slide.title || 'Banner'}
                     fill
                     sizes="100vw"
-                    className="object-cover object-center sm:hidden"
+                    className="object-contain object-center sm:hidden"
                     priority
                   />
                 ) : (
-                  /* Fallback to responsive contain/cover on mobile so graphic photos don't cut text */
                   <Image
                     src={slide.image}
                     alt={slide.title || 'Banner'}
                     fill
                     sizes="100vw"
-                    className="object-cover object-top sm:object-center sm:hidden"
+                    className="object-contain object-center sm:hidden"
                     priority
                   />
                 )}
