@@ -348,6 +348,7 @@ export interface Banner {
   buttonText?: string;
   buttonLink?: string;
   image?: string;
+  mobileImage?: string;
   bgColor?: string;
   position: 'hero' | 'mid' | 'bottom';
   isActive: boolean;

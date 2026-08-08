@@ -147,52 +147,9 @@ export default function HeroBanner({ initialBanners = [] }: { initialBanners?: S
               />
             )}
 
-            {/* Gradient overlays — shown when text overlay is enabled */}
-            {!slide.hideTextOverlay && (
-              <>
-                <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent sm:from-black/75 sm:via-black/35 sm:to-black/10 pointer-events-none" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/10 pointer-events-none" />
-              </>
-            )}
           </Link>
         </motion.div>
       </AnimatePresence>
-
-      {/* ── Content / Text Overlay ─────────────────────────────────────────── */}
-     {!slide.hideTextOverlay && (
-        <div className="relative z-10 h-full flex items-center pointer-events-none">
-          <div className="section-container w-full">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={`text-${slide._id}`}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.4, ease: 'easeOut' }}
-                className="max-w-[16rem] sm:max-w-lg md:max-w-xl lg:max-w-2xl pb-10 sm:pb-0 pointer-events-auto"
-              >
-                {/* Heading */}
-                {slide.title && (
-                  <h1
-                    className="text-xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white mb-2 sm:mb-5 leading-[1.15]"
-                    style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 600 }}
-                  >
-                    {slide.title}
-                  </h1>
-                )}
-
-                {/* Subtitle */}
-                {slide.subtitle && (
-                  <p className="text-white/80 text-[11px] sm:text-sm md:text-base lg:text-lg mb-4 sm:mb-8 line-clamp-2 sm:line-clamp-none max-w-[14rem] sm:max-w-sm lg:max-w-md leading-relaxed">
-                    {slide.subtitle}
-                  </p>
-                )}
-
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        </div>
-      )}
       
 
       {/* ── Desktop Navigation Arrows ───────────────────────────────────────── */}

@@ -38,6 +38,7 @@ export default function BannersPage() {
   const [deleting, setDeleting] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const mobileFileRef = useRef<HTMLInputElement>(null);
 
   async function load() {
     setLoading(true);
@@ -55,12 +56,12 @@ export default function BannersPage() {
   const setField = (k: keyof Banner, v: string | boolean | number) =>
     setForm((f) => ({ ...f, [k]: v }));
 
-  const handleImageFile = async (file: File) => {
+  const handleImageFile = async (file: File, field: 'image' | 'mobileImage' = 'image') => {
     if (!file) return;
     setUploading(true);
     try {
       const url = await bannersApi.uploadImage(file);
-      setForm((f) => ({ ...f, image: url }));
+      setForm((f) => ({ ...f, [field]: url }));
       toast.success('Image uploaded');
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Upload failed');
@@ -69,10 +70,10 @@ export default function BannersPage() {
     }
   };
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = (e: React.DragEvent, field: 'image' | 'mobileImage' = 'image') => {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
-    if (file) handleImageFile(file);
+    if (file) handleImageFile(file, field);
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -258,7 +259,7 @@ export default function BannersPage() {
                     className="border-2 border-dashed border-gray-200 rounded-xl h-36 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-[var(--color-gold)] hover:bg-[var(--color-cream)] transition-colors"
                     onClick={() => fileRef.current?.click()}
                     onDragOver={(e) => e.preventDefault()}
-                    onDrop={handleDrop}
+                    onDrop={(e) => handleDrop(e, 'image')}
                   >
                     {uploading ? (
                       <Loader2 size={24} className="text-[var(--color-gold)] animate-spin" />
@@ -280,7 +281,55 @@ export default function BannersPage() {
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
                   className="hidden"
-                  onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageFile(f); e.target.value = ''; }}
+                  onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageFile(f, 'image'); e.target.value = ''; }}
+                />
+              </div>
+
+              {/* ── Mobile banner image ─────────────────────────────────── */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                  Mobile Banner Image
+                </label>
+
+                {form.mobileImage ? (
+                  <div className="relative rounded-xl overflow-hidden h-32 bg-gray-100 mb-3">
+                    <Image src={form.mobileImage} alt="Mobile banner preview" fill sizes="320px" className="object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => setForm((f) => ({ ...f, mobileImage: '' }))}
+                      className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-red-500 transition-colors"
+                      title="Remove mobile image"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ) : null}
+
+                <div
+                  className="border-2 border-dashed border-gray-200 rounded-xl h-32 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-[var(--color-gold)] hover:bg-[var(--color-cream)] transition-colors"
+                  onClick={() => mobileFileRef.current?.click()}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => handleDrop(e, 'mobileImage')}
+                >
+                  {uploading ? (
+                    <Loader2 size={24} className="text-[var(--color-gold)] animate-spin" />
+                  ) : (
+                    <>
+                      <Upload size={22} className="text-gray-300" />
+                      <p className="text-xs text-gray-400 text-center">
+                        Upload a dedicated mobile banner so the image does not crop on narrow screens.
+                        <br />JPG, PNG or WebP · max 5 MB · 1080×1350 recommended
+                      </p>
+                    </>
+                  )}
+                </div>
+
+                <input
+                  ref={mobileFileRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageFile(f, 'mobileImage'); e.target.value = ''; }}
                 />
               </div>
 
