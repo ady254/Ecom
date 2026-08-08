@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export interface Slide {
@@ -113,7 +113,7 @@ export default function HeroBanner({ initialBanners = [] }: { initialBanners?: S
           transition={{ duration: 0.8, ease: 'easeInOut' }}
           className="absolute inset-0"
         >
-          <div className="block relative w-full h-full">
+          <Link href={slide.buttonLink || '/products'} className="block relative w-full h-full cursor-pointer">
             {slide.image ? (
               <>
                 {/* Mobile Image (if uploaded specifically for phone screens) */}
@@ -163,12 +163,12 @@ export default function HeroBanner({ initialBanners = [] }: { initialBanners?: S
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/10 pointer-events-none" />
               </>
             )}
-          </div>
+          </Link>
         </motion.div>
       </AnimatePresence>
 
       {/* ── Content / Text Overlay ─────────────────────────────────────────── */}
-      {!slide.hideTextOverlay && (
+     {!slide.hideTextOverlay && (
         <div className="relative z-10 h-full flex items-center pointer-events-none">
           <div className="section-container w-full">
             <AnimatePresence mode="wait">
@@ -205,16 +205,12 @@ export default function HeroBanner({ initialBanners = [] }: { initialBanners?: S
                   </p>
                 )}
 
-                {/* Social proof line */}
-                <p className="hidden sm:flex items-center gap-2 text-white/60 text-[11px] sm:text-xs mt-4 sm:mt-6">
-                  <span className="text-[#CFA96A]">★★★★★</span>
-                  Trusted by 4,200+ customers across India
-                </p>
               </motion.div>
             </AnimatePresence>
           </div>
         </div>
       )}
+      
 
       {/* ── Desktop Navigation Arrows ───────────────────────────────────────── */}
       <button

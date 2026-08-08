@@ -8,8 +8,23 @@ import { bannersApi, type Banner } from '@/lib/adminApi';
 
 const POSITIONS = ['hero', 'mid', 'bottom'] as const;
 
+const REDIRECT_PRESETS = [
+  { label: 'Shop All Products', value: '/products' },
+  { label: 'Quran Products', value: '/products?search=quran' },
+  { label: 'New Arrivals', value: '/products?search=new%20arrivals' },
+  { label: 'Wedding Gifts', value: '/products?search=wedding' },
+  { label: 'Hajj Gifts', value: '/products?search=hajj' },
+  { label: 'Custom URL', value: '__custom__' },
+] as const;
+
+function getRedirectPreset(link?: string) {
+  if (!link) return '/products';
+  const matched = REDIRECT_PRESETS.find((preset) => preset.value === link);
+  return matched ? matched.value : '__custom__';
+}
+
 const EMPTY: Partial<Banner> = {
-  title: '', subtitle: '', buttonText: '', buttonLink: '',
+  title: '', subtitle: '', buttonText: '', buttonLink: '/products',
   image: '', bgColor: '#0B2342', position: 'hero', isActive: true, order: 0,
 };
 
@@ -294,27 +309,30 @@ export default function BannersPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
-                    Button Text
+                    Redirect Destination
                   </label>
-                  <input
-                    value={form.buttonText || ''}
-                    onChange={(e) => setField('buttonText', e.target.value)}
+                  <select
+                    value={getRedirectPreset(form.buttonLink || '')}
+                    onChange={(e) => setField('buttonLink', e.target.value === '__custom__' ? '' : e.target.value)}
                     className="admin-input"
-                    placeholder="Shop Now"
-                  />
+                  >
+                    {REDIRECT_PRESETS.map((preset) => (
+                      <option key={preset.value} value={preset.value}>{preset.label}</option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
-                    Button Link
+                    Custom Link
                   </label>
                   <input
                     value={form.buttonLink || ''}
                     onChange={(e) => setField('buttonLink', e.target.value)}
                     className="admin-input"
-                    placeholder="/products?tags=wedding"
+                    placeholder="/products?search=quran"
                   />
                 </div>
               </div>
