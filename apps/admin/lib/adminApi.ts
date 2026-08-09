@@ -5,6 +5,24 @@ function getToken(): string | null {
   return localStorage.getItem('adminToken');
 }
 
+async function handleAdminResponse<T>(res: Response): Promise<T> {
+  if (res.status === 401) {
+    if (typeof window !== 'undefined') window.location.href = '/login';
+    throw new Error('Unauthorized');
+  }
+
+  if (!res.ok) {
+    const json = await res.json().catch(() => ({}));
+    throw new Error((json as { message?: string }).message || `API error ${res.status}`);
+  }
+
+  if (res.status === 204) {
+    return {} as T;
+  }
+
+  return res.json() as Promise<T>;
+}
+
 async function adminFetch<T>(path: string): Promise<T> {
   const token = getToken();
   const res = await fetch(`${BASE_URL}${path}`, {
@@ -14,12 +32,7 @@ async function adminFetch<T>(path: string): Promise<T> {
     },
     credentials: 'include',
   });
-  if (res.status === 401) {
-    if (typeof window !== 'undefined') window.location.href = '/login';
-    throw new Error('Unauthorized');
-  }
-  if (!res.ok) throw new Error(`API error ${res.status}`);
-  return res.json() as Promise<T>;
+  return handleAdminResponse<T>(res);
 }
 
 async function adminPost<T>(path: string, body: unknown): Promise<T> {
@@ -33,11 +46,7 @@ async function adminPost<T>(path: string, body: unknown): Promise<T> {
     credentials: 'include',
     body: JSON.stringify(body),
   });
-  if (!res.ok) {
-    const json = await res.json().catch(() => ({}));
-    throw new Error((json as { message?: string }).message || `API error ${res.status}`);
-  }
-  return res.json() as Promise<T>;
+  return handleAdminResponse<T>(res);
 }
 
 async function adminDelete<T>(path: string): Promise<T> {
@@ -50,11 +59,7 @@ async function adminDelete<T>(path: string): Promise<T> {
     },
     credentials: 'include',
   });
-  if (!res.ok) {
-    const json = await res.json().catch(() => ({}));
-    throw new Error((json as { message?: string }).message || `API error ${res.status}`);
-  }
-  return res.json() as Promise<T>;
+  return handleAdminResponse<T>(res);
 }
 
 async function adminPut<T>(path: string, body: unknown): Promise<T> {
@@ -68,11 +73,7 @@ async function adminPut<T>(path: string, body: unknown): Promise<T> {
     credentials: 'include',
     body: JSON.stringify(body),
   });
-  if (!res.ok) {
-    const json = await res.json().catch(() => ({}));
-    throw new Error((json as { message?: string }).message || `API error ${res.status}`);
-  }
-  return res.json() as Promise<T>;
+  return handleAdminResponse<T>(res);
 }
 
 async function adminPatch<T>(path: string, body: unknown): Promise<T> {
@@ -86,11 +87,7 @@ async function adminPatch<T>(path: string, body: unknown): Promise<T> {
     credentials: 'include',
     body: JSON.stringify(body),
   });
-  if (!res.ok) {
-    const json = await res.json().catch(() => ({}));
-    throw new Error((json as { message?: string }).message || `API error ${res.status}`);
-  }
-  return res.json() as Promise<T>;
+  return handleAdminResponse<T>(res);
 }
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────

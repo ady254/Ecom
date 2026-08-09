@@ -14,7 +14,7 @@ import { authenticate } from '../../middlewares/auth.middleware.js';
 import { requireAdmin } from '../../middlewares/admin.middleware.js';
 import { upload } from '../../middlewares/upload.middleware.js';
 
-const router = Router();
+const router: Router = Router();
 
 // Public routes
 router.get('/', getProducts);
