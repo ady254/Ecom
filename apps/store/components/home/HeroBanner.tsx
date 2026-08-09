@@ -27,7 +27,7 @@ const FALLBACK: Slide[] = [
     buttonText: 'Shop All Gifts',
     buttonLink: '/products',
     image: '/banner1.webp',
-    bgColor: '#0B2342',
+   
   },
   {
     _id: 'f2',
@@ -36,7 +36,7 @@ const FALLBACK: Slide[] = [
     buttonText: 'Shop Wedding Gifts',
     buttonLink: '/products?search=wedding',
     image: '/banner2.webp',
-    bgColor: '#1a0f2e',
+   
   },
   {
     _id: 'f3',
@@ -45,7 +45,7 @@ const FALLBACK: Slide[] = [
     buttonText: 'Explore Hajj Gifts',
     buttonLink: '/products?search=hajj',
     image: '/banner3.webp',
-    bgColor: '#0d2010',
+   
   },
   
 ];
