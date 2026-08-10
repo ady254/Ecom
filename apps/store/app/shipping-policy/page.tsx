@@ -43,7 +43,6 @@ export default async function ShippingPolicyPage() {
           <section>
             <h2 className="font-heading text-2xl text-[var(--color-navy)] mb-3">Processing & Delivery Time</h2>
             <ul className="list-disc pl-5 mt-2 space-y-1">
-              <li>Orders are packed and handed to our courier partner within <strong>24 hours</strong> of confirmation</li>
               <li>Delivery typically takes <strong>2–5 business days</strong> from dispatch, depending on your location</li>
               <li>Orders placed on Sundays or public holidays are processed the next business day</li>
             </ul>
