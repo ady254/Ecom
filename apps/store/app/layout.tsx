@@ -10,6 +10,7 @@ import WhatsAppButton from '@/components/layout/WhatsAppButton';
 import OfferPopup from '@/components/layout/OfferPopup';
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://minaragifting.com'),
   title: {
     default: 'MINARA — Luxury Gifting, Reimagined',
     template: '%s | MINARA',
@@ -18,17 +19,44 @@ export const metadata: Metadata = {
     'Discover curated luxury gifts for every occasion. Premium gifting experiences crafted with elegance and care.',
   keywords: ['luxury gifts', 'premium gifting', 'MINARA', 'gift hampers', 'corporate gifts'],
   authors: [{ name: 'MINARA' }],
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/icon.png', type: 'image/png' },
+      { url: '/logo.jpeg', type: 'image/jpeg' },
+    ],
+    shortcut: '/favicon.ico',
+    apple: '/apple-icon.png',
+  },
   openGraph: {
     type: 'website',
     locale: 'en_IN',
     url: 'https://minaragifting.com',
     siteName: 'MINARA',
     title: 'MINARA — Luxury Gifting, Reimagined',
-    description: 'Premium luxury gifting platform.',
+    description:
+      'Discover curated luxury gifts for every occasion. Premium gifting experiences crafted with elegance and care.',
+    images: [
+      {
+        url: '/opengraph-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'MINARA — Luxury Gifting, Reimagined',
+      },
+      {
+        url: '/logo.jpeg',
+        width: 1024,
+        height: 1024,
+        alt: 'MINARA Logo',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'MINARA — Luxury Gifting',
+    title: 'MINARA — Luxury Gifting, Reimagined',
+    description:
+      'Discover curated luxury gifts for every occasion. Premium gifting experiences crafted with elegance and care.',
+    images: ['/twitter-image.png'],
   },
   robots: {
     index: true,
