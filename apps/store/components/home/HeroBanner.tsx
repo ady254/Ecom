@@ -24,30 +24,30 @@ const FALLBACK: Slide[] = [
     _id: 'f1',
     title: 'Gifts That Carry Meaning',
     //subtitle: 'Handcrafted Islamic gifts — Quran sets, wedding hampers, Hajj favours & more, beautifully wrapped and delivered across India.',
-    buttonText: 'Shop All Gifts',
+    //buttonText: 'Shop All Gifts',
     buttonLink: '/products',
     image: '/banner1.webp',
-   
+
   },
   {
     _id: 'f2',
     title: 'Wedding Gifts That Touch Hearts',
     //subtitle: 'Exquisite Nikkah hampers, Quran sets, and keepsakes for the most blessed celebrations.',
-    buttonText: 'Shop Wedding Gifts',
+    // buttonText: 'Shop Wedding Gifts',
     buttonLink: '/products?search=wedding',
     image: '/banner2.webp',
-   
+
   },
   {
     _id: 'f3',
     title: 'Hajj Return Gifts',
     //subtitle: 'Thoughtful return favours for your loved ones — Zamzam sets, prayer gifts, and blessed keepsakes.',
-    buttonText: 'Explore Hajj Gifts',
+    //buttonText: 'Explore Hajj Gifts',
     buttonLink: '/products?search=hajj',
     image: '/banner3.webp',
-   
+
   },
-  
+
 ];
 
 const INTERVAL_MS = 5000;
@@ -110,14 +110,16 @@ export default function HeroBanner({ initialBanners = [] }: { initialBanners?: S
               <>
                 {/* Mobile Image (use a mobile-specific crop if available; otherwise fallback to contain to avoid cutting text) */}
                 {slide.mobileImage ? (
-                  <Image
-                    src={slide.mobileImage}
-                    alt={slide.title || 'Banner'}
-                    fill
-                    sizes="100vw"
-                    className="object-contain object-center sm:hidden"
-                    priority
-                  />
+                  <div className="relative w-full aspect-[4/5] sm:hidden">
+                    <Image
+                      src={slide.mobileImage}
+                      alt={slide.title || 'Banner'}
+                      fill
+                      sizes="100vw"
+                      className="object-cover"
+                      priority
+                    />
+                  </div>
                 ) : (
                   <Image
                     src={slide.image}
@@ -129,20 +131,22 @@ export default function HeroBanner({ initialBanners = [] }: { initialBanners?: S
                   />
                 )}
                 {/* Desktop Image */}
-                <Image
-                  src={slide.image}
-                  alt={slide.title || 'Banner'}
-                  fill
-                  sizes="100vw"
-                  className="hidden sm:block object-cover object-center"
-                  priority
-                />
+                <div className="relative hidden sm:block w-full aspect-[3/2]">
+                  <Image
+                    src={slide.image}
+                    alt={slide.title || 'Banner'}
+                    fill
+                    sizes="100vw"
+                    className="object-cover"
+                    priority
+                  />
+                </div>
               </>
             ) : (
               <div
                 className="absolute inset-0"
                 style={{
-                  background: `linear-gradient(135deg, ${slide.bgColor || '#0B2342'} 0%, ${slide.bgColor || '#0B2342'}bb 100%)`,
+                  background: `linear-gradient(135deg, ${slide.bgColor || '#fbfcfdff'} 0%, ${slide.bgColor || '#0B2342'}bb 100%)`,
                 }}
               />
             )}
@@ -150,7 +154,7 @@ export default function HeroBanner({ initialBanners = [] }: { initialBanners?: S
           </Link>
         </motion.div>
       </AnimatePresence>
-      
+
 
       {/* ── Desktop Navigation Arrows ───────────────────────────────────────── */}
       <button
@@ -175,11 +179,10 @@ export default function HeroBanner({ initialBanners = [] }: { initialBanners?: S
             key={i}
             onClick={() => setCurrent(i)}
             aria-label={`Go to slide ${i + 1}`}
-            className={`rounded-full transition-all duration-300 ${
-              i === safeIdx
+            className={`rounded-full transition-all duration-300 ${i === safeIdx
                 ? 'w-5 sm:w-8 h-1.5 sm:h-2 bg-[#CFA96A]'
                 : 'w-1.5 sm:w-2 h-1.5 sm:h-2 bg-white/40 hover:bg-white/70'
-            }`}
+              }`}
           />
         ))}
       </div>
