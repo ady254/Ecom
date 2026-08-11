@@ -89,7 +89,7 @@ export default function HeroBanner({ initialBanners = [] }: { initialBanners?: S
 
   return (
     <section
-      className="relative w-full overflow-hidden bg-[#071830] aspect-[16/9] sm:aspect-auto sm:h-[60vh] md:h-[65vh] lg:h-[75vh] sm:min-h-[380px] max-h-[750px]"
+      className="relative w-full overflow-hidden bg-[#FAF6F0] aspect-[16/9] sm:aspect-[2/1]"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onTouchStart={onTouchStart}
@@ -108,49 +108,44 @@ export default function HeroBanner({ initialBanners = [] }: { initialBanners?: S
           <Link href={slide.buttonLink || '/products'} className="block relative w-full h-full cursor-pointer">
             {slide.image ? (
               <>
-                {/* Mobile Image (use a mobile-specific crop if available; otherwise fallback to contain to avoid cutting text) */}
                 {slide.mobileImage ? (
-                  <div className="relative w-full aspect-[4/5] sm:hidden">
+                  <>
                     <Image
                       src={slide.mobileImage}
                       alt={slide.title || 'Banner'}
                       fill
                       sizes="100vw"
-                      className="object-cover"
+                      className="object-cover object-center sm:hidden"
                       priority
                     />
-                  </div>
+                    <Image
+                      src={slide.image}
+                      alt={slide.title || 'Banner'}
+                      fill
+                      sizes="100vw"
+                      className="hidden sm:block object-contain object-center"
+                      priority
+                    />
+                  </>
                 ) : (
                   <Image
                     src={slide.image}
                     alt={slide.title || 'Banner'}
                     fill
                     sizes="100vw"
-                    className="object-contain object-center sm:hidden"
+                    className="object-contain object-center"
                     priority
                   />
                 )}
-                {/* Desktop Image */}
-                <div className="relative hidden sm:block w-full aspect-[3/2]">
-                  <Image
-                    src={slide.image}
-                    alt={slide.title || 'Banner'}
-                    fill
-                    sizes="100vw"
-                    className="object-cover"
-                    priority
-                  />
-                </div>
               </>
             ) : (
               <div
                 className="absolute inset-0"
                 style={{
-                  background: `linear-gradient(135deg, ${slide.bgColor || '#fbfcfdff'} 0%, ${slide.bgColor || '#0B2342'}bb 100%)`,
+                  background: `linear-gradient(135deg, ${slide.bgColor || '#FAF6F0'} 0%, ${slide.bgColor || '#0B2342'}bb 100%)`,
                 }}
               />
             )}
-
           </Link>
         </motion.div>
       </AnimatePresence>
@@ -180,8 +175,8 @@ export default function HeroBanner({ initialBanners = [] }: { initialBanners?: S
             onClick={() => setCurrent(i)}
             aria-label={`Go to slide ${i + 1}`}
             className={`rounded-full transition-all duration-300 ${i === safeIdx
-                ? 'w-5 sm:w-8 h-1.5 sm:h-2 bg-[#CFA96A]'
-                : 'w-1.5 sm:w-2 h-1.5 sm:h-2 bg-white/40 hover:bg-white/70'
+              ? 'w-5 sm:w-8 h-1.5 sm:h-2 bg-[#CFA96A]'
+              : 'w-1.5 sm:w-2 h-1.5 sm:h-2 bg-white/40 hover:bg-white/70'
               }`}
           />
         ))}
