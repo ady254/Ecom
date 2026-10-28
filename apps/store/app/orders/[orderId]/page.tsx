@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -8,6 +8,7 @@ import { CheckCircle2, Package, Truck, Home, Loader2, XCircle, ChevronRight, Gif
 import toast from 'react-hot-toast';
 import { formatCurrency } from '@minara/utils';
 import api from '@/lib/api';
+import { trackPurchase } from '@/components/analytics/MetaPixel';
 
 interface OrderItem {
   product?: { slug: string };
@@ -69,6 +70,8 @@ export default function OrderDetailPage() {
   const [needEmail, setNeedEmail] = useState(false);
   const [emailInput, setEmailInput] = useState('');
   const [verifiedEmail, setVerifiedEmail] = useState(emailParam);
+  // Ensures the Purchase pixel fires exactly once per order success page load
+  const pixelFired = useRef(false);
 
   const fetchOrder = (email: string) => {
     setLoading(true);
@@ -101,6 +104,19 @@ export default function OrderDetailPage() {
     fetchOrder(emailParam);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderId]);
+
+  // Fire Meta Pixel Purchase event exactly once when arriving from a successful
+  // checkout (?success=1) and the order data has loaded.
+  useEffect(() => {
+    if (!isSuccess || !order || pixelFired.current) return;
+    pixelFired.current = true;
+    trackPurchase({
+      orderId: order.orderId,
+      value: order.total,
+      currency: 'INR',
+      numItems: order.items.reduce((sum, item) => sum + item.quantity, 0),
+    });
+  }, [isSuccess, order]);
 
   const handleCancel = async () => {
     setCancelling(true);

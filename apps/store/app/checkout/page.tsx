@@ -11,6 +11,7 @@ import { useCartStore } from '@/store/cartStore';
 import { useCodEligibility } from '@/hooks/useCodEligibility';
 import { formatCurrency } from '@minara/utils';
 import { SERVICEABLE_STATES } from '@minara/config';
+import { trackInitiateCheckout } from '@/components/analytics/MetaPixel';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
 
@@ -56,6 +57,14 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     setMounted(true);
+    // Fire Meta Pixel InitiateCheckout when user lands on checkout
+    if (items.length > 0) {
+      trackInitiateCheckout(
+        subtotal(),
+        'INR',
+        items.reduce((sum, i) => sum + i.quantity, 0)
+      );
+    }
     fetch(`${API_URL}/settings`)
       .then(res => res.json())
       .then(json => {

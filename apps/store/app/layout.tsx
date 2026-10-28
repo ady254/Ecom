@@ -8,6 +8,7 @@ import Footer from '@/components/layout/Footer';
 import CartDrawer from '@/components/cart/CartDrawer';
 import WhatsAppButton from '@/components/layout/WhatsAppButton';
 import OfferPopup from '@/components/layout/OfferPopup';
+import MetaPixel from '@/components/analytics/MetaPixel';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://minaragifting.com'),
@@ -67,6 +68,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <MetaPixel />
       <body>
         <SplashScreen />
         <AnnouncementBar />
