@@ -1,5 +1,10 @@
 import { Router } from 'express';
-import { SERVICEABLE_STATES } from '@minara/config';
+import {
+  SERVICEABLE_STATES,
+  getStateFromPincode,
+  isPincodeServiceable,
+  normalizeStateName,
+} from '@minara/config';
 import { asyncHandler } from '../../utils/asyncHandler.js';
 import { AppError } from '../../utils/AppError.js';
 
@@ -17,32 +22,64 @@ interface PincodeApiResult {
 }
 
 // GET /api/v1/shipping/check-pincode/:pincode — Resolve city/state for a pincode
-// and flag whether we currently deliver there. Backed by the free India Post API;
-// on any lookup failure we return serviceable: null so checkout can fall back to
-// manual entry instead of blocking the customer.
+// and flag whether we currently deliver there. Backed by India Post API with
+// deterministic offline fallback to guarantee quick and accurate validation.
 router.get(
   '/check-pincode/:pincode',
   asyncHandler(async (req, res) => {
     const pincode = String(req.params.pincode);
     if (!/^\d{6}$/.test(pincode)) throw new AppError('Enter a valid 6-digit pincode', 400);
 
+    const offlineState = getStateFromPincode(pincode);
+    const offlineServiceable = isPincodeServiceable(pincode);
+
     try {
-      const response = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
+      const response = await fetch(`https://api.postalpincode.in/pincode/${pincode}`, {
+        signal: AbortSignal.timeout(3500),
+      });
       const [result] = (await response.json()) as PincodeApiResult[];
       const postOffice = result?.Status === 'Success' ? result.PostOffice?.[0] : null;
 
       if (!postOffice) {
-        res.json({ success: true, data: { pincode, serviceable: null, state: null, city: null } });
+        res.json({
+          success: true,
+          data: {
+            pincode,
+            serviceable: offlineState ? offlineServiceable : false,
+            state: offlineState,
+            city: null,
+          },
+        });
         return;
       }
 
-      const serviceable = (SERVICEABLE_STATES as readonly string[]).includes(postOffice.State);
+      const resolvedState = postOffice.State || offlineState || '';
+      const normResolved = normalizeStateName(resolvedState);
+      const isServiceableState = (SERVICEABLE_STATES as readonly string[]).some(
+        (s) => normalizeStateName(s) === normResolved
+      );
+      const serviceable = isServiceableState && isPincodeServiceable(pincode);
+
       res.json({
         success: true,
-        data: { pincode, serviceable, state: postOffice.State, city: postOffice.District },
+        data: {
+          pincode,
+          serviceable,
+          state: resolvedState,
+          city: postOffice.District || postOffice.Name,
+        },
       });
     } catch {
-      res.json({ success: true, data: { pincode, serviceable: null, state: null, city: null } });
+      // Offline fallback: resolve immediately using deterministic postal zone rules
+      res.json({
+        success: true,
+        data: {
+          pincode,
+          serviceable: offlineState ? offlineServiceable : false,
+          state: offlineState,
+          city: null,
+        },
+      });
     }
   })
 );

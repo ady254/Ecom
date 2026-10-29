@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { ProductModel, IProduct } from '../products/product.model.js';
 import { CouponModel, ICoupon } from '../coupons/coupon.model.js';
 import { AppError } from '../../utils/AppError.js';
-import { SHIPPING, SERVICEABLE_STATES } from '@minara/config';
+import { SHIPPING, SERVICEABLE_STATES, validateAddressConsistency } from '@minara/config';
 
 // ─── Validation Schemas ───────────────────────────────────────────────────────
 // The client only ever tells us WHAT it wants to buy (product + quantity +
@@ -33,6 +33,19 @@ export const createOrderSchema = z.object({
       }),
     pincode: z.string().regex(/^\d{6}$/, 'Enter a valid 6-digit pincode'),
     country: z.string().trim().max(56).default('India'),
+  }).superRefine((val, ctx) => {
+    const check = validateAddressConsistency({
+      city: val.city,
+      state: val.state,
+      pincode: val.pincode,
+    });
+    if (!check.valid) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: check.error || 'Address validation failed',
+        path: ['pincode'],
+      });
+    }
   }),
   paymentMethod: z.enum(['razorpay', 'cod']),
   couponCode: z.string().trim().toUpperCase().max(40).optional(),

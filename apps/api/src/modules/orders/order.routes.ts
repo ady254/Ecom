@@ -22,7 +22,6 @@ import {
   releaseCoupon,
   reserveStock,
   releaseStock,
-  computeShipping,
   round2,
   toPaise,
 } from './order.pricing.js';

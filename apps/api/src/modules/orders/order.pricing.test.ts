@@ -138,6 +138,53 @@ describe('createOrderSchema — the client can never set prices', () => {
     expect(bad({ pincode: '12345' })).toBe(false);
     expect(bad({ phone: '1234567890' })).toBe(false); // must start 6-9
   });
+
+  it('rejects mismatched city, state, or pincode combinations', () => {
+    const check = (patch: object) =>
+      createOrderSchema.safeParse({
+        ...validBody,
+        shippingAddress: { ...validBody.shippingAddress, ...patch },
+      });
+
+    // The bug report case: City: New Delhi, State: Maharashtra, Pincode: 110025
+    const delhiPincodeInMaha = check({
+      city: 'New Delhi',
+      state: 'Maharashtra',
+      pincode: '110025',
+    });
+    expect(delhiPincodeInMaha.success).toBe(false);
+
+    // City: New Delhi, State: Delhi, Pincode: 110025 (Delhi is not serviceable)
+    const unserviceableDelhi = check({
+      city: 'New Delhi',
+      state: 'Delhi',
+      pincode: '110025',
+    });
+    expect(unserviceableDelhi.success).toBe(false);
+
+    // City: New Delhi in Maharashtra with Maharashtra pincode
+    const delhiCityInMaha = check({
+      city: 'New Delhi',
+      state: 'Maharashtra',
+      pincode: '400001',
+    });
+    expect(delhiCityInMaha.success).toBe(false);
+
+    // Valid combinations
+    const validMumbai = check({
+      city: 'Mumbai',
+      state: 'Maharashtra',
+      pincode: '400001',
+    });
+    expect(validMumbai.success).toBe(true);
+
+    const validBengaluru = check({
+      city: 'Bengaluru',
+      state: 'Karnataka',
+      pincode: '560001',
+    });
+    expect(validBengaluru.success).toBe(true);
+  });
 });
 
 describe('generateOrderId', () => {

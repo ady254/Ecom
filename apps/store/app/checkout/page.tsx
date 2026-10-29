@@ -10,7 +10,13 @@ import toast from 'react-hot-toast';
 import { useCartStore } from '@/store/cartStore';
 import { useCodEligibility } from '@/hooks/useCodEligibility';
 import { formatCurrency } from '@minara/utils';
-import { SERVICEABLE_STATES } from '@minara/config';
+import {
+  SERVICEABLE_STATES,
+  getStateFromPincode,
+  isPincodeInState,
+  isPincodeServiceable,
+  validateAddressConsistency,
+} from '@minara/config';
 import { trackInitiateCheckout } from '@/components/analytics/MetaPixel';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
@@ -52,7 +58,10 @@ export default function CheckoutPage() {
     addressLine1: '', addressLine2: '',
     city: '', state: '', pincode: '',
   });
-  const [pincodeStatus, setPincodeStatus] = useState<'idle' | 'checking' | 'serviceable' | 'unserviceable'>('idle');
+  const [pincodeStatus, setPincodeStatus] = useState<
+    'idle' | 'checking' | 'serviceable' | 'unserviceable' | 'mismatch'
+  >('idle');
+  const [pincodeMessage, setPincodeMessage] = useState<string | null>(null);
   const { codBlockedBy, codAllowed } = useCodEligibility(items.map((i) => i.productId));
 
   useEffect(() => {
@@ -85,29 +94,75 @@ export default function CheckoutPage() {
   }, [codAllowed]);
 
   // Look up the pincode once 6 digits are entered — auto-fills city/state and
-  // warns early if we don't currently deliver there. Fails open (idle) if the
-  // lookup API is unavailable, so checkout is never blocked by a third-party outage.
+  // validates delivery eligibility and geographical consistency.
   useEffect(() => {
-    if (!/^\d{6}$/.test(form.pincode)) { setPincodeStatus('idle'); return; }
+    if (!/^\d{6}$/.test(form.pincode)) {
+      setPincodeStatus('idle');
+      setPincodeMessage(null);
+      return;
+    }
+
+    const offlineExpectedState = getStateFromPincode(form.pincode);
+    if (!offlineExpectedState) {
+      setPincodeStatus('unserviceable');
+      setPincodeMessage('Please enter a valid 6-digit Indian pincode.');
+      return;
+    }
+
     let cancelled = false;
     setPincodeStatus('checking');
+    setPincodeMessage(null);
+
     const timer = setTimeout(() => {
       fetch(`${API_URL}/shipping/check-pincode/${form.pincode}`)
         .then((r) => r.json())
         .then((json) => {
-          if (cancelled || !json.success) return;
-          const { serviceable, state, city } = json.data;
-          if (serviceable === null) { setPincodeStatus('idle'); return; }
-          setPincodeStatus(serviceable ? 'serviceable' : 'unserviceable');
+          if (cancelled) return;
+          const data = json?.data;
+          const resolvedState = data?.state || offlineExpectedState;
+          const resolvedCity = data?.city || '';
+          const serviceable = data?.serviceable ?? isPincodeServiceable(form.pincode);
+
+          // Auto-sync state and city
           setForm((f) => ({
             ...f,
-            city: f.city.trim() ? f.city : city || f.city,
-            state: f.state ? f.state : state || f.state,
+            state: resolvedState,
+            city: resolvedCity || f.city,
           }));
+
+          if (!serviceable) {
+            setPincodeStatus('unserviceable');
+            setPincodeMessage(
+              `Sorry, we don't currently deliver to ${resolvedState} (pincode ${form.pincode}). We ship to Maharashtra, Karnataka, Tamil Nadu, Punjab, Jammu & Kashmir, Telangana, Uttar Pradesh, and Andhra Pradesh.`
+            );
+          } else {
+            setPincodeStatus('serviceable');
+            setPincodeMessage(null);
+          }
         })
-        .catch(() => { if (!cancelled) setPincodeStatus('idle'); });
-    }, 400);
-    return () => { cancelled = true; clearTimeout(timer); };
+        .catch(() => {
+          if (cancelled) return;
+          const serviceable = isPincodeServiceable(form.pincode);
+          setForm((f) => ({
+            ...f,
+            state: offlineExpectedState,
+          }));
+          if (!serviceable) {
+            setPincodeStatus('unserviceable');
+            setPincodeMessage(
+              `Sorry, we don't currently deliver to ${offlineExpectedState} (pincode ${form.pincode}). We ship to Maharashtra, Karnataka, Tamil Nadu, Punjab, Jammu & Kashmir, Telangana, Uttar Pradesh, and Andhra Pradesh.`
+            );
+          } else {
+            setPincodeStatus('serviceable');
+            setPincodeMessage(null);
+          }
+        });
+    }, 350);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
   }, [form.pincode]);
 
   const sub = subtotal();
@@ -115,6 +170,34 @@ export default function CheckoutPage() {
   const total = sub + shipping - couponDiscount;
 
   const set = (k: keyof FormData, v: string) => setForm((f) => ({ ...f, [k]: v }));
+
+  const handleStateChange = (selectedState: string) => {
+    set('state', selectedState);
+    if (/^\d{6}$/.test(form.pincode)) {
+      if (selectedState && !isPincodeInState(form.pincode, selectedState)) {
+        const expected = getStateFromPincode(form.pincode);
+        setPincodeStatus('mismatch');
+        setPincodeMessage(
+          `Pincode ${form.pincode} belongs to ${expected || 'another state'}, not ${selectedState}. Please select the matching state or correct the pincode.`
+        );
+        return;
+      }
+      if (selectedState && !SERVICEABLE_STATES.includes(selectedState as (typeof SERVICEABLE_STATES)[number])) {
+        setPincodeStatus('unserviceable');
+        setPincodeMessage(
+          `Sorry, we don't currently deliver to ${selectedState}. We ship to Maharashtra, Karnataka, Tamil Nadu, Punjab, Jammu & Kashmir, Telangana, Uttar Pradesh, and Andhra Pradesh.`
+        );
+        return;
+      }
+      const serviceable = isPincodeServiceable(form.pincode);
+      setPincodeStatus(serviceable ? 'serviceable' : 'unserviceable');
+      setPincodeMessage(
+        serviceable
+          ? null
+          : `Sorry, we don't currently deliver to ${selectedState} (pincode ${form.pincode}).`
+      );
+    }
+  };
 
   const validate = () => {
     if (!form.fullName.trim()) { toast.error('Full name is required'); return false; }
@@ -124,10 +207,40 @@ export default function CheckoutPage() {
     if (!form.city.trim()) { toast.error('City is required'); return false; }
     if (!form.state) { toast.error('State is required'); return false; }
     if (!form.pincode.match(/^\d{6}$/)) { toast.error('Enter a valid 6-digit pincode'); return false; }
+
+    if (pincodeStatus === 'checking') {
+      toast.error('Please wait, verifying pincode delivery availability...');
+      return false;
+    }
+
+    const consistency = validateAddressConsistency({
+      city: form.city,
+      state: form.state,
+      pincode: form.pincode,
+    });
+
+    if (!consistency.valid) {
+      toast.error(consistency.error || 'Address details do not match');
+      return false;
+    }
+
+    if (pincodeStatus === 'mismatch') {
+      toast.error(pincodeMessage || `Pincode ${form.pincode} does not belong to ${form.state}`);
+      return false;
+    }
+
+    if (pincodeStatus === 'unserviceable') {
+      toast.error(
+        pincodeMessage || `Sorry, we don't currently deliver to ${form.state} (pincode ${form.pincode})`
+      );
+      return false;
+    }
+
     if (!SERVICEABLE_STATES.includes(form.state as (typeof SERVICEABLE_STATES)[number])) {
       toast.error(`Sorry, we don't currently deliver to ${form.state}`);
       return false;
     }
+
     return true;
   };
 
@@ -419,14 +532,31 @@ export default function CheckoutPage() {
                     </div>
                     <div className="sm:col-span-2">
                       <label htmlFor="state" className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">State *</label>
-                      <select id="state" value={form.state} onChange={(e) => set('state', e.target.value)} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[var(--color-gold)] transition-colors bg-white" required>
+                      <select id="state" value={form.state} onChange={(e) => handleStateChange(e.target.value)} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[var(--color-gold)] transition-colors bg-white" required>
                         <option value="">Select state</option>
                         {INDIAN_STATES.map((s) => <option key={s} value={s}>{s}</option>)}
                       </select>
                     </div>
+                    {pincodeStatus === 'checking' && (
+                      <div className="sm:col-span-2 text-xs text-blue-700 bg-blue-50 border border-blue-200 rounded-xl px-4 py-2.5 flex items-center gap-2">
+                        <Loader2 size={14} className="animate-spin shrink-0 text-blue-600" />
+                        <span>Verifying delivery availability for pincode {form.pincode}…</span>
+                      </div>
+                    )}
                     {pincodeStatus === 'unserviceable' && (
-                      <div className="sm:col-span-2 text-xs text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5">
-                        Sorry, we don&apos;t currently deliver to this pincode. We ship to Maharashtra, Karnataka, Tamil Nadu, Punjab, Jammu &amp; Kashmir, Telangana, Uttar Pradesh, and Andhra Pradesh.
+                      <div className="sm:col-span-2 text-xs text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5 leading-relaxed">
+                        {pincodeMessage || `Sorry, we don't currently deliver to this pincode. We ship to Maharashtra, Karnataka, Tamil Nadu, Punjab, Jammu & Kashmir, Telangana, Uttar Pradesh, and Andhra Pradesh.`}
+                      </div>
+                    )}
+                    {pincodeStatus === 'mismatch' && (
+                      <div className="sm:col-span-2 text-xs text-amber-800 bg-amber-50 border border-amber-300 rounded-xl px-4 py-2.5 leading-relaxed">
+                        {pincodeMessage || `Pincode ${form.pincode} does not belong to ${form.state}. Please correct your state or pincode.`}
+                      </div>
+                    )}
+                    {pincodeStatus === 'serviceable' && form.pincode.length === 6 && form.state && (
+                      <div className="sm:col-span-2 text-xs text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2 flex items-center gap-2">
+                        <CheckCircle size={15} className="text-emerald-600 shrink-0" />
+                        <span>Delivery available to {form.city ? `${form.city}, ` : ''}{form.state} ({form.pincode})!</span>
                       </div>
                     )}
                   </div>
@@ -599,11 +729,24 @@ export default function CheckoutPage() {
 
                   <button
                     type="submit"
-                    disabled={submitting}
-                    className="mt-6 w-full py-4 bg-[var(--color-navy)] text-white font-semibold tracking-wider rounded-full hover:bg-[var(--color-navy-light)] transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+                    disabled={
+                      submitting ||
+                      pincodeStatus === 'unserviceable' ||
+                      pincodeStatus === 'mismatch' ||
+                      pincodeStatus === 'checking' ||
+                      (form.pincode.length === 6 && form.state ? !isPincodeInState(form.pincode, form.state) : false) ||
+                      (form.state ? !SERVICEABLE_STATES.includes(form.state as (typeof SERVICEABLE_STATES)[number]) : false)
+                    }
+                    className="mt-6 w-full py-4 bg-[var(--color-navy)] text-white font-semibold tracking-wider rounded-full hover:bg-[var(--color-navy-light)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     {submitting ? (
                       <><Loader2 size={16} className="animate-spin" /> Processing…</>
+                    ) : pincodeStatus === 'checking' ? (
+                      <><Loader2 size={16} className="animate-spin" /> Verifying Pincode…</>
+                    ) : pincodeStatus === 'mismatch' ? (
+                      'Pincode & State Do Not Match'
+                    ) : pincodeStatus === 'unserviceable' ? (
+                      'Delivery Unavailable to This Location'
                     ) : (
                       paymentMethod === 'cod' ? 'Place Order (COD)' : `Pay ${formatCurrency(total)}`
                     )}
