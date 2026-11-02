@@ -34,11 +34,11 @@ interface FormData {
 }
 
 const INDIAN_STATES = [
-  'Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat',
-  'Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh',
-  'Maharashtra','Manipur','Meghalaya','Mizoram','Nagaland','Odisha','Punjab',
-  'Rajasthan','Sikkim','Tamil Nadu','Telangana','Tripura','Uttar Pradesh',
-  'Uttarakhand','West Bengal','Delhi','Jammu & Kashmir','Ladakh',
+  'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa', 'Gujarat',
+  'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka', 'Kerala', 'Madhya Pradesh',
+  'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab',
+  'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura', 'Uttar Pradesh',
+  'Uttarakhand', 'West Bengal', 'Delhi', 'Jammu & Kashmir', 'Ladakh',
 ];
 
 export default function CheckoutPage() {
@@ -85,7 +85,7 @@ export default function CheckoutPage() {
           });
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   // Never leave a disallowed method selected.
@@ -473,7 +473,7 @@ export default function CheckoutPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="sm:col-span-2">
                       <label htmlFor="fullName" className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Full Name *</label>
-                      <input id="fullName" value={form.fullName} onChange={(e) => set('fullName', e.target.value)} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[var(--color-gold)] transition-colors" placeholder="Aarav Sharma" required />
+                      <input id="fullName" value={form.fullName} onChange={(e) => set('fullName', e.target.value)} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[var(--color-gold)] transition-colors" placeholder="Ayaan Ahmad" required />
                     </div>
                     <div>
                       <label htmlFor="phone" className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Mobile Number *</label>
@@ -571,39 +571,39 @@ export default function CheckoutPage() {
                     Have a coupon code?
                   </summary>
                   <div className="mt-5">
-                  {couponApplied ? (
-                    <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <Tag size={15} className="text-emerald-600" />
-                        <span className="font-semibold text-sm text-emerald-700">{couponCode.toUpperCase()}</span>
-                        <span className="text-xs text-emerald-600">— {formatCurrency(couponDiscount)} off</span>
+                    {couponApplied ? (
+                      <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <Tag size={15} className="text-emerald-600" />
+                          <span className="font-semibold text-sm text-emerald-700">{couponCode.toUpperCase()}</span>
+                          <span className="text-xs text-emerald-600">— {formatCurrency(couponDiscount)} off</span>
+                        </div>
+                        <button onClick={removeCoupon} type="button" aria-label="Remove coupon" className="p-1 text-emerald-500 hover:text-red-500 transition-colors">
+                          <X size={15} />
+                        </button>
                       </div>
-                      <button onClick={removeCoupon} type="button" aria-label="Remove coupon" className="p-1 text-emerald-500 hover:text-red-500 transition-colors">
-                        <X size={15} />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={couponCode}
-                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                        onKeyDown={(e) => e.key === 'Enter' && applyCoupon()}
-                        placeholder="Enter coupon code"
-                        className="flex-1 px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[var(--color-gold)] transition-colors uppercase tracking-wider"
-                        maxLength={20}
-                      />
-                      <button
-                        type="button"
-                        onClick={applyCoupon}
-                        disabled={couponLoading || !couponCode.trim()}
-                        className="px-5 py-3 bg-[var(--color-cream)] border border-gray-200 text-[var(--color-navy)] text-sm font-semibold rounded-xl hover:bg-[var(--color-gold-light)] transition-colors disabled:opacity-50 flex items-center gap-1.5"
-                      >
-                        {couponLoading ? <Loader2 size={14} className="animate-spin" /> : <Tag size={14} />}
-                        Apply
-                      </button>
-                    </div>
-                  )}
+                    ) : (
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={couponCode}
+                          onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                          onKeyDown={(e) => e.key === 'Enter' && applyCoupon()}
+                          placeholder="Enter coupon code"
+                          className="flex-1 px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[var(--color-gold)] transition-colors uppercase tracking-wider"
+                          maxLength={20}
+                        />
+                        <button
+                          type="button"
+                          onClick={applyCoupon}
+                          disabled={couponLoading || !couponCode.trim()}
+                          className="px-5 py-3 bg-[var(--color-cream)] border border-gray-200 text-[var(--color-navy)] text-sm font-semibold rounded-xl hover:bg-[var(--color-gold-light)] transition-colors disabled:opacity-50 flex items-center gap-1.5"
+                        >
+                          {couponLoading ? <Loader2 size={14} className="animate-spin" /> : <Tag size={14} />}
+                          Apply
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </details>
 
@@ -619,13 +619,12 @@ export default function CheckoutPage() {
                       type="button"
                       onClick={() => setPaymentMethod('cod')}
                       disabled={!codAllowed}
-                      className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left ${
-                        !codAllowed
+                      className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left ${!codAllowed
                           ? 'border-gray-100 bg-gray-50 cursor-not-allowed opacity-60'
                           : paymentMethod === 'cod'
                             ? 'border-[var(--color-navy)] bg-[var(--color-cream)]'
                             : 'border-gray-200 hover:border-gray-300'
-                      }`}
+                        }`}
                     >
                       <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${paymentMethod === 'cod' && codAllowed ? 'bg-[var(--color-navy)]' : 'bg-gray-100'}`}>
                         <Truck size={18} className={paymentMethod === 'cod' && codAllowed ? 'text-white' : 'text-gray-400'} />
@@ -643,11 +642,10 @@ export default function CheckoutPage() {
                     <button
                       type="button"
                       onClick={() => setPaymentMethod('razorpay')}
-                      className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left ${
-                        paymentMethod === 'razorpay'
+                      className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left ${paymentMethod === 'razorpay'
                           ? 'border-[var(--color-gold)] bg-amber-50'
                           : 'border-gray-200 hover:border-gray-300'
-                      }`}
+                        }`}
                     >
                       <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${paymentMethod === 'razorpay' ? 'bg-[var(--color-gold)]' : 'bg-gray-100'}`}>
                         <CreditCard size={18} className={paymentMethod === 'razorpay' ? 'text-[var(--color-navy)]' : 'text-gray-400'} />
